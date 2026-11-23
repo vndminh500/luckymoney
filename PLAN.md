@@ -14,7 +14,7 @@ Làm theo lát cắt dọc: mỗi tính năng chạy được từ giao diện �
   - Xong khi: test phủ các trường hợp biên (đầu/cuối tháng, múi giờ).
 
 ## Giai đoạn 1: Xác thực
-- [ ] T5. Đăng ký và đăng nhập bằng email + mật khẩu (Auth.js, JWT), băm mật khẩu, middleware chặn route cần đăng nhập, tạo danh mục mặc định khi đăng ký.
+- [x] T5. Đăng ký và đăng nhập bằng email + mật khẩu (Auth.js, JWT), băm mật khẩu, middleware chặn route cần đăng nhập, tạo danh mục mặc định khi đăng ký.
   - Xong khi: e2e đăng ký, đăng nhập, đăng xuất pass; chưa đăng nhập bị chuyển về `/login`.
 - [ ] T6. Thêm đăng nhập Google OAuth.
   - Xong khi: đăng nhập Google tạo hoặc liên kết user đúng.
