@@ -1,0 +1,4 @@
+# Keep LF line endings everywhere (Prettier default, Linux CI).
+* text=auto eol=lf
+*.ico binary
+*.png binary

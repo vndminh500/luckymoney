@@ -4,9 +4,9 @@ Quy tắc: làm tuần tự, mỗi lần một task. Task chỉ được tick kh
 Làm theo lát cắt dọc: mỗi tính năng chạy được từ giao diện đến database.
 
 ## Giai đoạn 0: Nền móng
-- [ ] T1. Khởi tạo Next.js + TypeScript strict, Tailwind, ESLint, Prettier. Thêm script `lint`, `typecheck`, `test`.
+- [x] T1. Khởi tạo Next.js + TypeScript strict, Tailwind, ESLint, Prettier. Thêm script `lint`, `typecheck`, `test`.
   - Xong khi: `npm run dev` chạy, trang chủ hiển thị, các script chạy không lỗi.
-- [ ] T2. Cấu hình Prisma + Postgres, tạo migration đầu tiên từ `prisma/schema.prisma`, thêm `.env.example`.
+- [x] T2. Cấu hình Prisma + Postgres, tạo migration đầu tiên từ `prisma/schema.prisma`, thêm `.env.example`.
   - Xong khi: `npx prisma migrate dev` thành công, có script seed rỗng.
 - [ ] T3. Cài Vitest + Playwright, viết một test mẫu cho mỗi loại, thêm GitHub Actions chạy lint, typecheck, test trên mỗi push.
   - Xong khi: CI xanh trên GitHub.
