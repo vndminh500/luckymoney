@@ -10,7 +10,7 @@ Làm theo lát cắt dọc: mỗi tính năng chạy được từ giao diện �
   - Xong khi: `npx prisma migrate dev` thành công, có script seed rỗng.
 - [ ] T3. Cài Vitest + Playwright, viết một test mẫu cho mỗi loại, thêm GitHub Actions chạy lint, typecheck, test trên mỗi push.
   - Xong khi: CI xanh trên GitHub.
-- [ ] T4. Viết `src/lib/money.ts` (định dạng VND, parse "50k") và `src/lib/dates.ts` (gom tháng theo múi giờ) kèm unit test.
+- [x] T4. Viết `src/lib/money.ts` (định dạng VND, parse "50k") và `src/lib/dates.ts` (gom tháng theo múi giờ) kèm unit test.
   - Xong khi: test phủ các trường hợp biên (đầu/cuối tháng, múi giờ).
 
 ## Giai đoạn 1: Xác thực

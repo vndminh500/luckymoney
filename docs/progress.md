@@ -25,3 +25,11 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Playwright luôn chạy trên bản production (`next build` + `next start`, cổng 3100). Lý do: Next 16 chỉ cho một `next dev` mỗi thư mục, nên e2e không đụng dev server đang chạy.
 - CI (`.github/workflows/ci.yml`): job `check` (lint, typecheck, format:check, unit test) và job `e2e` (Chromium). Chưa có Postgres trong CI; sẽ thêm khi e2e cần DB (T5).
 - `npm audit`: 3 cảnh báo high từ `effect` (phụ thuộc nội bộ của Prisma CLI `@prisma/config`). Chỉ là công cụ dev, không vào bundle. `npm audit fix --force` sẽ hạ Prisma về v6 nên không áp dụng; theo dõi bản vá của Prisma.
+
+## T4. money.ts + dates.ts (2026-11-23)
+- `formatVnd`: `Intl.NumberFormat("vi-VN", VND)`, ví dụ `50.000 ₫` (khoảng trắng là NBSP `U+00A0`). Ném `RangeError` nếu không phải số nguyên.
+- `parseVnd`: nhận số thường (`50000`, `50.000`, `50,000`, `50 000`), đơn vị `k/nghìn/ngàn`, `tr/triệu/m`, thập phân (`1.5tr`, `1,5k`), kiểu viết tắt `1tr5`, `2k5`, hậu tố `đ/₫/vnd/vnđ`. Trả `null` nếu không phải số nguyên VND không âm. Không dùng số thực: dịch chữ số dạng chuỗi rồi `BigInt`. Ràng buộc `> 0` và `<= 1_000_000_000` thuộc schema Zod (T7).
+- Không viết BigInt literal (`10n`) vì `tsconfig` target ES2017 không cho phép.
+- `dates.ts` dùng `Intl` có sẵn, không thêm thư viện múi giờ. Tháng là khoảng nửa mở `[start, end)` theo UTC: truy vấn `occurredAt >= start AND occurredAt < end`.
+- `startOfZonedDay` xử lý DST bỏ qua nửa đêm (America/Santiago 2026-09-06) bằng cách thử offset ở hai phía của thời điểm đổi giờ và lấy thời điểm sớm nhất thuộc ngày đó.
+- Kiểm tra độ mạnh của test: cố ý đổi sang gom theo UTC thì 11 test thất bại.
