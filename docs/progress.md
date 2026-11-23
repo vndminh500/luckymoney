@@ -45,3 +45,11 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Test: database riêng `spendly_test` (integration, xóa sạch trước mỗi test) và `spendly_e2e`. Test từ chối chạy nếu tên database không kết thúc bằng `_test`/`_e2e`.
 - CI thêm Postgres service cho cả hai job.
 - Đổi font sang Inter (có subset `vietnamese`), `lang="vi"`.
+
+## T6. Đăng nhập Google OAuth (2026-11-24) — chờ kiểm tra với Client ID thật
+- Không dùng `@auth/prisma-adapter`: adapter ghi thêm cột `emailVerified`, `image` mà schema không có, và phiên đã là JWT. Việc tạo và liên kết user nằm trong `src/server/auth/google.ts` (callback `signIn`), callback `jwt` đổi id Google sang id user của mình.
+- Quy tắc liên kết: Google đã liên kết thì dùng user đó (kể cả khi email Google đổi); email thuộc user không có mật khẩu thì liên kết; email thuộc tài khoản có mật khẩu thì **từ chối** (`?error=OAuthAccountNotLinked`); email mới thì tạo user, danh mục mặc định và liên kết. Chỉ nhận email Google đã xác minh (`email_verified`).
+- Lý do từ chối liên kết với tài khoản mật khẩu: v1 không xác minh email khi đăng ký, nên tài khoản đó có thể do người khác tạo trước ("pre-account takeover"). Nếu bổ sung xác minh email thì có thể bật lại việc liên kết.
+- Không lưu access/refresh token của Google vì app không gọi API Google.
+- Nút Google chỉ hiện khi có `AUTH_GOOGLE_ID` và `AUTH_GOOGLE_SECRET`. Trang `/register` là trang tĩnh, nên biến này được đọc lúc build.
+- E2E dùng client ID giả và chặn `accounts.google.com` để kiểm tra URL ủy quyền (client_id, redirect_uri, scope, PKCE S256). Vòng OAuth thật chưa kiểm tra được vì chưa có Client ID thật.

@@ -34,7 +34,7 @@ test.describe("guests", () => {
     expect(url.pathname).toBe("/login");
     expect(url.searchParams.get("callbackUrl")).toBe("/transactions?month=2026-11");
     // Exactly one form: each input has a single label (accessible name "Email", not "Email Email").
-    await expect(page.locator("form")).toHaveCount(1);
+    await expect(page.locator('form:has(input[name="email"])')).toHaveCount(1);
     await expect(page.getByRole("textbox", { name: "Email", exact: true })).toHaveCount(1);
   });
 

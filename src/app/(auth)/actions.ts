@@ -68,6 +68,11 @@ export async function registerAction(
   return {};
 }
 
+export async function googleSignInAction(formData: FormData): Promise<void> {
+  // Redirects to Google, then back to callbackUrl (validated to stay on this site).
+  await signIn("google", { redirectTo: safeRedirectPath(formData.get("callbackUrl")) });
+}
+
 export async function logoutAction(): Promise<void> {
   await signOut({ redirectTo: "/login" });
 }
