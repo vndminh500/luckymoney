@@ -1,0 +1,104 @@
+// Mô hình dữ liệu cho Spendly.
+// Quy ước: tiền là Int (VND), thời gian lưu UTC, mọi bảng dữ liệu người dùng đều có userId.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String?
+  passwordHash String? // null nếu chỉ đăng nhập bằng Google
+  timeZone     String    @default("Asia/Ho_Chi_Minh")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  accounts     Account[]
+  categories   Category[]
+  transactions Transaction[]
+  budgets      Budget[]
+}
+
+// Dùng cho Google OAuth (Auth.js Prisma adapter).
+// Phiên đăng nhập dùng JWT nên không cần bảng Session.
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Category {
+  id         String          @id @default(cuid())
+  userId     String
+  name       String
+  type       TransactionType // danh mục thuộc thu hay chi
+  icon       String? // emoji hoặc tên icon
+  archivedAt DateTime? // lưu trữ thay vì xóa
+  createdAt  DateTime        @default(now())
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  budgets      Budget[]
+
+  @@unique([userId, name, type])
+  @@index([userId])
+}
+
+model Transaction {
+  id         String          @id @default(cuid())
+  userId     String
+  categoryId String
+  type       TransactionType
+  amount     Int // VND, > 0, tối đa 1_000_000_000 (kiểm tra bằng Zod)
+  occurredAt DateTime // thời điểm phát sinh (UTC)
+  note       String?
+  deletedAt  DateTime? // xóa mềm
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@index([userId, occurredAt])
+  @@index([userId, categoryId])
+}
+
+model Budget {
+  id         String   @id @default(cuid())
+  userId     String
+  categoryId String
+  month      String // định dạng "YYYY-MM"
+  amount     Int // hạn mức VND
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, categoryId, month])
+  @@index([userId, month])
+}

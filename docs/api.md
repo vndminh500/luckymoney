@@ -1,0 +1,58 @@
+# API (hợp đồng giữa frontend và backend)
+
+Quy ước chung
+- Base path: `/api`. Dữ liệu JSON. Tiền là số nguyên VND. Ngày giờ là ISO 8601 UTC.
+- Mọi endpoint (trừ đăng ký/đăng nhập) yêu cầu đã đăng nhập, nếu không trả `401`.
+- Mọi truy vấn lọc theo `userId` của phiên. Truy cập tài nguyên của người khác trả `404` (không tiết lộ là có tồn tại).
+- Lỗi validate trả `400` kèm `{ "error": "VALIDATION_ERROR", "details": [{ "field": "amount", "message": "..." }] }`.
+- Lỗi khác dùng dạng `{ "error": "CODE", "message": "..." }`.
+
+Mã lỗi: `400 VALIDATION_ERROR`, `401 UNAUTHENTICATED`, `404 NOT_FOUND`, `409 CONFLICT`, `429 RATE_LIMITED`, `500 INTERNAL`.
+
+## Xác thực
+| Method | Path | Mô tả |
+|---|---|---|
+| POST | `/api/auth/register` | Body: `{ email, password, name? }`. Trả `201` với user (không có hash). `409` nếu email đã tồn tại. |
+| POST/GET | `/api/auth/[...nextauth]` | Auth.js: đăng nhập credentials, Google, đăng xuất, session. |
+
+Ràng buộc: email hợp lệ, mật khẩu tối thiểu 8 ký tự. Giới hạn tần suất cho đăng nhập và đăng ký.
+
+## Giao dịch
+| Method | Path | Mô tả |
+|---|---|---|
+| GET | `/api/transactions` | Query: `month=YYYY-MM`, `categoryId?`, `type?`, `page=1`, `pageSize=20`. Trả `{ items, page, pageSize, total }`, sắp xếp `occurredAt` giảm dần, bỏ qua bản ghi đã xóa mềm. |
+| POST | `/api/transactions` | Body: `{ type, amount, categoryId, occurredAt, note? }`. Trả `201`. `categoryId` phải thuộc user, chưa lưu trữ và khớp `type`. |
+| GET | `/api/transactions/:id` | Chi tiết một giao dịch. |
+| PATCH | `/api/transactions/:id` | Sửa một phần các trường trên. |
+| DELETE | `/api/transactions/:id` | Xóa mềm (`deletedAt = now`). Trả `204`. |
+
+Ràng buộc: `amount` là số nguyên, `1 <= amount <= 1_000_000_000`; `note` tối đa 200 ký tự.
+
+## Danh mục
+| Method | Path | Mô tả |
+|---|---|---|
+| GET | `/api/categories` | Query: `includeArchived=false`. |
+| POST | `/api/categories` | Body: `{ name, type, icon? }`. `409` nếu trùng `(name, type)`. |
+| PATCH | `/api/categories/:id` | Đổi `name`, `icon`. |
+| POST | `/api/categories/:id/archive` | Lưu trữ. |
+| POST | `/api/categories/:id/restore` | Bỏ lưu trữ. |
+
+Danh mục mặc định được tạo khi đăng ký (ví dụ: Ăn uống, Đi lại, Nhà ở, Giải trí, Mua sắm, Sức khỏe, Học tập, Khác; thu: Lương, Thưởng, Khác).
+
+## Thống kê
+| Method | Path | Mô tả |
+|---|---|---|
+| GET | `/api/stats/summary?month=YYYY-MM` | `{ income, expense, balance }` của tháng theo múi giờ user. |
+| GET | `/api/stats/by-category?month=YYYY-MM&type=EXPENSE` | `[{ categoryId, name, total, percent }]`. |
+| GET | `/api/stats/daily?month=YYYY-MM` | `[{ date: "YYYY-MM-DD", income, expense }]`. |
+
+## Ngân sách
+| Method | Path | Mô tả |
+|---|---|---|
+| GET | `/api/budgets?month=YYYY-MM` | Mỗi mục kèm `spent` và `percentUsed`. |
+| PUT | `/api/budgets` | Body: `{ categoryId, month, amount }`. Tạo hoặc cập nhật (upsert). |
+| DELETE | `/api/budgets/:id` | Xóa ngân sách. |
+
+## Ghi chú cài đặt
+- Có thể dùng Server Actions cho thao tác từ giao diện, nhưng logic nằm trong `src/server/` và dùng chung với route handler để dễ test.
+- Mọi schema Zod đặt ở `src/lib/schemas/` và dùng lại cho cả client và server.
