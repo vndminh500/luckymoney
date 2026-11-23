@@ -17,3 +17,11 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Seed chạy bằng `node prisma/seed.ts` (Node 24 tự bỏ type TypeScript), không cần `tsx`.
 - npm 11 chặn install script mặc định: đã duyệt `prisma` và `@prisma/engines` (`allowScripts` trong `package.json`), vì engines cần tải schema engine cho `migrate`.
 - Postgres local chạy bằng `docker-compose.yml` (postgres:17-alpine). `.gitignore` thêm `!.env.example`.
+
+## T3. Vitest + Playwright + CI (2026-11-23)
+- Vitest 5 (môi trường `node`, test ở `tests/unit/`). Alias `@/*` dùng `resolve.tsconfigPaths` có sẵn trong Vite 8, không cần `vite-tsconfig-paths`.
+- Vitest chưa hỗ trợ async Server Component (theo tài liệu Next): UI kiểm tra bằng e2e, unit test dành cho `src/lib` và `src/server`.
+- Nâng `@types/node` từ `^20` lên `^24` cho khớp runtime Node 24 (Vitest 5 yêu cầu >= 22).
+- Playwright luôn chạy trên bản production (`next build` + `next start`, cổng 3100). Lý do: Next 16 chỉ cho một `next dev` mỗi thư mục, nên e2e không đụng dev server đang chạy.
+- CI (`.github/workflows/ci.yml`): job `check` (lint, typecheck, format:check, unit test) và job `e2e` (Chromium). Chưa có Postgres trong CI; sẽ thêm khi e2e cần DB (T5).
+- `npm audit`: 3 cảnh báo high từ `effect` (phụ thuộc nội bộ của Prisma CLI `@prisma/config`). Chỉ là công cụ dev, không vào bundle. `npm audit fix --force` sẽ hạ Prisma về v6 nên không áp dụng; theo dõi bản vá của Prisma.
