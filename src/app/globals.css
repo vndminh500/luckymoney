@@ -38,6 +38,15 @@
     }
   }
 
+  @keyframes lm-grow {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
   @keyframes lm-drift {
     from {
       transform: translate3d(0, 0, 0) scale(1);
@@ -89,6 +98,47 @@ body {
     --auth-border: #1d4560;
     --auth-tab-track: #0f3048;
     --auth-tab-pill: #1b5378;
+  }
+}
+
+/* Dashboard: brand surfaces plus chart colors. Series slots are the validated
+   categorical palette (dataviz reference instance), checked against these
+   card surfaces: white in light mode, #0b2639 in dark mode. */
+.dash-shell {
+  --dash-bg: #f4fbff;
+  --dash-surface: #ffffff;
+  --dash-text: #062b45;
+  --dash-muted: #3d6680;
+  --dash-border: #d6ecf8;
+  --dash-grid: #e3eef5;
+  --dash-track: #eaf5fb;
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e87ba4;
+  --series-other: #9fb3c0;
+  --series-income: #1baf7a;
+  background: var(--dash-bg);
+  color: var(--dash-text);
+}
+
+@media (prefers-color-scheme: dark) {
+  .dash-shell {
+    --dash-bg: #061b2b;
+    --dash-surface: #0b2639;
+    --dash-text: #e8f8ff;
+    --dash-muted: #9cc3d8;
+    --dash-border: #1d4560;
+    --dash-grid: #163a52;
+    --dash-track: #0f3048;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --series-4: #c98500;
+    --series-5: #d55181;
+    --series-other: #5d7a8c;
+    --series-income: #199e70;
   }
 }
 

@@ -35,7 +35,7 @@ Làm theo lát cắt dọc: mỗi tính năng chạy được từ giao diện �
 ## Giai đoạn 3: Dashboard
 - [x] T12. API và service thống kê (summary, by-category, daily) kèm unit test với dữ liệu mẫu.
   - Xong khi: số liệu khớp tổng thủ công, đúng ở ranh giới tháng theo múi giờ; có test giao dịch xóa mềm không được tính (để đóng T9).
-- [ ] T13. Giao diện dashboard: thẻ tổng quan, biểu đồ tròn theo danh mục, biểu đồ cột theo ngày, chọn tháng.
+- [x] T13. Giao diện dashboard: thẻ tổng quan, biểu đồ tròn theo danh mục, biểu đồ cột theo ngày, chọn tháng.
   - Xong khi: e2e kiểm tra số trên dashboard khớp dữ liệu seed.
 
 ## Giai đoạn 4: Ngân sách

@@ -79,3 +79,25 @@ function scaleByUnit(whole: string, fraction: string, exponent: number): number 
 function toSafeInteger(value: bigint): number | null {
   return value <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(value) : null;
 }
+
+const compactNumber = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 1 });
+
+const COMPACT_UNITS: { size: number; suffix: string }[] = [
+  { size: 1_000_000_000, suffix: " tỷ" },
+  { size: 1_000_000, suffix: "tr" },
+  { size: 1_000, suffix: "k" },
+];
+
+/**
+ * Short label for chart axes, in the shorthand people type: 45k, 1,5tr, 1 tỷ.
+ * Display only (one decimal, rounded); never parse it back into an amount.
+ */
+export function formatVndCompact(amount: number): string {
+  const sign = amount < 0 ? "-" : "";
+  const value = Math.abs(amount);
+  const unit = COMPACT_UNITS.find(({ size }) => value >= size);
+  if (!unit) {
+    return `${sign}${compactNumber.format(value)}`;
+  }
+  return `${sign}${compactNumber.format(value / unit.size)}${unit.suffix}`;
+}

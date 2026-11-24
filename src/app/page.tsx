@@ -1,60 +1,165 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
 import { logoutAction } from "@/app/(auth)/actions";
+import { Logo } from "@/components/brand/logo";
+import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
+import { DailyChart } from "@/components/dashboard/daily-chart";
+import { SummaryTiles } from "@/components/dashboard/summary-tiles";
+import { addMonths } from "@/lib/dates";
 import { getCurrentUser } from "@/server/auth/session";
+import { ValidationError } from "@/server/errors";
+import { getDailyStats, getStatsByCategory, getSummary } from "@/server/stats/service";
 
-// Temporary signed-in home page. The monthly dashboard replaces it in T13.
-export default function HomePage() {
+export const metadata: Metadata = { title: "Tổng quan" };
+
+const navLink =
+  "rounded-lg px-3 py-2 font-medium text-[var(--dash-muted)] transition-colors duration-200 hover:bg-[var(--dash-track)] hover:text-[var(--dash-text)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lm-deep";
+
+const monthButton =
+  "grid size-10 place-items-center rounded-full border border-[var(--dash-border)] bg-[var(--dash-surface)] text-lg transition-[border-color,transform] duration-200 ease-lm hover:border-lm-sky active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lm-deep";
+
+/** The signed-in home page: the monthly dashboard (PRD F4). */
+export default function DashboardPage({ searchParams }: PageProps<"/">) {
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-8">
-      <header className="flex items-center justify-between gap-4">
-        <p className="text-xl font-semibold tracking-tight text-emerald-800 dark:text-emerald-400">
-          Lucky Money
-        </p>
-        <form action={logoutAction}>
-          <button
-            type="submit"
-            className="h-10 rounded-lg border border-zinc-300 px-4 text-sm font-medium hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 dark:border-zinc-600 dark:hover:bg-zinc-800"
-          >
-            Đăng xuất
-          </button>
-        </form>
+    <div className="dash-shell flex flex-1 flex-col">
+      <header className="border-b border-[var(--dash-border)] bg-[var(--dash-surface)]/80 backdrop-blur">
+        <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3">
+          <Link href="/" aria-label="Lucky Money, trang tổng quan" className="rounded-lg">
+            <Logo />
+          </Link>
+          <nav aria-label="Chính" className="flex items-center gap-1">
+            <Link href="/transactions" className={navLink}>
+              Giao dịch
+            </Link>
+            <Link href="/categories" className={navLink}>
+              Danh mục
+            </Link>
+            <form action={logoutAction}>
+              <button type="submit" className={navLink}>
+                Đăng xuất
+              </button>
+            </form>
+          </nav>
+        </div>
       </header>
-      {/* Reading the session is request data, so it streams in behind Suspense. */}
-      <Suspense fallback={<p className="text-zinc-600 dark:text-zinc-400">Đang tải…</p>}>
-        <Greeting />
-      </Suspense>
-    </main>
+      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8">
+        {/* The user, the month and its numbers are request data: they stream in. */}
+        <Suspense fallback={<p className="text-[var(--dash-muted)]">Đang tải…</p>}>
+          <Dashboard searchParams={searchParams} />
+        </Suspense>
+      </main>
+    </div>
   );
 }
 
-async function Greeting() {
-  const user = await getCurrentUser();
+function monthLabel(month: string): string {
+  const [year, value] = month.split("-");
+  return `Tháng ${Number(value)}/${year}`;
+}
+
+/** The month's statistics, or null when the URL holds an invalid month. */
+async function loadStats(userId: string, month: string | undefined) {
+  const query = { month };
+  try {
+    return await Promise.all([
+      getSummary(userId, query),
+      getStatsByCategory(userId, query),
+      getDailyStats(userId, query),
+    ]);
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+async function Dashboard({ searchParams }: Pick<PageProps<"/">, "searchParams">) {
+  const [user, params] = await Promise.all([getCurrentUser(), searchParams]);
+  const month = typeof params.month === "string" && params.month ? params.month : undefined;
+  const stats = await loadStats(user.id, month);
+
+  const greeting = (
+    <h1 className="text-[1.75rem] leading-tight font-bold tracking-[-0.01em]">
+      Xin chào, {user.name ?? user.email}
+    </h1>
+  );
+
+  if (!stats) {
+    return (
+      <>
+        {greeting}
+        <p
+          role="alert"
+          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-900"
+        >
+          Tháng không hợp lệ.{" "}
+          <Link href="/" className="font-medium underline">
+            Xem tháng này
+          </Link>
+        </p>
+      </>
+    );
+  }
+
+  const [summary, byCategory, daily] = stats;
+  const current = summary.month;
+
   return (
-    <section>
-      <h1 className="text-2xl font-semibold">Xin chào, {user.name ?? user.email}</h1>
-      <p className="mt-2 text-zinc-600 dark:text-zinc-400">Bạn đã đăng nhập bằng {user.email}.</p>
-      <div className="mt-6 flex flex-wrap gap-3">
+    <>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          {greeting}
+          <div className="mt-3 flex items-center gap-2">
+            <Link
+              href={`/?month=${addMonths(current, -1)}`}
+              aria-label="Tháng trước"
+              className={monthButton}
+            >
+              ‹
+            </Link>
+            <h2 className="min-w-36 text-center text-lg font-medium">{monthLabel(current)}</h2>
+            <Link
+              href={`/?month=${addMonths(current, 1)}`}
+              aria-label="Tháng sau"
+              className={monthButton}
+            >
+              ›
+            </Link>
+          </div>
+        </div>
         <Link
           href="/transactions/new"
-          className="inline-flex h-11 items-center rounded-lg bg-emerald-700 px-4 font-medium text-white hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+          className="inline-flex h-12 items-center rounded-xl bg-lm-sky px-5 font-bold text-lm-ink shadow-[0_6px_16px_rgb(48_175_255/0.35)] transition-[background-color,transform] duration-200 ease-lm hover:bg-[#4dbaff] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lm-deep"
         >
           Thêm giao dịch
         </Link>
-        <Link
-          href="/transactions"
-          className="inline-flex h-11 items-center rounded-lg border border-zinc-300 px-4 font-medium hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 dark:border-zinc-600 dark:hover:bg-zinc-800"
-        >
-          Xem giao dịch
-        </Link>
-        <Link
-          href="/categories"
-          className="inline-flex h-11 items-center rounded-lg border border-zinc-300 px-4 font-medium hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 dark:border-zinc-600 dark:hover:bg-zinc-800"
-        >
-          Danh mục
-        </Link>
       </div>
-    </section>
+
+      <section aria-label="Tổng quan tháng">
+        <SummaryTiles summary={summary} />
+      </section>
+
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
+        <section className="rounded-2xl border border-[var(--dash-border)] bg-[var(--dash-surface)] p-5">
+          <div className="mb-5 flex items-baseline justify-between gap-3">
+            <h2 className="text-lg font-bold">Chi theo danh mục</h2>
+            <Link
+              href={`/transactions?month=${current}&type=EXPENSE`}
+              className="text-sm font-medium text-lm-deep underline-offset-4 hover:underline dark:text-lm-aqua"
+            >
+              Xem giao dịch
+            </Link>
+          </div>
+          <CategoryBreakdown items={byCategory.items} />
+        </section>
+        <section className="rounded-2xl border border-[var(--dash-border)] bg-[var(--dash-surface)] p-5">
+          <h2 className="mb-5 text-lg font-bold">Chi theo ngày</h2>
+          <DailyChart days={daily.days} />
+        </section>
+      </div>
+    </>
   );
 }

@@ -131,3 +131,13 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Test dữ liệu mẫu (UTC+7): ranh giới 16:59:59Z/17:00Z ở cả đầu và cuối tháng, đổi sang Europe/London, giao dịch xóa mềm, dữ liệu user khác, tháng nhuận (2028-02), tổng daily khớp summary. Lúc đầu test London kỳ vọng sai (đã nhầm ranh giới), service đúng.
 - Test phân quyền T11 tự phát hiện 3 endpoint mới chưa có trường hợp; đã thêm. Bỏ `userId` khỏi phạm vi thống kê làm 7 test đỏ.
 - T9 được tick: điều kiện "xóa mềm không xuất hiện ở thống kê" đã có test.
+
+## T13. Dashboard theo tháng (2026-11-24)
+- Trang chủ `/` thành dashboard: chào, chọn tháng (‹ ›, `?month=`), nút thêm giao dịch, ba ô Thu/Chi/Số dư, "Chi theo danh mục", "Chi theo ngày". Dùng bảng màu thương hiệu (`.dash-shell`), có chế độ tối.
+- Theo yêu cầu người dùng: phần danh mục dùng **thanh xếp hạng** (một màu, lớn nhất trước, kèm số tiền và %) thay cho biểu đồ tròn ghi trong PLAN, cộng một thanh tỉ lệ mảnh ở trên (5 danh mục đầu có màu riêng, còn lại gộp "Khác"). Lý do: so sánh góc của biểu đồ tròn khó và kém chính xác.
+- Màu biểu đồ: bảng categorical đã được validator của skill dataviz kiểm tra trên nền thẻ trắng và `#0b2639` (đạt CVD và phân biệt màu; 3 màu dưới 3:1 trên nền sáng nên mỗi dòng luôn có tên và số tiền in rõ). Màu theo thứ hạng trong tháng, nên đổi tháng có thể đổi màu của một danh mục; danh tính luôn nằm ở tên, không chỉ ở màu.
+- "Chi theo ngày": Recharts `3.10.1` (ghim; bản mới nhất 3.11.x mới phát hành dưới 2 tuần). Một chuỗi (chi), một trục; thu nhập khác thang đo (lương làm lùn mọi khoản chi) nên chỉ hiện ở ô tổng và tooltip. Có tooltip khi rê chuột, bảng "Xem dạng bảng" cho trình đọc màn hình. Trục Y dùng `formatVndCompact` (45k, 1,5tr, 1 tỷ; chỉ để hiển thị) trong `src/lib/money.ts`, có unit test.
+- Sửa lỗi phát hiện khi build: route GET thống kê gọi `connection()` (qua `requireUserId`) trong `try/catch`, nên tín hiệu dừng prerender của Next bị `errorResponse` bắt và ghi log. `errorResponse` giờ gọi `unstable_rethrow` trước tiên (có test với `notFound()`).
+- E2E "register, sign out, and sign in again" chập chờn khi mọi worker cùng đăng ký trên server vừa khởi động: đo tuần tự chỉ 0,7–1,7 s, nhưng song song có lúc quá 5 s. Nâng `expect.timeout` của Playwright lên 10 s (ghi lý do trong `playwright.config.ts`). Sau đó e2e lặp 3 lần: 96/96.
+- E2E dashboard: dữ liệu tháng 6/2026 tạo qua API (có một giao dịch đã xóa và một giao dịch 23:30 ngày 31/05 giờ Việt Nam), kiểm tra từng số trên dashboard, bảng theo ngày và chuyển tháng.
+- `npm audit` vẫn chỉ 3 cảnh báo cũ của Prisma/`effect`; Recharts không thêm cảnh báo.
