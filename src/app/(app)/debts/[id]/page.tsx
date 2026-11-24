@@ -51,6 +51,7 @@ async function Debt({ params }: Pick<PageProps<"/debts/[id]">, "params">) {
   const money = (amount: number) => formatMoney(amount, display.amountFormat);
   const date = (key: string) => formatDateKey(key, display.dateFormat);
   const payLabel = debt.direction === "I_OWE" ? "Ghi lần trả" : "Ghi lần thu";
+  const historyLabel = debt.direction === "I_OWE" ? "Các lần đã trả" : "Các lần đã thu";
 
   return (
     <>
@@ -157,13 +158,13 @@ async function Debt({ params }: Pick<PageProps<"/debts/[id]">, "params">) {
 
           <section className={card} aria-labelledby="payments-title">
             <h2 id="payments-title" className="text-lg font-bold">
-              Các lần đã trả
+              {historyLabel}
             </h2>
             {debt.payments.length === 0 ? (
-              <p className="text-[var(--dash-muted)]">Chưa có lần trả nào.</p>
+              <p className="text-[var(--dash-muted)]">Chưa có lần nào.</p>
             ) : (
               <ul
-                aria-label="Các lần đã trả"
+                aria-label={historyLabel}
                 className="flex flex-col divide-y divide-[var(--dash-border)]"
               >
                 {debt.payments.map((payment) => (

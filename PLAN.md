@@ -47,6 +47,8 @@ Làm theo lát cắt dọc: mỗi tính năng chạy được từ giao diện �
 - [ ] T16. Giới hạn tần suất cho đăng nhập/đăng ký, rà soát bảo mật (header, cookie, input).
 - [ ] T17. Triển khai Vercel + Postgres hosted, tạo tài khoản demo với dữ liệu mẫu.
 - [ ] T18. Viết `README.md` tiếng Anh: giới thiệu, ảnh chụp màn hình, sơ đồ kiến trúc, stack, cách chạy, link demo.
+- [x] T22. Sổ nợ (theo yêu cầu): khoản nợ hai chiều, lịch trả nhiều kỳ, trả một phần, quá hạn, email nhắc hằng ngày.
+  - Xong khi: test lịch trả/trả một phần/quá hạn, test phân quyền cho mọi route và action, test email nhắc (một lần mỗi loại, theo múi giờ, gửi lỗi thì thử lại), e2e luồng thêm, trả, xóa.
 
 ## Giai đoạn 6 (v2, sau khi MVP xong)
 - [ ] T19. Nhập nhanh bằng AI: gõ câu tự nhiên, LLM trả về JSON (amount, category, date), người dùng xác nhận trước khi lưu.

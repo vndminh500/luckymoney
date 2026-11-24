@@ -84,6 +84,7 @@ export async function saveNotificationsAction(
   await updateNotificationPreferences(userId, {
     notifyBudgetWarning: formData.get("notifyBudgetWarning") === "on",
     notifyBudgetOver: formData.get("notifyBudgetOver") === "on",
+    notifyDebtEmail: formData.get("notifyDebtEmail") === "on",
   });
   refresh();
   return { savedAt: Date.now() };

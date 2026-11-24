@@ -39,10 +39,14 @@ function Switch({
   );
 }
 
-type Props = { notifyBudgetWarning: boolean; notifyBudgetOver: boolean };
+type Props = { notifyBudgetWarning: boolean; notifyBudgetOver: boolean; notifyDebtEmail: boolean };
 
-/** Cài đặt > Thông báo: in-app budget alerts on the dashboard. */
-export function NotificationsForm({ notifyBudgetWarning, notifyBudgetOver }: Props) {
+/** Cài đặt > Thông báo: in-app budget alerts and the debt reminder emails. */
+export function NotificationsForm({
+  notifyBudgetWarning,
+  notifyBudgetOver,
+  notifyDebtEmail,
+}: Props) {
   const [state, formAction, pending] = useActionState<SettingsFormState, FormData>(
     saveNotificationsAction,
     {},
@@ -62,9 +66,12 @@ export function NotificationsForm({ notifyBudgetWarning, notifyBudgetOver }: Pro
         description="Báo trên trang Tổng quan khi một danh mục chi vượt ngân sách tháng."
         defaultChecked={notifyBudgetOver}
       />
-      <p className="text-sm text-[var(--dash-muted)]">
-        Thông báo hiện trong ứng dụng. Ứng dụng chưa gửi email hay thông báo đẩy.
-      </p>
+      <Switch
+        name="notifyDebtEmail"
+        label="Email nhắc trả nợ"
+        description="Gửi email tới địa chỉ tài khoản khi một kỳ trong Sổ nợ còn 3 ngày đến hạn và khi quá hạn."
+        defaultChecked={notifyDebtEmail}
+      />
       <button type="submit" disabled={pending} className={`${brandPrimaryButton} self-start`}>
         {pending ? <Spinner /> : null}
         {pending ? "Đang lưu…" : "Lưu thông báo"}

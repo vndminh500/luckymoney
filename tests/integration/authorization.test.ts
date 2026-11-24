@@ -33,6 +33,7 @@ import * as settingsActions from "@/app/(app)/settings/actions";
 import * as transactionActions from "@/app/(app)/transactions/actions";
 import * as categoryRoute from "@/app/api/categories/[id]/route";
 import * as categoriesRoute from "@/app/api/categories/route";
+import * as debtRemindersCron from "@/app/api/cron/debt-reminders/route";
 import * as debtPaymentRoute from "@/app/api/debts/[id]/payments/[paymentId]/route";
 import * as debtPaymentsRoute from "@/app/api/debts/[id]/payments/route";
 import * as debtRoute from "@/app/api/debts/[id]/route";
@@ -377,6 +378,13 @@ const endpoints: {
         params: Promise.resolve({ id: bobDebt, paymentId: bobPayment }),
       }),
     expectStatus: 404,
+  },
+  {
+    route: "cron/debt-reminders",
+    method: "GET",
+    // A user session is not the cron secret.
+    attack: () => debtRemindersCron.GET(request("GET", "/api/cron/debt-reminders")),
+    expectStatus: 401,
   },
   {
     route: "account/avatar",

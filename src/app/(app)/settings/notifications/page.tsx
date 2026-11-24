@@ -18,12 +18,13 @@ export default function NotificationsPage() {
 
 async function Notifications() {
   const user = await getCurrentUser();
-  const { notifyBudgetWarning, notifyBudgetOver } = await getPreferences(user.id);
+  const { notifyBudgetWarning, notifyBudgetOver, notifyDebtEmail } = await getPreferences(user.id);
   return (
-    <SettingsCard title="Thông báo ngân sách">
+    <SettingsCard title="Thông báo">
       <NotificationsForm
         notifyBudgetWarning={notifyBudgetWarning}
         notifyBudgetOver={notifyBudgetOver}
+        notifyDebtEmail={notifyDebtEmail}
       />
     </SettingsCard>
   );

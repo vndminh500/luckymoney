@@ -24,6 +24,7 @@ export const themeSchema = z.object({
 export const notificationPreferencesSchema = z.object({
   notifyBudgetWarning: z.boolean(),
   notifyBudgetOver: z.boolean(),
+  notifyDebtEmail: z.boolean(),
 });
 
 export type Theme = (typeof THEMES)[number];

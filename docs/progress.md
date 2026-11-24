@@ -219,3 +219,11 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Giao diện: mỗi dòng có "Sửa" và "Xóa" + số giao dịch. "Xóa" mở `<dialog>` gốc (`showModal`: giữ focus, Esc đóng, bấm nền đóng) với hiệu ứng vào: danh mục trống → "Xóa danh mục?" + Hủy / Xóa danh mục; còn giao dịch → "Chưa xóa được danh mục", nêu số giao dịch, chỉ có nút Đóng. Bỏ thẻ "Đã lưu trữ".
 - Cập nhật `docs/api.md` và PRD F3. Ghi chú: T10 trong PLAN mô tả "lưu trữ, khôi phục" theo yêu cầu cũ; hành vi hiện tại theo mục này.
 - Test: bỏ các test chỉ còn ý nghĩa với lưu trữ (danh mục lưu trữ trên giao dịch/ngân sách cũ); các test "không chọn được" chuyển sang danh mục đã xóa. Kiểm tra độ mạnh: nới điều kiện "còn giao dịch" làm test từ chối xóa đỏ.
+
+## T22. Sổ nợ (2026-11-24, theo yêu cầu)
+- Đã hỏi người dùng: lịch trả **nhiều kỳ**; trả/thu nợ **không** tạo giao dịch thu/chi (sổ nợ riêng, không làm sai thống kê); nhắc hạn bằng **email**.
+- Mô hình: `Debt` (chiều `I_OWE`/`THEY_OWE`, người, số tiền, ngày vay), `DebtInstallment` (lịch dự kiến, có `upcomingRemindedAt`/`overdueRemindedAt`), `DebtPayment` (lần trả thực tế). Ngày là chuỗi `YYYY-MM-DD` theo múi giờ user, không phải thời điểm, nên không lệch ngày khi đổi múi giờ.
+- Không lưu trạng thái từng kỳ: `scheduleStatus` (src/lib/debt.ts, hàm thuần) tính từ lịch + tổng đã trả, phủ các kỳ theo thứ tự ngày hạn. Sửa lịch hay hoàn tác lần trả thì trạng thái tự đúng.
+- Sửa khoản nợ thay toàn bộ lịch trả (xóa và tạo lại các kỳ), nên dấu "đã nhắc" của các kỳ cũ mất theo; kỳ mới có thể được nhắc lại. Chấp nhận được.
+- Email: `nodemailer` qua `SMTP_URL` (dev không có thì in ra log server; production thiếu thì báo lỗi). Chọn bản 8.x vì `next-auth` khai báo peer `nodemailer ^7 || ^8.0.5`. Cron `/api/cron/debt-reminders` lúc 01:00 UTC (08:00 giờ VN) qua `vercel.json`, bảo vệ bằng `CRON_SECRET` (so sánh hằng thời gian; chưa đặt thì từ chối mọi lời gọi). Mỗi user một email; chỉ đánh dấu "đã nhắc" sau khi gửi thành công nên lỗi SMTP được thử lại lần sau.
+- Kiểm tra độ mạnh: bỏ lọc `userId` ở `findOwned` làm 3 case phân quyền đỏ; bỏ điều kiện "đã nhắc sắp đến hạn" làm test "nhắc một lần" đỏ.

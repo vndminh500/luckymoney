@@ -56,6 +56,20 @@ Thiếu `month` thì dùng tháng hiện tại theo múi giờ user (với `/per
 | PUT | `/api/budgets` | Body: `{ categoryId, month, amount }`. Tạo hoặc cập nhật (upsert). Chỉ danh mục chi của user. |
 | DELETE | `/api/budgets/:id` | Xóa ngân sách. |
 
+## Sổ nợ
+Ngày là ngày lịch `YYYY-MM-DD`; trạng thái tính theo "hôm nay" ở múi giờ user. Sổ nợ không phải thu/chi, không vào thống kê.
+
+| Method | Path | Mô tả |
+|---|---|---|
+| GET | `/api/debts` | `{ debts, totals: { iOwe, theyOwe, overdueCount } }`. Khoản còn nợ trước (kỳ tới sớm nhất), khoản đã xong sau. |
+| POST | `/api/debts` | Body: `{ direction: "I_OWE" | "THEY_OWE", counterparty, principal, startDate, note?, installments: [{ dueDate, amount }] }`. Tổng các kỳ phải bằng `principal`. Trả `201 { id }`. |
+| GET | `/api/debts/:id` | Khoản nợ, `status` (từng kỳ: `paid`/`partial`/`upcoming`/`overdue`, `paid`, `remaining`, `nextDue`) và `payments`. |
+| PUT | `/api/debts/:id` | Body như POST; thay chi tiết và lịch trả. `principal` không được nhỏ hơn số đã trả. |
+| DELETE | `/api/debts/:id` | Xóa khoản nợ, lịch trả và các lần trả. `204`. |
+| POST | `/api/debts/:id/payments` | Body: `{ amount, paidOn, note? }`. Không vượt số còn nợ. Tiền trả phủ các kỳ theo thứ tự ngày hạn. `201`. |
+| DELETE | `/api/debts/:id/payments/:paymentId` | Hoàn tác một lần trả. `204`. |
+| GET | `/api/cron/debt-reminders` | Chỉ cho Vercel Cron: header `Authorization: Bearer $CRON_SECRET`. Gửi email nhắc (kỳ còn ≤ 3 ngày và kỳ quá hạn, mỗi kỳ một lần mỗi loại). Trả `{ emails, installments }`. |
+
 ## Ghi chú cài đặt
 - Có thể dùng Server Actions cho thao tác từ giao diện, nhưng logic nằm trong `src/server/` và dùng chung với route handler để dễ test.
 - Mọi schema Zod đặt ở `src/lib/schemas/` và dùng lại cho cả client và server.

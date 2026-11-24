@@ -20,6 +20,7 @@ export type Preferences = {
   theme: ThemePreference;
   notifyBudgetWarning: boolean;
   notifyBudgetOver: boolean;
+  notifyDebtEmail: boolean;
 };
 
 /** What the UI needs to format amounts and dates the way the user chose. */
@@ -33,6 +34,7 @@ const preferencesSelect = {
   theme: true,
   notifyBudgetWarning: true,
   notifyBudgetOver: true,
+  notifyDebtEmail: true,
 } as const;
 
 export async function getPreferences(userId: string): Promise<Preferences> {

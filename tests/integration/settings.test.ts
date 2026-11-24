@@ -38,6 +38,7 @@ describe("preferences", () => {
       theme: "SYSTEM",
       notifyBudgetWarning: true,
       notifyBudgetOver: true,
+      notifyDebtEmail: true,
     });
   });
 
@@ -78,11 +79,13 @@ describe("preferences", () => {
     await updateNotificationPreferences(alice.userId, {
       notifyBudgetWarning: false,
       notifyBudgetOver: true,
+      notifyDebtEmail: false,
     });
     await expect(getPreferences(alice.userId)).resolves.toMatchObject({
       theme: "DARK",
       notifyBudgetWarning: false,
       notifyBudgetOver: true,
+      notifyDebtEmail: false,
     });
   });
 });
@@ -153,12 +156,14 @@ describe("getBudgetAlerts", () => {
     await updateNotificationPreferences(alice.userId, {
       notifyBudgetWarning: false,
       notifyBudgetOver: true,
+      notifyDebtEmail: true,
     });
     expect((await getBudgetAlerts(alice.userId, "2026-11")).map((a) => a.status)).toEqual(["over"]);
 
     await updateNotificationPreferences(alice.userId, {
       notifyBudgetWarning: false,
       notifyBudgetOver: false,
+      notifyDebtEmail: true,
     });
     await expect(getBudgetAlerts(alice.userId, "2026-11")).resolves.toEqual([]);
   });

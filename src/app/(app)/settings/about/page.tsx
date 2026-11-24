@@ -12,6 +12,7 @@ const FEATURES = [
   "Tổng quan tháng, thống kê theo tuần, tháng, năm",
   "Ngân sách theo danh mục, cảnh báo ở 80% và 100%",
   "Danh mục riêng: thêm, sửa, xóa, chọn biểu tượng",
+  "Sổ nợ: ai nợ ai, lịch trả nhiều kỳ, email nhắc hạn",
 ];
 
 export default function AboutPage() {

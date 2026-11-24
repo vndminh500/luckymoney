@@ -40,6 +40,13 @@ Mọi người ghi chi tiêu bằng ghi chú hoặc bảng tính rồi bỏ sau 
 ### F5. Ngân sách (mở rộng trong v1)
 - Đặt ngân sách tháng cho từng danh mục; thanh tiến độ; cảnh báo ở mức 80% và 100%.
 
+### F6. Sổ nợ (thêm theo yêu cầu ngày 2026-11-24)
+- Ghi khoản "Tôi nợ" và "Nợ tôi": người, số tiền, ngày vay, ghi chú, lịch trả dự kiến nhiều kỳ (có nút chia đều theo tháng).
+- Ghi các lần trả (được trả một phần); tiền trả phủ các kỳ sớm nhất trước. Kỳ quá hạn từ ngày sau ngày hạn.
+- Tổng "Tôi đang nợ", "Người khác nợ tôi", số kỳ quá hạn. Không tính vào thu chi và thống kê.
+- Email nhắc mỗi ngày (bật/tắt trong Cài đặt > Thông báo) cho kỳ còn 3 ngày đến hạn và kỳ quá hạn.
+- Nghiệm thu: tổng các kỳ phải bằng số tiền nợ; không trả quá số còn nợ; mỗi kỳ chỉ nhắc một lần mỗi loại; user A không xem/sửa được sổ nợ của user B.
+
 ## 6. Ý tưởng cho v2
 - Giao dịch định kỳ, nhập/xuất CSV, đính kèm hóa đơn.
 - Nhập nhanh bằng AI: gõ "phở 50k hôm qua", ứng dụng tự tách số tiền, danh mục, ngày (LLM trả về dữ liệu có cấu trúc, người dùng xác nhận trước khi lưu).
