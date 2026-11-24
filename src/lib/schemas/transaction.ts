@@ -38,6 +38,14 @@ export const createTransactionSchema = z.object({
   note,
 });
 
+/** Body of PATCH /api/transactions/:id: any subset of the create fields, at least one. */
+export const updateTransactionSchema = createTransactionSchema
+  .partial()
+  .refine((value) => Object.values(value).some((field) => field !== undefined), {
+    error: "Cần ít nhất một trường để cập nhật.",
+    path: ["body"],
+  });
+
 /** True for a real calendar date written as YYYY-MM-DD. */
 function isCalendarDate(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -72,6 +80,7 @@ export const transactionFormSchema = z.object({
 });
 
 export type CreateTransactionInput = z.infer<typeof createTransactionSchema>;
+export type UpdateTransactionInput = z.infer<typeof updateTransactionSchema>;
 export type TransactionFormInput = z.infer<typeof transactionFormSchema>;
 
 export const PAGE_SIZE_DEFAULT = 20;

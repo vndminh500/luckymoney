@@ -85,3 +85,16 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Trang `/transactions`: chuyển tháng trước/sau (giữ bộ lọc), form lọc GET không cần JS, phân trang, trạng thái rỗng, bộ lọc sai hiện thông báo. Ô lọc danh mục chỉ liệt kê danh mục chưa lưu trữ; lọc danh mục đã lưu trữ vẫn được qua URL. Xem lại ở T10.
 - Sau khi lưu ở `/transactions/new` có liên kết "Xem danh sách" tới đúng tháng của giao dịch.
 - Test: `tests/integration/transaction-list.test.ts` (ranh giới tháng UTC+7, mặc định tháng, phân quyền, xóa mềm, lọc, phân trang ổn định, danh mục lưu trữ, query sai), e2e thêm rồi thấy đúng tháng, không thấy ở tháng sau. Thêm `tests/integration/fixtures.ts` dùng chung.
+
+## CI lần đầu trên GitHub (2026-11-24)
+- Lần push đầu: job check xanh, job e2e đỏ ở . Nguyên nhân: CI build ở bước  riêng, không có biến Google giả (chỉ khai báo trong  của Playwright), mà  là trang tĩnh đọc biến lúc build. Sửa: Playwright tự build trong CI như ở local, bỏ bước build riêng. Lần chạy sau xanh cả hai job, tick T3.
+
+## T9. Sửa và xóa mềm giao dịch (2026-11-24) — chưa tick, chờ T12
+- Service: ,  (PATCH, ít nhất một trường), , . Mọi truy vấn lọc ; của user khác, không tồn tại hoặc đã xóa đều là . Xóa lần hai cũng .
+- Đổi loại hoặc danh mục thì danh mục mới phải hợp lệ (cùng quy tắc khi tạo). Giữ nguyên danh mục cũ thì được lưu kể cả khi danh mục đó đã bị lưu trữ; trang sửa thêm danh mục đó vào ô chọn với nhãn "(đã lưu trữ)".
+- Form sửa: nếu ngày không đổi thì giữ nguyên thời điểm gốc (giao dịch tạo qua API có giờ cụ thể không bị dời về đầu ngày).
+- Xóa mềm bằng  có điều kiện, nên không có khoảng hở giữa kiểm tra và ghi. Cập nhật dùng  với  có , lỗi  (bị xóa giữa chừng) đổi thành .
+- Trang  nằm sau , nên  trả giao diện 404 kèm  nhưng mã HTTP vẫn 200 (đúng tài liệu Next.js về streaming). API trả  thật. Thêm  tiếng Việt.
+- Xóa không hỏi xác nhận (không dùng hộp thoại trình duyệt); chấp nhận vì là xóa mềm. Có thể thêm bước xác nhận hoặc hoàn tác ở T15.
+- Gom việc đọc múi giờ user thành  trong service giao dịch.
+- Phần "không xuất hiện ở thống kê" chưa kiểm tra được vì chưa có service thống kê; đã ghi vào điều kiện xong của T12.

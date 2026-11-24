@@ -1,14 +1,16 @@
-import type { TransactionType } from "@prisma/client";
+import { Prisma, type TransactionType } from "@prisma/client";
 
 import { getMonthRange, startOfZonedDay, toDateKey, toMonthKey } from "@/lib/dates";
 import {
   createTransactionSchema,
   listTransactionsQuerySchema,
   transactionFormSchema,
+  updateTransactionSchema,
   type CreateTransactionInput,
+  type UpdateTransactionInput,
 } from "@/lib/schemas/transaction";
 import { prisma } from "@/server/db";
-import { ValidationError } from "@/server/errors";
+import { NotFoundError, ValidationError } from "@/server/errors";
 
 /** A transaction as returned to clients (no userId, no deletedAt). */
 export type TransactionDto = {
@@ -57,10 +59,7 @@ export async function createTransactionFromForm(
     throw ValidationError.fromZod(parsed.error);
   }
   const { date, ...rest } = parsed.data;
-  const { timeZone } = await prisma.user.findUniqueOrThrow({
-    where: { id: userId },
-    select: { timeZone: true },
-  });
+  const timeZone = await getUserTimeZone(userId);
   return insertTransaction(userId, { ...rest, occurredAt: startOfZonedDay(date, timeZone) });
 }
 
@@ -95,12 +94,18 @@ async function assertSelectableCategory(
   }
 }
 
-/** Today's date ("YYYY-MM-DD") in the user's time zone, the default for the form. */
-export async function getTodayKeyForUser(userId: string, now = new Date()): Promise<string> {
+/** The user's IANA time zone, used to turn instants into their local days and months. */
+export async function getUserTimeZone(userId: string): Promise<string> {
   const { timeZone } = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
     select: { timeZone: true },
   });
+  return timeZone;
+}
+
+/** Today's date ("YYYY-MM-DD") in the user's time zone, the default for the form. */
+export async function getTodayKeyForUser(userId: string, now = new Date()): Promise<string> {
+  const timeZone = await getUserTimeZone(userId);
   return toDateKey(now, timeZone);
 }
 
@@ -139,10 +144,7 @@ export async function listTransactions(
     throw ValidationError.fromZod(parsed.error);
   }
   const { categoryId, type, page, pageSize } = parsed.data;
-  const { timeZone } = await prisma.user.findUniqueOrThrow({
-    where: { id: userId },
-    select: { timeZone: true },
-  });
+  const timeZone = await getUserTimeZone(userId);
   const month = parsed.data.month ?? toMonthKey(now, timeZone);
   const { start, end } = getMonthRange(month, timeZone);
 
@@ -160,21 +162,128 @@ export async function listTransactions(
       orderBy: [{ occurredAt: "desc" }, { createdAt: "desc" }, { id: "desc" }],
       skip: (page - 1) * pageSize,
       take: pageSize,
-      select: {
-        id: true,
-        type: true,
-        amount: true,
-        occurredAt: true,
-        note: true,
-        category: { select: { id: true, name: true, icon: true, archivedAt: true } },
-      },
+      select: listItemSelect,
     }),
     prisma.transaction.count({ where }),
   ]);
 
-  const items = rows.map(({ category: { archivedAt, ...category }, ...row }) => ({
-    ...row,
-    category: { ...category, archived: archivedAt !== null },
-  }));
+  const items = rows.map(toListItem);
   return { month, timeZone, items, page, pageSize, total };
+}
+
+const listItemSelect = {
+  id: true,
+  type: true,
+  amount: true,
+  occurredAt: true,
+  note: true,
+  category: { select: { id: true, name: true, icon: true, archivedAt: true } },
+} as const;
+
+type ListItemRow = Prisma.TransactionGetPayload<{ select: typeof listItemSelect }>;
+
+function toListItem({ category: { archivedAt, ...category }, ...row }: ListItemRow) {
+  return { ...row, category: { ...category, archived: archivedAt !== null } };
+}
+
+/** Only the user's own, not soft-deleted transaction; anything else is "not found". */
+const ownedActive = (userId: string, id: string) => ({ id, userId, deletedAt: null });
+
+const transactionNotFound = () => new NotFoundError("Không tìm thấy giao dịch.");
+
+/** One of the user's transactions. Another user's or a deleted one is a 404. */
+export async function getTransaction(userId: string, id: string): Promise<TransactionListItem> {
+  const row = await prisma.transaction.findFirst({
+    where: ownedActive(userId, id),
+    select: listItemSelect,
+  });
+  if (!row) {
+    throw transactionNotFound();
+  }
+  return toListItem(row);
+}
+
+/** PATCH: changes only the given fields. A new type or category must be selectable. */
+export async function updateTransaction(
+  userId: string,
+  id: string,
+  input: unknown,
+): Promise<TransactionDto> {
+  const parsed = updateTransactionSchema.safeParse(input);
+  if (!parsed.success) {
+    throw ValidationError.fromZod(parsed.error);
+  }
+  return applyUpdate(userId, id, parsed.data);
+}
+
+/**
+ * Saves the edit form. If the day did not change, the original time is kept,
+ * so editing the amount never moves a transaction within its day.
+ */
+export async function updateTransactionFromForm(
+  userId: string,
+  id: string,
+  input: unknown,
+): Promise<TransactionDto> {
+  const parsed = transactionFormSchema.safeParse(input);
+  if (!parsed.success) {
+    throw ValidationError.fromZod(parsed.error);
+  }
+  const { date, ...rest } = parsed.data;
+  const existing = await findOwnedActive(userId, id);
+  const timeZone = await getUserTimeZone(userId);
+  const occurredAt =
+    toDateKey(existing.occurredAt, timeZone) === date
+      ? existing.occurredAt
+      : startOfZonedDay(date, timeZone);
+  return applyUpdate(userId, id, { ...rest, occurredAt });
+}
+
+async function findOwnedActive(userId: string, id: string) {
+  const existing = await prisma.transaction.findFirst({
+    where: ownedActive(userId, id),
+    select: { type: true, categoryId: true, occurredAt: true },
+  });
+  if (!existing) {
+    throw transactionNotFound();
+  }
+  return existing;
+}
+
+async function applyUpdate(
+  userId: string,
+  id: string,
+  data: UpdateTransactionInput,
+): Promise<TransactionDto> {
+  const existing = await findOwnedActive(userId, id);
+  const type = data.type ?? existing.type;
+  const categoryId = data.categoryId ?? existing.categoryId;
+  // Keeping the current category is allowed even if it was archived since.
+  if (type !== existing.type || categoryId !== existing.categoryId) {
+    await assertSelectableCategory(userId, categoryId, type);
+  }
+  try {
+    return await prisma.transaction.update({
+      where: ownedActive(userId, id),
+      data,
+      select: transactionSelect,
+    });
+  } catch (error) {
+    // Deleted between the check and the update.
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+      throw transactionNotFound();
+    }
+    throw error;
+  }
+}
+
+/** Soft delete: sets deletedAt. Another user's, unknown or already deleted is a 404. */
+export async function deleteTransaction(userId: string, id: string): Promise<void> {
+  const { count } = await prisma.transaction.updateMany({
+    where: ownedActive(userId, id),
+    data: { deletedAt: new Date() },
+  });
+  if (count === 0) {
+    throw transactionNotFound();
+  }
 }

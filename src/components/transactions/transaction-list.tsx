@@ -98,30 +98,35 @@ export function TransactionList({ result, filters, categories }: Props) {
           className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800"
         >
           {items.map((item) => (
-            <li key={item.id} className="flex items-center justify-between gap-3 px-4 py-3">
-              <div className="min-w-0">
-                <p className="truncate font-medium">
-                  {item.category.icon ? `${item.category.icon} ` : ""}
-                  {item.category.name}
-                  {item.category.archived ? (
-                    <span className="ml-2 text-xs font-normal text-zinc-500">(đã lưu trữ)</span>
-                  ) : null}
-                </p>
-                <p className="truncate text-sm text-zinc-600 dark:text-zinc-400">
-                  {dayLabel(item.occurredAt, timeZone)}
-                  {item.note ? ` · ${item.note}` : ""}
-                </p>
-              </div>
-              <p
-                className={`shrink-0 font-semibold tabular-nums ${
-                  item.type === "EXPENSE"
-                    ? "text-red-700 dark:text-red-400"
-                    : "text-emerald-700 dark:text-emerald-400"
-                }`}
+            <li key={item.id}>
+              <Link
+                href={`/transactions/${item.id}/edit`}
+                className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-zinc-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-emerald-700 dark:hover:bg-zinc-900"
               >
-                {item.type === "EXPENSE" ? "−" : "+"}
-                {formatVnd(item.amount)}
-              </p>
+                <div className="min-w-0">
+                  <p className="truncate font-medium">
+                    {item.category.icon ? `${item.category.icon} ` : ""}
+                    {item.category.name}
+                    {item.category.archived ? (
+                      <span className="ml-2 text-xs font-normal text-zinc-500">(đã lưu trữ)</span>
+                    ) : null}
+                  </p>
+                  <p className="truncate text-sm text-zinc-600 dark:text-zinc-400">
+                    {dayLabel(item.occurredAt, timeZone)}
+                    {item.note ? ` · ${item.note}` : ""}
+                  </p>
+                </div>
+                <p
+                  className={`shrink-0 font-semibold tabular-nums ${
+                    item.type === "EXPENSE"
+                      ? "text-red-700 dark:text-red-400"
+                      : "text-emerald-700 dark:text-emerald-400"
+                  }`}
+                >
+                  {item.type === "EXPENSE" ? "−" : "+"}
+                  {formatVnd(item.amount)}
+                </p>
+              </Link>
             </li>
           ))}
         </ul>

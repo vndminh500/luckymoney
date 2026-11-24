@@ -8,7 +8,7 @@ Làm theo lát cắt dọc: mỗi tính năng chạy được từ giao diện �
   - Xong khi: `npm run dev` chạy, trang chủ hiển thị, các script chạy không lỗi.
 - [x] T2. Cấu hình Prisma + Postgres, tạo migration đầu tiên từ `prisma/schema.prisma`, thêm `.env.example`.
   - Xong khi: `npx prisma migrate dev` thành công, có script seed rỗng.
-- [ ] T3. Cài Vitest + Playwright, viết một test mẫu cho mỗi loại, thêm GitHub Actions chạy lint, typecheck, test trên mỗi push.
+- [x] T3. Cài Vitest + Playwright, viết một test mẫu cho mỗi loại, thêm GitHub Actions chạy lint, typecheck, test trên mỗi push.
   - Xong khi: CI xanh trên GitHub.
 - [x] T4. Viết `src/lib/money.ts` (định dạng VND, parse "50k") và `src/lib/dates.ts` (gom tháng theo múi giờ) kèm unit test.
   - Xong khi: test phủ các trường hợp biên (đầu/cuối tháng, múi giờ).
@@ -26,6 +26,7 @@ Làm theo lát cắt dọc: mỗi tính năng chạy được từ giao diện �
   - Xong khi: e2e thêm rồi thấy trong danh sách đúng tháng.
 - [ ] T9. Sửa và xóa mềm giao dịch.
   - Xong khi: test xác nhận bản ghi xóa mềm không xuất hiện ở danh sách và thống kê.
+  - Trạng thái: sửa, xóa mềm và phần danh sách đã xong, có test. Còn phần thống kê: chưa có service thống kê, sẽ kiểm tra ở T12 rồi mới tick T9.
 - [ ] T10. Quản lý danh mục: thêm, đổi tên, lưu trữ, khôi phục.
   - Xong khi: danh mục lưu trữ không chọn được cho giao dịch mới nhưng vẫn hiện ở giao dịch cũ.
 - [ ] T11. Test phân quyền tổng hợp: user A không đọc, sửa, xóa được dữ liệu của user B ở mọi endpoint.
@@ -33,7 +34,7 @@ Làm theo lát cắt dọc: mỗi tính năng chạy được từ giao diện �
 
 ## Giai đoạn 3: Dashboard
 - [ ] T12. API và service thống kê (summary, by-category, daily) kèm unit test với dữ liệu mẫu.
-  - Xong khi: số liệu khớp tổng thủ công, đúng ở ranh giới tháng theo múi giờ.
+  - Xong khi: số liệu khớp tổng thủ công, đúng ở ranh giới tháng theo múi giờ; có test giao dịch xóa mềm không được tính (để đóng T9).
 - [ ] T13. Giao diện dashboard: thẻ tổng quan, biểu đồ tròn theo danh mục, biểu đồ cột theo ngày, chọn tháng.
   - Xong khi: e2e kiểm tra số trên dashboard khớp dữ liệu seed.
 

@@ -6,6 +6,7 @@ import { useActionState, useState } from "react";
 import {
   createTransactionAction,
   type TransactionFormState,
+  type TransactionFormValues,
 } from "@/app/(app)/transactions/actions";
 import { Field, SubmitButton } from "@/components/ui/form";
 import { NOTE_MAX_LENGTH } from "@/lib/schemas/transaction";
@@ -18,13 +19,35 @@ const TYPE_LABELS: Record<TransactionType, string> = { EXPENSE: "Chi", INCOME: "
 const controlClass =
   "h-11 rounded-lg border border-zinc-300 bg-white px-3 text-base text-zinc-900 outline-none focus-visible:border-emerald-700 focus-visible:ring-2 focus-visible:ring-emerald-700/30 aria-invalid:border-red-700 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100";
 
-type Props = { categories: SelectableCategory[]; today: string };
+type FormAction = (
+  state: TransactionFormState,
+  formData: FormData,
+) => Promise<TransactionFormState>;
 
-export function TransactionForm({ categories, today }: Props) {
-  const [state, formAction, pending] = useActionState<TransactionFormState, FormData>(
-    createTransactionAction,
-    {},
-  );
+type Props = {
+  /** Categories that can be picked (for an edit, plus the current one if archived). */
+  categories: SelectableCategory[];
+  today: string;
+  /** Defaults to creating a transaction; the edit page passes its bound update action. */
+  action?: FormAction;
+  /** Starting values, e.g. the transaction being edited. */
+  initialValues?: TransactionFormValues;
+  submitLabel?: string;
+  /** Focus the amount on load (quick entry); off when editing. */
+  autoFocusAmount?: boolean;
+};
+
+export function TransactionForm({
+  categories,
+  today,
+  action = createTransactionAction,
+  initialValues,
+  submitLabel = "Lưu giao dịch",
+  autoFocusAmount = true,
+}: Props) {
+  const [state, formAction, pending] = useActionState<TransactionFormState, FormData>(action, {
+    values: initialValues,
+  });
 
   return (
     <form action={formAction} className="flex flex-col gap-4" noValidate>
@@ -48,13 +71,19 @@ export function TransactionForm({ categories, today }: Props) {
         categories={categories}
         today={today}
         state={state}
+        autoFocusAmount={autoFocusAmount}
       />
-      <SubmitButton pending={pending}>{pending ? "Đang lưu…" : "Lưu giao dịch"}</SubmitButton>
+      <SubmitButton pending={pending}>{pending ? "Đang lưu…" : submitLabel}</SubmitButton>
     </form>
   );
 }
 
-function TransactionFields({ categories, today, state }: Props & { state: TransactionFormState }) {
+function TransactionFields({
+  categories,
+  today,
+  state,
+  autoFocusAmount,
+}: Pick<Props, "categories" | "today" | "autoFocusAmount"> & { state: TransactionFormState }) {
   const values = state.values;
   const errors = state.fieldErrors ?? {};
   const [type, setType] = useState<TransactionType>(
@@ -92,7 +121,7 @@ function TransactionFields({ categories, today, state }: Props & { state: Transa
         inputMode="decimal"
         autoComplete="off"
         required
-        autoFocus
+        autoFocus={autoFocusAmount}
         defaultValue={values?.amount}
         hint="Ví dụ: 50000, 50k, 1tr5"
         error={errors.amount}
