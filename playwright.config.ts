@@ -15,6 +15,10 @@ export default defineConfig({
   globalSetup: "tests/e2e/global-setup.ts",
   fullyParallel: true,
   forbidOnly: isCI,
+  // Sign-up does two scrypt hashes and lands on the dashboard (three stats
+  // queries). Sequentially that takes ~1-2s, but with every worker signing up
+  // at once on a cold server it can pass the 5s default.
+  expect: { timeout: 10_000 },
   retries: isCI ? 2 : 0,
   reporter: isCI ? [["github"], ["html", { open: "never" }]] : "list",
   use: {
