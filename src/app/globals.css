@@ -14,13 +14,32 @@
   }
 }
 
+/* Light: sky palette (#30AFFF, #92EEFF, #D8FFC5, #C4F7CA). Sky on white is too
+   light for text (2.4:1), so text and links use ink and deep.
+   Dark: teal / navy / purple palette (#78B9B5, #0F828C, #065084, #320A6B). The
+   accent is the light teal with dark text on it (8.7:1); #0F828C only fills
+   areas, never small text (4.1:1). */
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --lm-sky: #30afff;
+  --lm-sky-hover: #4dbaff;
+  --lm-aqua: #92eeff;
+  --lm-lime: #d8ffc5;
+  --lm-mint: #c4f7ca;
+  --lm-ink: #062b45;
+  --lm-deep: #0a6fb0;
 
   @variant dark {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0b0a22;
+    --foreground: #eaf4f3;
+    --lm-sky: #78b9b5;
+    --lm-sky-hover: #8fcac6;
+    --lm-aqua: #8fd0cb;
+    --lm-lime: #0f828c;
+    --lm-mint: #5fa9a4;
+    --lm-ink: #0c0a24;
+    --lm-deep: #78b9b5;
   }
 }
 
@@ -30,16 +49,19 @@
   --font-sans: var(--font-roboto), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Lucky Money brand palette. Sky on white is too light for text (2.4:1), so text
-   and links use ink and deep; sky is a fill with ink text on top. */
-@theme {
-  --color-lm-sky: #30afff;
-  --color-lm-aqua: #92eeff;
-  --color-lm-lime: #d8ffc5;
-  --color-lm-mint: #c4f7ca;
-  --color-lm-ink: #062b45;
-  --color-lm-deep: #0a6fb0;
+/* Lucky Money brand colors, as theme-aware roles (values below, per theme):
+   sky = accent fill, ink = text on the accent, deep = focus rings and links,
+   aqua / lime / mint = soft fills. */
+@theme inline {
+  --color-lm-sky: var(--lm-sky);
+  --color-lm-aqua: var(--lm-aqua);
+  --color-lm-lime: var(--lm-lime);
+  --color-lm-mint: var(--lm-mint);
+  --color-lm-ink: var(--lm-ink);
+  --color-lm-deep: var(--lm-deep);
+}
 
+@theme {
   --ease-lm: cubic-bezier(0.22, 1, 0.36, 1);
 
   --animate-lm-rise: lm-rise 520ms var(--ease-lm) both;
@@ -101,19 +123,41 @@ body {
   color: var(--auth-text);
 
   @variant dark {
-    --auth-bg: #061b2b;
-    --auth-surface: #0b2639;
-    --auth-text: #e8f8ff;
-    --auth-muted: #9cc3d8;
-    --auth-border: #1d4560;
-    --auth-tab-track: #0f3048;
-    --auth-tab-pill: #1b5378;
+    --auth-bg: #0b0a22;
+    --auth-surface: #131536;
+    --auth-text: #eaf4f3;
+    --auth-muted: #a3c4c1;
+    --auth-border: #2a2f66;
+    --auth-tab-track: #1c2150;
+    --auth-tab-pill: #065084;
   }
 }
 
-/* Dashboard: brand surfaces plus chart colors. Series slots are the validated
+/* Brand panel of the sign-in screens: the light palette by day, the
+   purple / navy / teal palette by night. */
+.brand-panel {
+  --panel-bg: #92eeff;
+  --panel-text: #062b45;
+  --panel-blob-1: rgb(48 175 255 / 0.7);
+  --panel-blob-2: #d8ffc5;
+  --panel-blob-3: #c4f7ca;
+  --panel-card: rgb(255 255 255 / 0.75);
+  --panel-chip: #d8ffc5;
+
+  @variant dark {
+    --panel-bg: #120a33;
+    --panel-text: #eaf4f3;
+    --panel-blob-1: rgb(50 10 107 / 0.95);
+    --panel-blob-2: rgb(6 80 132 / 0.9);
+    --panel-blob-3: rgb(15 130 140 / 0.75);
+    --panel-card: rgb(19 21 54 / 0.72);
+    --panel-chip: rgb(120 185 181 / 0.22);
+  }
+}
+
+/* App pages: brand surfaces plus chart colors. Series slots are the validated
    categorical palette (dataviz reference instance), checked against these
-   card surfaces: white in light mode, #0b2639 in dark mode. */
+   card surfaces: white in light mode, #131536 in dark mode. */
 .dash-shell {
   --dash-bg: #f4fbff;
   --dash-surface: #ffffff;
@@ -134,13 +178,18 @@ body {
   color: var(--dash-text);
 
   @variant dark {
-    --dash-bg: #061b2b;
-    --dash-surface: #0b2639;
-    --dash-text: #e8f8ff;
-    --dash-muted: #9cc3d8;
-    --dash-border: #1d4560;
-    --dash-grid: #163a52;
-    --dash-track: #0f3048;
+    --dash-bg: #0b0a22;
+    --dash-surface: #131536;
+    --dash-text: #eaf4f3;
+    --dash-muted: #a3c4c1;
+    --dash-border: #2a2f66;
+    --dash-grid: #20264f;
+    --dash-track: #1c2150;
+    /* Two faint glows of the palette's purple and navy behind the pages. */
+    background:
+      radial-gradient(60rem 32rem at 100% 0%, rgb(50 10 107 / 0.45), transparent 70%),
+      radial-gradient(48rem 28rem at 0% 100%, rgb(6 80 132 / 0.3), transparent 70%), var(--dash-bg);
+    background-attachment: fixed;
     --series-1: #3987e5;
     --series-2: #d95926;
     --series-3: #199e70;

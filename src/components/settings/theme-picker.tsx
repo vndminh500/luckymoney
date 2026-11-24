@@ -16,11 +16,11 @@ const OPTIONS: { value: Theme; label: string; description: string }[] = [
 function Preview({ theme }: { theme: Theme }) {
   const half = (dark: boolean) => (
     <div
-      className={`flex h-full flex-1 flex-col gap-1.5 p-2 ${dark ? "bg-[#061b2b]" : "bg-[#f4fbff]"}`}
+      className={`flex h-full flex-1 flex-col gap-1.5 p-2 ${dark ? "bg-[#0b0a22]" : "bg-[#f4fbff]"}`}
     >
-      <span className={`h-2 w-2/3 rounded-full ${dark ? "bg-[#e8f8ff]/70" : "bg-[#062b45]/70"}`} />
-      <span className={`h-5 rounded-md ${dark ? "bg-[#0b2639]" : "bg-white"}`} />
-      <span className="h-2 w-1/2 rounded-full bg-lm-sky" />
+      <span className={`h-2 w-2/3 rounded-full ${dark ? "bg-[#eaf4f3]/70" : "bg-[#062b45]/70"}`} />
+      <span className={`h-5 rounded-md ${dark ? "bg-[#131536]" : "bg-white"}`} />
+      <span className={`h-2 w-1/2 rounded-full ${dark ? "bg-[#78b9b5]" : "bg-[#30afff]"}`} />
     </div>
   );
   return (
@@ -61,7 +61,7 @@ export function ThemePicker({ initial }: { initial: Theme }) {
         {OPTIONS.map((option) => (
           <label
             key={option.value}
-            className="flex cursor-pointer flex-col gap-3 rounded-2xl border border-[var(--dash-border)] p-3 transition-[border-color,box-shadow] duration-200 ease-lm hover:border-lm-sky/70 has-checked:border-lm-sky has-checked:shadow-[0_0_0_3px_rgb(48_175_255/0.25)] has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-lm-deep"
+            className="flex cursor-pointer flex-col gap-3 rounded-2xl border border-[var(--dash-border)] p-3 transition-[border-color,box-shadow] duration-200 ease-lm hover:border-lm-sky/70 has-checked:border-lm-sky has-checked:shadow-[0_0_0_3px_color-mix(in_srgb,var(--lm-sky)_25%,transparent)] has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-lm-deep"
           >
             <input
               type="radio"

@@ -91,7 +91,7 @@ test("the theme applies at once and survives a reload", async ({ page }) => {
     .locator(".dash-shell")
     .first()
     .evaluate((el) => getComputedStyle(el).backgroundColor);
-  expect(background).toBe("rgb(6, 27, 43)");
+  expect(background).toBe("rgb(11, 10, 34)"); // #0b0a22, the dark palette background
 
   await page.getByText("Sáng", { exact: true }).click();
   await expect(html).toHaveAttribute("data-theme", "light");

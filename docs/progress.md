@@ -198,3 +198,10 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Thông báo: dải "Cảnh báo ngân sách" trên Tổng quan (biểu tượng + chữ + %), ẩn theo công tắc.
 - Trang `/settings`, `/settings/appearance`, `/settings/notifications`, `/settings/about` (phiên bản lấy từ `package.json`).
 - Ghi chú quy trình: một lệnh `node - <<'EOF'` dài chứa nhiều dấu nháy/backtick làm bash lỗi cú pháp (không chạy gì); chuyển sang ghi script ra file bằng Write rồi chạy, đúng như mục "Lỗi hay gặp".
+
+## Giao diện tối theo bảng màu teal / navy / tím (2026-11-24, theo yêu cầu)
+- Bảng màu người dùng chọn cho chế độ tối: `#78B9B5`, `#0F828C`, `#065084`, `#320A6B`. Chế độ sáng giữ nguyên.
+- Màu thương hiệu `lm-*` thành vai trò theo theme qua biến CSS (`@theme inline { --color-lm-sky: var(--lm-sky) … }`): sky = màu nhấn, ink = chữ trên màu nhấn, deep = viền focus/liên kết, aqua/lime/mint = nền phụ. Tối: nhấn `#78B9B5` với chữ `#0c0a24` (8,7:1), viền focus `#78B9B5` trên thẻ (7,9:1); `#0F828C` chỉ làm nền (chữ trên nó chỉ 4,1:1).
+- Nền tối `#0b0a22` với hai vầng sáng tím `#320A6B` và navy `#065084`; thẻ `#131536`, chữ `#eaf4f3`, chữ phụ `#a3c4c1` (9,5:1), viền `#2a2f66`. Bảng đăng nhập: gradient tím → navy → teal, chữ sáng (biến `--panel-*` riêng).
+- Bóng và hover viết cứng màu xanh trời (`rgb(48 175 255 / …)`, `#4dbaff`) chuyển sang `color-mix(… var(--lm-sky) …)` / `var(--lm-sky-hover)` để theo theme.
+- Bảng màu biểu đồ (categorical đã validate) giữ nguyên; chạy lại validator trên nền thẻ mới `#131536`: đạt mọi kiểm tra.

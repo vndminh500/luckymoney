@@ -12,7 +12,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         {/* A soft wash of the palette behind the form on small screens. */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -top-32 -right-24 size-80 rounded-full bg-lm-aqua/40 blur-3xl lg:hidden"
+          className="pointer-events-none absolute -top-32 -right-24 size-80 rounded-full bg-lm-aqua/40 blur-3xl dark:bg-[#320a6b]/60 lg:hidden"
         />
         <div className="relative w-full max-w-[400px] animate-lm-rise">
           <Logo className="mb-10 lg:hidden" />

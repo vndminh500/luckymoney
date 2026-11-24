@@ -6,7 +6,7 @@ import { saveBudgetAction, type BudgetFormState } from "@/app/(app)/budgets/acti
 import type { SelectableCategory } from "@/server/categories/service";
 
 const control =
-  "h-12 w-full rounded-xl border border-[var(--dash-border)] bg-[var(--dash-surface)] px-4 text-base text-[var(--dash-text)] outline-none transition-[border-color,box-shadow] duration-200 ease-lm hover:border-lm-sky/70 focus-visible:border-lm-sky focus-visible:shadow-[0_0_0_4px_rgb(146_238_255/0.55)] aria-invalid:border-red-600";
+  "h-12 w-full rounded-xl border border-[var(--dash-border)] bg-[var(--dash-surface)] px-4 text-base text-[var(--dash-text)] outline-none transition-[border-color,box-shadow] duration-200 ease-lm hover:border-lm-sky/70 focus-visible:border-lm-sky focus-visible:shadow-[0_0_0_4px_color-mix(in_srgb,var(--lm-aqua)_55%,transparent)] aria-invalid:border-red-600";
 
 type Props = { month: string; categories: SelectableCategory[] };
 
@@ -83,7 +83,7 @@ export function BudgetForm({ month, categories }: Props) {
       <button
         type="submit"
         disabled={pending}
-        className="h-12 rounded-xl bg-lm-sky px-5 font-bold text-lm-ink shadow-[0_6px_16px_rgb(48_175_255/0.35)] transition-[background-color,transform] duration-200 ease-lm hover:bg-[#4dbaff] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lm-deep active:scale-[0.98] disabled:opacity-80 sm:mt-8"
+        className="h-12 rounded-xl bg-lm-sky px-5 font-bold text-lm-ink shadow-[0_6px_16px_color-mix(in_srgb,var(--lm-sky)_35%,transparent)] transition-[background-color,transform] duration-200 ease-lm hover:bg-[var(--lm-sky-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lm-deep active:scale-[0.98] disabled:opacity-80 sm:mt-8"
       >
         {pending ? "Đang lưu…" : "Lưu ngân sách"}
       </button>

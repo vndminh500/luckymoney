@@ -56,7 +56,7 @@ export function TransactionForm({
           // A new key per save replays the entrance, so each save is visibly confirmed.
           key={state.savedId}
           role="status"
-          className="flex animate-lm-rise flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-lm-mint bg-lm-lime/60 px-4 py-3 text-lm-ink [animation-duration:320ms] dark:border-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-100"
+          className="flex animate-lm-rise flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-lm-mint bg-lm-lime/60 px-4 py-3 text-lm-ink [animation-duration:320ms] dark:border-[#0f828c] dark:bg-[#0f828c]/25 dark:text-[#eaf4f3]"
         >
           <svg viewBox="0 0 20 20" className="size-5 shrink-0" aria-hidden="true">
             <circle cx="10" cy="10" r="9" fill="currentColor" opacity="0.15" />
@@ -114,7 +114,7 @@ function TypeSwitch({
       <div className="relative grid grid-cols-2 rounded-full bg-[var(--dash-track)] p-1">
         <span
           aria-hidden="true"
-          className={`absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full shadow-[0_4px_12px_rgb(48_175_255/0.25)] transition-[transform,background-color] duration-300 ease-lm ${
+          className={`absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full shadow-[0_4px_12px_color-mix(in_srgb,var(--lm-sky)_25%,transparent)] transition-[transform,background-color] duration-300 ease-lm ${
             type === "EXPENSE" ? "bg-lm-sky" : "bg-lm-mint"
           }`}
           style={{ transform: `translateX(${index * 100}%)` }}

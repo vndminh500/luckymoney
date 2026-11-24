@@ -21,7 +21,7 @@ export function SavedNote({ savedAt, children }: { savedAt?: number; children: s
     <p
       key={savedAt}
       role="status"
-      className="animate-lm-rise rounded-xl border border-lm-mint bg-lm-lime/60 px-4 py-3 text-lm-ink [animation-duration:320ms] dark:border-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-100"
+      className="animate-lm-rise rounded-xl border border-lm-mint bg-lm-lime/60 px-4 py-3 text-lm-ink [animation-duration:320ms] dark:border-[#0f828c] dark:bg-[#0f828c]/25 dark:text-[#eaf4f3]"
     >
       {children}
     </p>

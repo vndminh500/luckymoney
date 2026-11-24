@@ -108,7 +108,7 @@ async function Dashboard({ searchParams }: Pick<PageProps<"/">, "searchParams">)
         </div>
         <Link
           href="/transactions/new"
-          className="inline-flex h-12 items-center rounded-xl bg-lm-sky px-5 font-bold text-lm-ink shadow-[0_6px_16px_rgb(48_175_255/0.35)] transition-[background-color,transform] duration-200 ease-lm hover:bg-[#4dbaff] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lm-deep"
+          className="inline-flex h-12 items-center rounded-xl bg-lm-sky px-5 font-bold text-lm-ink shadow-[0_6px_16px_color-mix(in_srgb,var(--lm-sky)_35%,transparent)] transition-[background-color,transform] duration-200 ease-lm hover:bg-[var(--lm-sky-hover)] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lm-deep"
         >
           Thêm giao dịch
         </Link>

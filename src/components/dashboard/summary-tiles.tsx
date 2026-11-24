@@ -22,7 +22,7 @@ export function SummaryTiles({
           key={tile.label}
           className={`animate-lm-rise rounded-2xl border border-[var(--dash-border)] p-5 ${
             tile.label === "Số dư"
-              ? "bg-lm-sky text-lm-ink shadow-[0_10px_24px_rgb(48_175_255/0.28)]"
+              ? "bg-lm-sky text-lm-ink shadow-[0_10px_24px_color-mix(in_srgb,var(--lm-sky)_28%,transparent)]"
               : "bg-[var(--dash-surface)]"
           }`}
           style={{ animationDelay: `${index * 70}ms` }}

@@ -27,7 +27,7 @@ export function AuthTabs() {
     >
       <span
         aria-hidden="true"
-        className="absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-[var(--auth-tab-pill)] shadow-[0_1px_2px_rgb(6_43_69/0.08),0_4px_12px_rgb(48_175_255/0.18)] transition-transform duration-300 ease-lm"
+        className="absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-[var(--auth-tab-pill)] shadow-[0_1px_2px_rgb(6_43_69/0.08),0_4px_12px_color-mix(in_srgb,var(--lm-sky)_18%,transparent)] transition-transform duration-300 ease-lm"
         style={{ transform: `translateX(${activeIndex * 100}%)` }}
       />
       {TABS.map((tab, index) => (

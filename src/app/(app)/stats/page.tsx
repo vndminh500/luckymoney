@@ -95,7 +95,7 @@ async function Stats({ searchParams }: Pick<PageProps<"/stats">, "searchParams">
         >
           <span
             aria-hidden="true"
-            className="absolute inset-y-1 left-1 w-[calc((100%-0.5rem)/3)] rounded-full bg-lm-sky shadow-[0_4px_12px_rgb(48_175_255/0.3)] transition-transform duration-300 ease-lm"
+            className="absolute inset-y-1 left-1 w-[calc((100%-0.5rem)/3)] rounded-full bg-lm-sky shadow-[0_4px_12px_color-mix(in_srgb,var(--lm-sky)_30%,transparent)] transition-transform duration-300 ease-lm"
             style={{ transform: `translateX(${tabIndex * 100}%)` }}
           />
           {STATS_PERIODS.map((period) => (

@@ -8,7 +8,7 @@ export function GoogleSignIn({ callbackUrl }: { callbackUrl?: string }) {
         {callbackUrl ? <input type="hidden" name="callbackUrl" value={callbackUrl} /> : null}
         <button
           type="submit"
-          className="flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-[var(--auth-border)] bg-[var(--auth-surface)] px-4 font-medium text-[var(--auth-text)] transition-[border-color,box-shadow,transform] duration-200 ease-lm hover:border-lm-sky hover:shadow-[0_6px_16px_rgb(48_175_255/0.18)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lm-deep active:scale-[0.98]"
+          className="flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-[var(--auth-border)] bg-[var(--auth-surface)] px-4 font-medium text-[var(--auth-text)] transition-[border-color,box-shadow,transform] duration-200 ease-lm hover:border-lm-sky hover:shadow-[0_6px_16px_color-mix(in_srgb,var(--lm-sky)_18%,transparent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lm-deep active:scale-[0.98]"
         >
           <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5">
             <path

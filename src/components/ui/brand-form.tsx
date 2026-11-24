@@ -7,7 +7,7 @@ import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from "react
 
 /** Shared look of every control; sizes are separate so no two classes conflict. */
 const controlBase =
-  "rounded-xl border border-[var(--dash-border)] bg-[var(--dash-surface)] text-[var(--dash-text)] outline-none transition-[border-color,box-shadow] duration-200 ease-lm placeholder:text-[var(--dash-muted)]/70 hover:border-lm-sky/70 focus-visible:border-lm-sky focus-visible:shadow-[0_0_0_4px_rgb(146_238_255/0.55)] aria-invalid:border-red-600 aria-invalid:focus-visible:shadow-[0_0_0_4px_rgb(220_38_38/0.15)]";
+  "rounded-xl border border-[var(--dash-border)] bg-[var(--dash-surface)] text-[var(--dash-text)] outline-none transition-[border-color,box-shadow] duration-200 ease-lm placeholder:text-[var(--dash-muted)]/70 hover:border-lm-sky/70 focus-visible:border-lm-sky focus-visible:shadow-[0_0_0_4px_color-mix(in_srgb,var(--lm-aqua)_55%,transparent)] aria-invalid:border-red-600 aria-invalid:focus-visible:shadow-[0_0_0_4px_rgb(220_38_38/0.15)]";
 
 export const brandControl = `${controlBase} h-12 w-full px-4 text-base`;
 
@@ -18,7 +18,7 @@ export const brandControlCompact = `${controlBase} h-10 px-3 text-sm`;
 const brandControlLarge = `${controlBase} h-16 w-full px-4 text-[1.75rem] font-bold tracking-[-0.01em] tabular-nums`;
 
 export const brandPrimaryButton =
-  "inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-lm-sky px-5 font-bold text-lm-ink shadow-[0_6px_16px_rgb(48_175_255/0.35)] transition-[background-color,box-shadow,transform] duration-200 ease-lm hover:bg-[#4dbaff] hover:shadow-[0_10px_24px_rgb(48_175_255/0.45)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lm-deep active:scale-[0.98] disabled:cursor-progress disabled:opacity-80";
+  "inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-lm-sky px-5 font-bold text-lm-ink shadow-[0_6px_16px_color-mix(in_srgb,var(--lm-sky)_35%,transparent)] transition-[background-color,box-shadow,transform] duration-200 ease-lm hover:bg-[var(--lm-sky-hover)] hover:shadow-[0_10px_24px_color-mix(in_srgb,var(--lm-sky)_45%,transparent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lm-deep active:scale-[0.98] disabled:cursor-progress disabled:opacity-80";
 
 export const brandSecondaryButton =
   "inline-flex h-10 items-center justify-center gap-1.5 rounded-xl border border-[var(--dash-border)] bg-[var(--dash-surface)] px-4 font-medium text-[var(--dash-text)] transition-[border-color,background-color,transform] duration-200 ease-lm hover:border-lm-sky focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lm-deep active:scale-[0.98]";

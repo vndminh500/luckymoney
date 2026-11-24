@@ -146,8 +146,8 @@ export function TransactionList({ result, filters, categories, display }: Props)
                     aria-hidden="true"
                     className={`grid size-11 shrink-0 place-items-center rounded-full text-xl transition-transform duration-200 ease-lm group-hover:scale-105 ${
                       income
-                        ? "bg-lm-mint dark:bg-emerald-900/60"
-                        : "bg-lm-aqua/60 dark:bg-[#123a55]"
+                        ? "bg-lm-mint dark:bg-[#0f828c]/45"
+                        : "bg-lm-aqua/60 dark:bg-[#065084]/45"
                     }`}
                   >
                     {item.category.icon ?? "•"}

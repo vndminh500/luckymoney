@@ -10,7 +10,7 @@ type FieldProps = InputHTMLAttributes<HTMLInputElement> & {
 };
 
 const inputClass =
-  "h-12 w-full rounded-xl border border-[var(--auth-border)] bg-[var(--auth-surface)] px-4 text-base text-[var(--auth-text)] outline-none transition-[border-color,box-shadow] duration-200 ease-lm placeholder:text-[var(--auth-muted)]/70 hover:border-lm-sky/70 focus-visible:border-lm-sky focus-visible:shadow-[0_0_0_4px_rgb(146_238_255/0.55)] aria-invalid:border-red-600 aria-invalid:focus-visible:shadow-[0_0_0_4px_rgb(220_38_38/0.15)]";
+  "h-12 w-full rounded-xl border border-[var(--auth-border)] bg-[var(--auth-surface)] px-4 text-base text-[var(--auth-text)] outline-none transition-[border-color,box-shadow] duration-200 ease-lm placeholder:text-[var(--auth-muted)]/70 hover:border-lm-sky/70 focus-visible:border-lm-sky focus-visible:shadow-[0_0_0_4px_color-mix(in_srgb,var(--lm-aqua)_55%,transparent)] aria-invalid:border-red-600 aria-invalid:focus-visible:shadow-[0_0_0_4px_rgb(220_38_38/0.15)]";
 
 function describedBy(id: string, hint?: string, error?: string): string | undefined {
   return (
@@ -133,7 +133,7 @@ export function AuthSubmit({ pending, children }: { pending: boolean; children: 
       type="submit"
       disabled={pending}
       aria-disabled={pending}
-      className="relative mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-lm-sky font-bold text-lm-ink shadow-[0_6px_16px_rgb(48_175_255/0.35)] transition-[background-color,box-shadow,transform] duration-200 ease-lm hover:bg-[#4dbaff] hover:shadow-[0_10px_24px_rgb(48_175_255/0.45)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lm-deep active:scale-[0.98] disabled:cursor-progress disabled:opacity-80"
+      className="relative mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-lm-sky font-bold text-lm-ink shadow-[0_6px_16px_color-mix(in_srgb,var(--lm-sky)_35%,transparent)] transition-[background-color,box-shadow,transform] duration-200 ease-lm hover:bg-[var(--lm-sky-hover)] hover:shadow-[0_10px_24px_color-mix(in_srgb,var(--lm-sky)_45%,transparent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lm-deep active:scale-[0.98] disabled:cursor-progress disabled:opacity-80"
     >
       {pending ? (
         <svg viewBox="0 0 24 24" className="size-5 animate-spin" aria-hidden="true">

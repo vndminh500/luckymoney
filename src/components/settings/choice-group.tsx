@@ -20,7 +20,7 @@ export function ChoiceGroup({ name, legend, choices, defaultValue, error, hint }
         {choices.map((choice) => (
           <label
             key={choice.value}
-            className="flex cursor-pointer flex-col gap-0.5 rounded-xl border border-[var(--dash-border)] bg-[var(--dash-surface)] px-4 py-3 transition-[border-color,box-shadow,background-color] duration-200 ease-lm hover:border-lm-sky/70 has-checked:border-lm-sky has-checked:bg-lm-sky/10 has-checked:shadow-[0_0_0_3px_rgb(48_175_255/0.25)] has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-lm-deep"
+            className="flex cursor-pointer flex-col gap-0.5 rounded-xl border border-[var(--dash-border)] bg-[var(--dash-surface)] px-4 py-3 transition-[border-color,box-shadow,background-color] duration-200 ease-lm hover:border-lm-sky/70 has-checked:border-lm-sky has-checked:bg-lm-sky/10 has-checked:shadow-[0_0_0_3px_color-mix(in_srgb,var(--lm-sky)_25%,transparent)] has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-lm-deep"
           >
             <input
               type="radio"
