@@ -20,7 +20,7 @@ Làm theo lát cắt dọc: mỗi tính năng chạy được từ giao diện �
   - Xong khi: đăng nhập Google tạo hoặc liên kết user đúng.
 
 ## Giai đoạn 2: Giao dịch và danh mục (lát cắt dọc đầu tiên)
-- [ ] T7. Thêm giao dịch: schema Zod, service, route/action, form giao diện, test.
+- [x] T7. Thêm giao dịch: schema Zod, service, route/action, form giao diện, test.
   - Xong khi: tạo được giao dịch; test từ chối `amount <= 0`, danh mục của user khác, danh mục đã lưu trữ.
 - [ ] T8. Danh sách giao dịch: phân trang, lọc theo tháng/danh mục/loại.
   - Xong khi: e2e thêm rồi thấy trong danh sách đúng tháng.

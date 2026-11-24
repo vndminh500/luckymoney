@@ -53,3 +53,12 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Không lưu access/refresh token của Google vì app không gọi API Google.
 - Nút Google chỉ hiện khi có `AUTH_GOOGLE_ID` và `AUTH_GOOGLE_SECRET`. Trang `/register` là trang tĩnh, nên biến này được đọc lúc build.
 - E2E dùng client ID giả và chặn `accounts.google.com` để kiểm tra URL ủy quyền (client_id, redirect_uri, scope, PKCE S256). Vòng OAuth thật chưa kiểm tra được vì chưa có Client ID thật.
+
+## T7. Thêm giao dịch (2026-11-24)
+- Schema ở `src/lib/schemas/transaction.ts`: `createTransactionSchema` cho API (`amount` số nguyên 1..1_000_000_000, `occurredAt` ISO 8601 có múi giờ, `note` cắt khoảng trắng, rỗng thành `null`, tối đa 200 ký tự) và `transactionFormSchema` cho form (`amount` là chuỗi đọc bằng `parseVnd`, `date` dạng `YYYY-MM-DD`). Khóa lạ như `userId` bị bỏ.
+- Danh mục không tồn tại, của user khác, đã lưu trữ hoặc khác loại đều trả cùng một lỗi `400 VALIDATION_ERROR` ở trường `categoryId`, nên không lộ danh mục của người khác có tồn tại hay không.
+- Form chỉ chọn ngày; `occurredAt` là thời điểm đầu ngày đó theo múi giờ của user (`startOfZonedDay`). Ngày mặc định là "hôm nay" theo múi giờ user, tính ở server.
+- Giao diện: trang `/transactions/new`, sau khi lưu thì giữ loại và ngày, xóa số tiền, danh mục, ghi chú để nhập tiếp nhanh. Danh sách (T8) chưa có nên chưa chuyển trang.
+- Route `POST /api/transactions` dùng chung service với server action. Test route đi qua e2e (cookie phiên thật) thay vì mock session.
+- Vướng mắc (chưa sửa, cần xử lý trước khi thêm nhiều liên kết ở T8/T13): proxy của Auth.js gắn lại cookie phiên vào mọi phản hồi (gia hạn phiên). Một request prefetch gửi trước khi đăng xuất nhưng trả về sau sẽ ghi lại cookie, làm user bị đăng nhập lại. E2E "registering an existing email" lỗi khoảng 1/5 lần khi trang chủ có liên kết prefetch. Tạm tắt prefetch cho liên kết "Thêm giao dịch" (130/130 lần chạy xanh). Hướng sửa gốc: proxy chỉ đọc phiên mà không ghi cookie, hoặc thu hồi phiên ở server khi đăng xuất.
+- Chưa xử lý: danh mục bị lưu trữ đúng lúc giữa bước kiểm tra và bước ghi (khoảng cách rất nhỏ, chấp nhận ở v1).

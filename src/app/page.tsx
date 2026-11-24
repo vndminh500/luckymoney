@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Suspense } from "react";
 
 import { logoutAction } from "@/app/(auth)/actions";
@@ -34,6 +35,15 @@ async function Greeting() {
     <section>
       <h1 className="text-2xl font-semibold">Xin chào, {user.name ?? user.email}</h1>
       <p className="mt-2 text-zinc-600 dark:text-zinc-400">Bạn đã đăng nhập bằng {user.email}.</p>
+      <Link
+        href="/transactions/new"
+        // Auth.js' proxy re-sets the session cookie on every response. A prefetch
+        // still in flight during sign-out would sign the user back in (see docs/progress.md).
+        prefetch={false}
+        className="mt-6 inline-flex h-11 items-center rounded-lg bg-emerald-700 px-4 font-medium text-white hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+      >
+        Thêm giao dịch
+      </Link>
     </section>
   );
 }
