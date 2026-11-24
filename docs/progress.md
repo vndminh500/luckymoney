@@ -87,14 +87,14 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Test: `tests/integration/transaction-list.test.ts` (ranh giới tháng UTC+7, mặc định tháng, phân quyền, xóa mềm, lọc, phân trang ổn định, danh mục lưu trữ, query sai), e2e thêm rồi thấy đúng tháng, không thấy ở tháng sau. Thêm `tests/integration/fixtures.ts` dùng chung.
 
 ## CI lần đầu trên GitHub (2026-11-24)
-- Lần push đầu: job check xanh, job e2e đỏ ở . Nguyên nhân: CI build ở bước  riêng, không có biến Google giả (chỉ khai báo trong  của Playwright), mà  là trang tĩnh đọc biến lúc build. Sửa: Playwright tự build trong CI như ở local, bỏ bước build riêng. Lần chạy sau xanh cả hai job, tick T3.
+- Lần push đầu: job check xanh, job e2e đỏ ở `google.spec.ts › register page offers Google too`. Nguyên nhân: CI build ở bước `npm run build` riêng, không có biến Google giả (chỉ khai báo trong `webServer.env` của Playwright), mà `/register` là trang tĩnh đọc biến lúc build. Sửa: Playwright tự build trong CI như ở local, bỏ bước build riêng. Lần chạy sau xanh cả hai job, tick T3.
 
 ## T9. Sửa và xóa mềm giao dịch (2026-11-24) — chưa tick, chờ T12
-- Service: ,  (PATCH, ít nhất một trường), , . Mọi truy vấn lọc ; của user khác, không tồn tại hoặc đã xóa đều là . Xóa lần hai cũng .
+- Service: `getTransaction`, `updateTransaction` (PATCH, ít nhất một trường), `updateTransactionFromForm`, `deleteTransaction`. Mọi truy vấn lọc `{ id, userId, deletedAt: null }`; của user khác, không tồn tại hoặc đã xóa đều là `404`. Xóa lần hai cũng `404`.
 - Đổi loại hoặc danh mục thì danh mục mới phải hợp lệ (cùng quy tắc khi tạo). Giữ nguyên danh mục cũ thì được lưu kể cả khi danh mục đó đã bị lưu trữ; trang sửa thêm danh mục đó vào ô chọn với nhãn "(đã lưu trữ)".
 - Form sửa: nếu ngày không đổi thì giữ nguyên thời điểm gốc (giao dịch tạo qua API có giờ cụ thể không bị dời về đầu ngày).
-- Xóa mềm bằng  có điều kiện, nên không có khoảng hở giữa kiểm tra và ghi. Cập nhật dùng  với  có , lỗi  (bị xóa giữa chừng) đổi thành .
-- Trang  nằm sau , nên  trả giao diện 404 kèm  nhưng mã HTTP vẫn 200 (đúng tài liệu Next.js về streaming). API trả  thật. Thêm  tiếng Việt.
+- Xóa mềm bằng `updateMany` có điều kiện, nên không có khoảng hở giữa kiểm tra và ghi. Cập nhật dùng `update` với `where` có `userId`, lỗi `P2025` (bị xóa giữa chừng) đổi thành `404`.
+- Trang `/transactions/[id]/edit` nằm sau `<Suspense>`, nên `notFound()` trả giao diện 404 kèm `noindex` nhưng mã HTTP vẫn 200 (đúng tài liệu Next.js về streaming). API trả `404` thật. Thêm `src/app/not-found.tsx` tiếng Việt.
 - Xóa không hỏi xác nhận (không dùng hộp thoại trình duyệt); chấp nhận vì là xóa mềm. Có thể thêm bước xác nhận hoặc hoàn tác ở T15.
-- Gom việc đọc múi giờ user thành  trong service giao dịch.
+- Gom việc đọc múi giờ user thành `getUserTimeZone` trong service giao dịch.
 - Phần "không xuất hiện ở thống kê" chưa kiểm tra được vì chưa có service thống kê; đã ghi vào điều kiện xong của T12.

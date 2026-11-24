@@ -58,4 +58,4 @@ Một task CHƯA xong cho đến khi lint, typecheck và test đều pass. Phả
 6. Đánh dấu task trong `PLAN.md`, ghi quyết định hoặc vướng mắc vào `docs/progress.md`.
 
 ## Lỗi hay gặp (thêm một dòng mỗi khi agent lặp lại cùng một lỗi)
-- (chưa có)
+- Không ghi văn bản có backtick (Markdown inline code, template literal) qua `node -e "..."` hay `sed` trong bash: bash coi backtick là lệnh con, làm mất chữ và chạy lệnh ngoài ý muốn. Dùng công cụ Edit/Write, hoặc heredoc có nháy (`<<'EOF'`).
