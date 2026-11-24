@@ -1,6 +1,7 @@
 import type { DebtDirection, Prisma } from "@prisma/client";
 import type { z } from "zod";
 
+import { toDateKey } from "@/lib/dates";
 import { scheduleStatus, type ScheduleStatus } from "@/lib/debt";
 import { debtSchema, paymentSchema, type DebtInput } from "@/lib/schemas/debt";
 import { prisma } from "@/server/db";
@@ -198,4 +199,13 @@ export async function deletePayment(
   if (count === 0) {
     throw new NotFoundError("Không tìm thấy lần trả.");
   }
+}
+
+/** Today's calendar day in the user's time zone, which decides what is overdue. */
+export async function todayForUser(userId: string, now: Date = new Date()): Promise<string> {
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: userId },
+    select: { timeZone: true },
+  });
+  return toDateKey(now, user.timeZone);
 }

@@ -32,6 +32,10 @@ import * as settingsActions from "@/app/(app)/settings/actions";
 import * as transactionActions from "@/app/(app)/transactions/actions";
 import * as categoryRoute from "@/app/api/categories/[id]/route";
 import * as categoriesRoute from "@/app/api/categories/route";
+import * as debtPaymentRoute from "@/app/api/debts/[id]/payments/[paymentId]/route";
+import * as debtPaymentsRoute from "@/app/api/debts/[id]/payments/route";
+import * as debtRoute from "@/app/api/debts/[id]/route";
+import * as debtsRoute from "@/app/api/debts/route";
 import * as statsByCategoryRoute from "@/app/api/stats/by-category/route";
 import * as statsDailyRoute from "@/app/api/stats/daily/route";
 import * as statsPeriodRoute from "@/app/api/stats/period/route";
@@ -48,6 +52,9 @@ let bob: UserFixture;
 let bobTx: string;
 /** Bob's budget for the same month. */
 let bobBudget: string;
+/** Bob's debt ("Chú Tư", 7,654,321) and a payment on it. */
+let bobDebt: string;
+let bobPayment: string;
 
 const signInAs = (user: UserFixture | null) => {
   session.userId = user?.userId ?? null;
@@ -73,13 +80,17 @@ function form(values: Record<string, string>): FormData {
 
 /** Bob's rows exactly as they are in the database, to prove nothing changed. */
 async function bobSnapshot() {
-  const [transactions, categories, budgets, avatar] = await Promise.all([
+  const [transactions, categories, budgets, avatar, debts] = await Promise.all([
     prisma.transaction.findMany({ where: { userId: bob.userId }, orderBy: { id: "asc" } }),
     prisma.category.findMany({ where: { userId: bob.userId }, orderBy: { id: "asc" } }),
     prisma.budget.findMany({ where: { userId: bob.userId }, orderBy: { id: "asc" } }),
     prisma.userAvatar.findUnique({ where: { userId: bob.userId } }),
+    prisma.debt.findMany({
+      where: { userId: bob.userId },
+      include: { installments: true, payments: true },
+    }),
   ]);
-  return { transactions, categories, budgets, avatar };
+  return { transactions, categories, budgets, avatar, debts };
 }
 
 /** Next.js' notFound() throws an error whose digest marks a 404. */
@@ -130,6 +141,20 @@ beforeEach(async () => {
       data: { userId: bob.userId, categoryId: bob.food, month: "2026-11", amount: 123_456 },
     })
   ).id;
+  const debt = await prisma.debt.create({
+    data: {
+      userId: bob.userId,
+      direction: "I_OWE",
+      counterparty: "Chú Tư",
+      principal: 7_654_321,
+      startDate: "2026-10-01",
+      installments: { create: [{ dueDate: "2026-11-01", amount: 7_654_321 }] },
+      payments: { create: [{ amount: 54_321, paidOn: "2026-10-15" }] },
+    },
+    include: { payments: true },
+  });
+  bobDebt = debt.id;
+  bobPayment = debt.payments[0].id;
   signInAs(alice);
 });
 
@@ -282,6 +307,77 @@ const endpoints: {
     expectStatus: 404,
   },
   {
+    route: "debts",
+    method: "GET",
+    attack: () => debtsRoute.GET(),
+    expectStatus: 200,
+  },
+  {
+    route: "debts",
+    method: "POST",
+    // Claiming to be Bob: the debt is Alice's.
+    attack: () =>
+      debtsRoute.POST(
+        request("POST", "/api/debts", {
+          direction: "THEY_OWE",
+          counterparty: "Hacked",
+          principal: 1,
+          startDate: "2026-11-01",
+          installments: [{ dueDate: "2026-12-01", amount: 1 }],
+          userId: bob.userId,
+        }),
+      ),
+    expectStatus: 201,
+  },
+  {
+    route: "debts/[id]",
+    method: "GET",
+    attack: () => debtRoute.GET(request("GET", `/api/debts/${bobDebt}`), context(bobDebt)),
+    expectStatus: 404,
+  },
+  {
+    route: "debts/[id]",
+    method: "PUT",
+    attack: () =>
+      debtRoute.PUT(
+        request("PUT", `/api/debts/${bobDebt}`, {
+          direction: "THEY_OWE",
+          counterparty: "Hacked",
+          principal: 1,
+          startDate: "2026-11-01",
+          installments: [{ dueDate: "2026-12-01", amount: 1 }],
+          userId: bob.userId,
+        }),
+        context(bobDebt),
+      ),
+    expectStatus: 404,
+  },
+  {
+    route: "debts/[id]",
+    method: "DELETE",
+    attack: () => debtRoute.DELETE(request("DELETE", `/api/debts/${bobDebt}`), context(bobDebt)),
+    expectStatus: 404,
+  },
+  {
+    route: "debts/[id]/payments",
+    method: "POST",
+    attack: () =>
+      debtPaymentsRoute.POST(
+        request("POST", `/api/debts/${bobDebt}/payments`, { amount: 1, paidOn: "2026-11-02" }),
+        context(bobDebt),
+      ),
+    expectStatus: 404,
+  },
+  {
+    route: "debts/[id]/payments/[paymentId]",
+    method: "DELETE",
+    attack: () =>
+      debtPaymentRoute.DELETE(request("DELETE", `/api/debts/${bobDebt}/payments/${bobPayment}`), {
+        params: Promise.resolve({ id: bobDebt, paymentId: bobPayment }),
+      }),
+    expectStatus: 404,
+  },
+  {
     route: "account/avatar",
     method: "GET",
     // Only the session user's own avatar exists at this URL; Alice has none.
@@ -311,6 +407,10 @@ describe("API endpoints", () => {
         "99000",
         "123456",
         "BOBAVATAR",
+        bobDebt,
+        bobPayment,
+        "Chú Tư",
+        "7654321",
       ]) {
         expect(body).not.toContain(secret);
       }
