@@ -20,24 +20,48 @@ test("add, rename, archive and restore a category", async ({ page }) => {
   await page.getByRole("link", { name: "Danh mục" }).click();
   await expect(page).toHaveURL("/categories");
 
-  // Add
+  // Add, picking the icon from the everyday activities
   const addForm = page.getByRole("form", { name: "Thêm danh mục" });
   await addForm.getByLabel("Tên danh mục").fill("Cà phê");
-  await addForm.getByLabel("Biểu tượng").fill("☕");
+  const picker = addForm.getByRole("button", { name: /^Biểu tượng:/ });
+  await expect(picker).toHaveAccessibleName("Biểu tượng: chưa chọn");
+  await picker.click();
+  const panel = addForm.getByRole("dialog", { name: "Biểu tượng" });
+  await expect(panel).toBeVisible();
+  await expect(panel.getByRole("group", { name: "Đi lại" })).toBeVisible();
+  // Search works without diacritics.
+  await panel.getByLabel("Tìm hoạt động").fill("ca phe");
+  await expect(panel.getByRole("group")).toHaveCount(1);
+  await panel.getByRole("button", { name: "Cà phê" }).click();
+  await expect(panel).toBeHidden();
+  await expect(picker).toHaveAccessibleName("Biểu tượng: Cà phê");
+  await expect(picker).toBeFocused();
   await addForm.getByRole("button", { name: "Thêm danh mục" }).click();
   await expect(row(page, "Danh mục chi", "Cà phê")).toHaveCount(1);
+  await expect(row(page, "Danh mục chi", "Cà phê")).toContainText("☕");
   await expect(addForm.getByLabel("Tên danh mục")).toHaveValue("");
+  await expect(picker).toHaveAccessibleName("Biểu tượng: chưa chọn");
+
+  // Escape closes the picker without choosing.
+  await picker.click();
+  await expect(panel).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(panel).toBeHidden();
 
   // Duplicate name of the same type
   await addForm.getByLabel("Tên danh mục").fill("Cà phê");
   await addForm.getByRole("button", { name: "Thêm danh mục" }).click();
   await expect(addForm.getByText(/Đã có danh mục cùng tên/)).toBeVisible();
 
-  // Rename
-  await row(page, "Danh mục chi", "Cà phê").getByRole("button", { name: "Đổi tên" }).click();
+  // Edit the name and the icon
+  const coffee = row(page, "Danh mục chi", "Cà phê");
+  await coffee.getByRole("button", { name: "Sửa" }).click();
   await page.getByLabel("Tên mới cho Cà phê").fill("Cà phê sáng");
-  await page.getByRole("button", { name: "Lưu tên" }).click();
+  await coffee.getByRole("button", { name: "Biểu tượng: Cà phê" }).click();
+  await coffee.getByRole("button", { name: "Trà sữa" }).click();
+  await coffee.getByRole("button", { name: "Lưu thay đổi" }).click();
   await expect(row(page, "Danh mục chi", "Cà phê sáng")).toHaveCount(1);
+  await expect(row(page, "Danh mục chi", "Cà phê sáng")).toContainText("🧋");
 
   // Archive: moves to the archived list
   await row(page, "Danh mục chi", "Cà phê sáng").getByRole("button", { name: "Lưu trữ" }).click();

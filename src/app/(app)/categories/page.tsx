@@ -7,15 +7,55 @@ import { listCategories, type CategoryDto } from "@/server/categories/service";
 
 export const metadata: Metadata = { title: "Danh mục" };
 
+const card =
+  "animate-lm-rise rounded-2xl border border-[var(--dash-border)] bg-[var(--dash-surface)]";
+
 export default function CategoriesPage() {
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-8">
-      <h1 className="text-[1.75rem] leading-tight font-bold tracking-[-0.01em]">Danh mục</h1>
-      <AddCategoryForm />
-      <Suspense fallback={<p className="text-zinc-600 dark:text-zinc-400">Đang tải…</p>}>
+    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8">
+      <div>
+        <h1 className="text-[1.75rem] leading-tight font-bold tracking-[-0.01em]">Danh mục</h1>
+        <p className="mt-1 text-[var(--dash-muted)]">
+          Nhóm các khoản thu chi theo cách bạn quen gọi.
+        </p>
+      </div>
+      <section aria-labelledby="add-heading" className={`${card} relative z-20 p-5 sm:p-6`}>
+        <h2 id="add-heading" className="mb-5 text-lg font-bold">
+          Thêm danh mục
+        </h2>
+        <AddCategoryForm />
+      </section>
+      <Suspense fallback={<p className="text-[var(--dash-muted)]">Đang tải…</p>}>
         <CategoryLists />
       </Suspense>
     </main>
+  );
+}
+
+type Group = { title: string; items: CategoryDto[]; empty: string; note?: string };
+
+function GroupCard({ group }: { group: Group }) {
+  return (
+    <section className={`${card} relative focus-within:z-10`}>
+      <div className="flex items-baseline justify-between gap-3 border-b border-[var(--dash-border)] px-4 py-3 sm:px-5">
+        <h2 className="text-lg font-bold">{group.title}</h2>
+        <span className="text-sm text-[var(--dash-muted)] tabular-nums">
+          {group.items.length} danh mục
+        </span>
+      </div>
+      {group.note ? (
+        <p className="px-4 pt-3 text-sm text-[var(--dash-muted)] sm:px-5">{group.note}</p>
+      ) : null}
+      {group.items.length === 0 ? (
+        <p className="px-4 py-6 text-center text-[var(--dash-muted)] sm:px-5">{group.empty}</p>
+      ) : (
+        <ul aria-label={`Danh mục ${group.title.toLowerCase()}`}>
+          {group.items.map((category) => (
+            <CategoryRow key={category.id} category={category} />
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
 
@@ -23,7 +63,7 @@ async function CategoryLists() {
   const user = await getCurrentUser();
   const categories = await listCategories(user.id, { includeArchived: "true" });
   const active = categories.filter((category) => !category.archived);
-  const groups: { title: string; items: CategoryDto[]; empty: string }[] = [
+  const [expense, income, archived]: Group[] = [
     {
       title: "Chi",
       items: active.filter((category) => category.type === "EXPENSE"),
@@ -38,33 +78,17 @@ async function CategoryLists() {
       title: "Đã lưu trữ",
       items: categories.filter((category) => category.archived),
       empty: "Không có danh mục nào được lưu trữ.",
+      note: "Không chọn được cho giao dịch mới, nhưng vẫn hiện trên các giao dịch cũ.",
     },
   ];
 
   return (
-    <div className="flex flex-col gap-6">
-      {groups.map((group) => (
-        <section key={group.title} className="flex flex-col gap-2">
-          <h2 className="text-lg font-semibold">{group.title}</h2>
-          {group.title === "Đã lưu trữ" ? (
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Không chọn được cho giao dịch mới, nhưng vẫn hiện trên các giao dịch cũ.
-            </p>
-          ) : null}
-          {group.items.length === 0 ? (
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">{group.empty}</p>
-          ) : (
-            <ul
-              aria-label={`Danh mục ${group.title.toLowerCase()}`}
-              className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800"
-            >
-              {group.items.map((category) => (
-                <CategoryRow key={category.id} category={category} />
-              ))}
-            </ul>
-          )}
-        </section>
-      ))}
+    <div className="grid items-start gap-6 lg:grid-cols-2">
+      <GroupCard group={expense} />
+      <div className="flex flex-col gap-6">
+        <GroupCard group={income} />
+        <GroupCard group={archived} />
+      </div>
     </div>
   );
 }
