@@ -119,6 +119,7 @@ body {
   --series-5: #e87ba4;
   --series-other: #9fb3c0;
   --series-income: #1baf7a;
+  color-scheme: light;
   background: var(--dash-bg);
   color: var(--dash-text);
 }
@@ -139,6 +140,8 @@ body {
     --series-5: #d55181;
     --series-other: #5d7a8c;
     --series-income: #199e70;
+    /* Native controls (date picker icon, select menus) follow the dark surface. */
+    color-scheme: dark;
   }
 }
 

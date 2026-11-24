@@ -8,16 +8,16 @@ import {
   type TransactionFormState,
   type TransactionFormValues,
 } from "@/app/(app)/transactions/actions";
-import { Field, SubmitButton } from "@/components/ui/form";
+import { BrandField, BrandSelect, brandPrimaryButton, Spinner } from "@/components/ui/brand-form";
 import { NOTE_MAX_LENGTH } from "@/lib/schemas/transaction";
 import type { SelectableCategory } from "@/server/categories/service";
 
 type TransactionType = SelectableCategory["type"];
 
-const TYPE_LABELS: Record<TransactionType, string> = { EXPENSE: "Chi", INCOME: "Thu" };
-
-const controlClass =
-  "h-11 rounded-lg border border-zinc-300 bg-white px-3 text-base text-zinc-900 outline-none focus-visible:border-emerald-700 focus-visible:ring-2 focus-visible:ring-emerald-700/30 aria-invalid:border-red-700 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100";
+const TYPES: { value: TransactionType; label: string }[] = [
+  { value: "EXPENSE", label: "Chi" },
+  { value: "INCOME", label: "Thu" },
+];
 
 type FormAction = (
   state: TransactionFormState,
@@ -50,16 +50,29 @@ export function TransactionForm({
   });
 
   return (
-    <form action={formAction} className="flex flex-col gap-4" noValidate>
+    <form action={formAction} className="flex flex-col gap-5" noValidate>
       {state.savedId ? (
         <p
+          // A new key per save replays the entrance, so each save is visibly confirmed.
+          key={state.savedId}
           role="status"
-          className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200"
+          className="flex animate-lm-rise flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-lm-mint bg-lm-lime/60 px-4 py-3 text-lm-ink [animation-duration:320ms] dark:border-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-100"
         >
-          Đã lưu giao dịch.{" "}
+          <svg viewBox="0 0 20 20" className="size-5 shrink-0" aria-hidden="true">
+            <circle cx="10" cy="10" r="9" fill="currentColor" opacity="0.15" />
+            <path
+              d="m6 10.5 2.5 2.5L14 7.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          Đã lưu giao dịch.
           <Link
             href={`/transactions?month=${state.values?.date.slice(0, 7) ?? ""}`}
-            className="font-medium underline"
+            className="font-medium underline underline-offset-4"
           >
             Xem danh sách
           </Link>
@@ -73,8 +86,57 @@ export function TransactionForm({
         state={state}
         autoFocusAmount={autoFocusAmount}
       />
-      <SubmitButton pending={pending}>{pending ? "Đang lưu…" : submitLabel}</SubmitButton>
+      <button
+        type="submit"
+        disabled={pending}
+        aria-disabled={pending}
+        className={brandPrimaryButton}
+      >
+        {pending ? <Spinner /> : null}
+        {pending ? "Đang lưu…" : submitLabel}
+      </button>
     </form>
+  );
+}
+
+/** Expense/income switch: a pill slides to the chosen side. */
+function TypeSwitch({
+  type,
+  onChange,
+}: {
+  type: TransactionType;
+  onChange: (type: TransactionType) => void;
+}) {
+  const index = TYPES.findIndex((option) => option.value === type);
+  return (
+    <fieldset>
+      <legend className="mb-2 font-medium">Loại</legend>
+      <div className="relative grid grid-cols-2 rounded-full bg-[var(--dash-track)] p-1">
+        <span
+          aria-hidden="true"
+          className={`absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full shadow-[0_4px_12px_rgb(48_175_255/0.25)] transition-[transform,background-color] duration-300 ease-lm ${
+            type === "EXPENSE" ? "bg-lm-sky" : "bg-lm-mint"
+          }`}
+          style={{ transform: `translateX(${index * 100}%)` }}
+        />
+        {TYPES.map((option) => (
+          <label
+            key={option.value}
+            className="relative z-10 flex h-11 cursor-pointer items-center justify-center rounded-full font-bold text-[var(--dash-muted)] transition-colors duration-300 has-checked:text-lm-ink has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-lm-deep"
+          >
+            <input
+              type="radio"
+              name="type"
+              value={option.value}
+              checked={type === option.value}
+              onChange={() => onChange(option.value)}
+              className="sr-only"
+            />
+            {option.label}
+          </label>
+        ))}
+      </div>
+    </fieldset>
   );
 }
 
@@ -93,89 +155,61 @@ function TransactionFields({
 
   return (
     <>
-      <fieldset className="flex flex-col gap-1.5">
-        <legend className="mb-1.5 text-sm font-medium">Loại</legend>
-        <div className="grid grid-cols-2 gap-2">
-          {(Object.keys(TYPE_LABELS) as TransactionType[]).map((value) => (
-            <label
-              key={value}
-              className="flex h-11 cursor-pointer items-center justify-center rounded-lg border border-zinc-300 text-sm font-medium has-checked:border-emerald-700 has-checked:bg-emerald-50 has-checked:text-emerald-900 has-focus-visible:ring-2 has-focus-visible:ring-emerald-700/30 dark:border-zinc-600 dark:has-checked:bg-emerald-950 dark:has-checked:text-emerald-200"
-            >
-              <input
-                type="radio"
-                name="type"
-                value={value}
-                checked={type === value}
-                onChange={() => setType(value)}
-                className="sr-only"
-              />
-              {TYPE_LABELS[value]}
-            </label>
-          ))}
-        </div>
-      </fieldset>
+      <TypeSwitch type={type} onChange={setType} />
 
-      <Field
+      <BrandField
         name="amount"
         label="Số tiền"
         inputMode="decimal"
         autoComplete="off"
+        placeholder="50k"
         required
         autoFocus={autoFocusAmount}
         defaultValue={values?.amount}
         hint="Ví dụ: 50000, 50k, 1tr5"
         error={errors.amount}
+        variant="large"
       />
 
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="categoryId" className="text-sm font-medium">
-          Danh mục
-        </label>
-        <select
-          // Re-mount when the type changes so the selection resets to the placeholder.
-          key={type}
-          id="categoryId"
-          name="categoryId"
-          required
-          defaultValue={values?.type === type ? values.categoryId : ""}
-          aria-invalid={errors.categoryId ? true : undefined}
-          aria-describedby={errors.categoryId ? "categoryId-error" : undefined}
-          className={controlClass}
-        >
-          <option value="" disabled>
-            Chọn danh mục
-          </option>
-          {options.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.icon ? `${category.icon} ` : ""}
-              {category.name}
-            </option>
-          ))}
-        </select>
-        {errors.categoryId ? (
-          <p id="categoryId-error" className="text-sm text-red-700 dark:text-red-400">
-            {errors.categoryId}
-          </p>
-        ) : null}
-      </div>
-
-      <Field
-        name="date"
-        type="date"
-        label="Ngày"
+      <BrandSelect
+        // Re-mount when the type changes so the selection resets to the placeholder.
+        key={type}
+        name="categoryId"
+        label="Danh mục"
         required
-        defaultValue={values?.date || today}
-        error={errors.date}
-      />
+        defaultValue={values?.type === type ? values.categoryId : ""}
+        error={errors.categoryId}
+      >
+        <option value="" disabled>
+          Chọn danh mục
+        </option>
+        {options.map((category) => (
+          <option key={category.id} value={category.id}>
+            {category.icon ? `${category.icon} ` : ""}
+            {category.name}
+          </option>
+        ))}
+      </BrandSelect>
 
-      <Field
-        name="note"
-        label="Ghi chú (không bắt buộc)"
-        autoComplete="off"
-        maxLength={NOTE_MAX_LENGTH}
-        defaultValue={values?.note}
-        error={errors.note}
-      />
+      <div className="grid gap-5 sm:grid-cols-[11rem_minmax(0,1fr)]">
+        <BrandField
+          name="date"
+          type="date"
+          label="Ngày"
+          required
+          defaultValue={values?.date || today}
+          error={errors.date}
+        />
+        <BrandField
+          name="note"
+          label="Ghi chú (không bắt buộc)"
+          autoComplete="off"
+          placeholder="Phở bò, đổ xăng…"
+          maxLength={NOTE_MAX_LENGTH}
+          defaultValue={values?.note}
+          error={errors.note}
+        />
+      </div>
       {errors.type ? <p className="text-sm text-red-700 dark:text-red-400">{errors.type}</p> : null}
     </>
   );

@@ -32,10 +32,11 @@ test("a new transaction shows up in the list of its month only", async ({ page }
   const list = page.getByRole("list", { name: "Giao dịch" });
   await expect(list.getByRole("listitem")).toHaveCount(1);
   await expect(list).toContainText("Ăn uống");
-  await expect(list).toContainText("15/10/2026 · Bún chả");
+  await expect(list).toContainText("Bún chả");
+  await expect(list).toContainText("15/10/2026");
   await expect(list).toContainText("−45.000");
 
-  await page.getByRole("link", { name: "Tháng sau →" }).click();
+  await page.getByRole("link", { name: "Tháng sau" }).click();
   await expect(page.getByRole("heading", { name: "Tháng 11/2026" })).toBeVisible();
   await expect(page.getByText("Không có giao dịch nào trong tháng 11/2026.")).toBeVisible();
 });

@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { brandControlCompact, brandSecondaryButton } from "@/components/ui/brand-form";
 import { addMonths, toDateKey } from "@/lib/dates";
 import { formatVnd } from "@/lib/money";
 import type { CategoryDto } from "@/server/categories/service";
@@ -16,11 +17,8 @@ export function transactionsHref({ month, type, categoryId, page }: ListFilters)
   return `/transactions?${params}`;
 }
 
-const linkClass =
-  "inline-flex h-10 items-center rounded-lg border border-zinc-300 px-3 text-sm font-medium hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 dark:border-zinc-600 dark:hover:bg-zinc-800";
-
-const selectClass =
-  "h-10 rounded-lg border border-zinc-300 bg-white px-2 text-sm text-zinc-900 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100";
+const monthButton =
+  "grid size-10 place-items-center rounded-full border border-[var(--dash-border)] bg-[var(--dash-surface)] text-lg transition-[border-color,transform] duration-200 ease-lm hover:border-lm-sky active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lm-deep";
 
 function monthLabel(month: string): string {
   const [year, value] = month.split("-");
@@ -30,6 +28,21 @@ function monthLabel(month: string): string {
 function dayLabel(date: Date, timeZone: string): string {
   const [year, month, day] = toDateKey(date, timeZone).split("-");
   return `${day}/${month}/${year}`;
+}
+
+function Chevron({ direction }: { direction: "left" | "right" }) {
+  return (
+    <svg viewBox="0 0 20 20" className="size-4" aria-hidden="true">
+      <path
+        d={direction === "left" ? "M12.5 4.5 7 10l5.5 5.5" : "M7.5 4.5 13 10l-5.5 5.5"}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
 }
 
 type Props = {
@@ -44,92 +57,136 @@ export function TransactionList({ result, filters, categories }: Props) {
   const sameFilters = { type: filters.type, categoryId: filters.categoryId };
 
   return (
-    <div className="flex flex-col gap-4">
-      <nav aria-label="Chọn tháng" className="flex items-center justify-between gap-2">
-        <Link
-          href={transactionsHref({ ...sameFilters, month: addMonths(month, -1) })}
-          className={linkClass}
-        >
-          ← Tháng trước
-        </Link>
-        <h2 className="text-lg font-semibold">{monthLabel(month)}</h2>
-        <Link
-          href={transactionsHref({ ...sameFilters, month: addMonths(month, 1) })}
-          className={linkClass}
-        >
-          Tháng sau →
-        </Link>
-      </nav>
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <nav aria-label="Chọn tháng" className="flex items-center gap-2">
+          <Link
+            href={transactionsHref({ ...sameFilters, month: addMonths(month, -1) })}
+            aria-label="Tháng trước"
+            className={monthButton}
+          >
+            ‹
+          </Link>
+          <h2 className="min-w-36 text-center text-lg font-medium">{monthLabel(month)}</h2>
+          <Link
+            href={transactionsHref({ ...sameFilters, month: addMonths(month, 1) })}
+            aria-label="Tháng sau"
+            className={monthButton}
+          >
+            ›
+          </Link>
+        </nav>
 
-      <form method="get" action="/transactions" className="flex flex-wrap items-end gap-2">
-        <input type="hidden" name="month" value={month} />
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Loại
-          <select name="type" defaultValue={filters.type ?? ""} className={selectClass}>
-            <option value="">Tất cả</option>
-            <option value="EXPENSE">Chi</option>
-            <option value="INCOME">Thu</option>
-          </select>
-        </label>
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Danh mục
-          <select name="categoryId" defaultValue={filters.categoryId ?? ""} className={selectClass}>
-            <option value="">Tất cả</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.icon ? `${category.icon} ` : ""}
-                {category.name} ({category.type === "EXPENSE" ? "chi" : "thu"}
-                {category.archived ? ", đã lưu trữ" : ""})
-              </option>
-            ))}
-          </select>
-        </label>
-        <button type="submit" className={linkClass}>
-          Lọc
-        </button>
-      </form>
+        <form
+          method="get"
+          action="/transactions"
+          className="flex flex-wrap items-end gap-2"
+          aria-label="Lọc giao dịch"
+        >
+          <input type="hidden" name="month" value={month} />
+          <label className="flex flex-col gap-1 text-sm font-medium">
+            Loại
+            <select
+              name="type"
+              defaultValue={filters.type ?? ""}
+              className={`${brandControlCompact} w-32`}
+            >
+              <option value="">Tất cả</option>
+              <option value="EXPENSE">Chi</option>
+              <option value="INCOME">Thu</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-medium">
+            Danh mục
+            <select
+              name="categoryId"
+              defaultValue={filters.categoryId ?? ""}
+              className={`${brandControlCompact} w-52`}
+            >
+              <option value="">Tất cả</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.icon ? `${category.icon} ` : ""}
+                  {category.name} ({category.type === "EXPENSE" ? "chi" : "thu"}
+                  {category.archived ? ", đã lưu trữ" : ""})
+                </option>
+              ))}
+            </select>
+          </label>
+          <button type="submit" className={brandSecondaryButton}>
+            Lọc
+          </button>
+        </form>
+      </div>
 
       {items.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-zinc-300 px-4 py-8 text-center text-zinc-600 dark:border-zinc-600 dark:text-zinc-400">
-          Không có giao dịch nào trong {monthLabel(month).toLowerCase()}.
-        </p>
+        <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-[var(--dash-border)] bg-[var(--dash-surface)] px-4 py-12 text-center">
+          <p className="text-[var(--dash-muted)]">
+            Không có giao dịch nào trong {monthLabel(month).toLowerCase()}.
+          </p>
+          <Link href="/transactions/new" className={brandSecondaryButton}>
+            Thêm giao dịch đầu tiên
+          </Link>
+        </div>
       ) : (
         <ul
           aria-label="Giao dịch"
-          className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800"
+          className="overflow-hidden rounded-2xl border border-[var(--dash-border)] bg-[var(--dash-surface)]"
         >
-          {items.map((item) => (
-            <li key={item.id}>
-              <Link
-                href={`/transactions/${item.id}/edit`}
-                className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-zinc-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-emerald-700 dark:hover:bg-zinc-900"
+          {items.map((item, index) => {
+            const income = item.type === "INCOME";
+            return (
+              <li
+                key={item.id}
+                className="animate-lm-rise border-t border-[var(--dash-border)] first:border-t-0"
+                style={{ animationDelay: `${Math.min(index, 10) * 30}ms` }}
               >
-                <div className="min-w-0">
-                  <p className="truncate font-medium">
-                    {item.category.icon ? `${item.category.icon} ` : ""}
-                    {item.category.name}
-                    {item.category.archived ? (
-                      <span className="ml-2 text-xs font-normal text-zinc-500">(đã lưu trữ)</span>
-                    ) : null}
-                  </p>
-                  <p className="truncate text-sm text-zinc-600 dark:text-zinc-400">
-                    {dayLabel(item.occurredAt, timeZone)}
-                    {item.note ? ` · ${item.note}` : ""}
-                  </p>
-                </div>
-                <p
-                  className={`shrink-0 font-semibold tabular-nums ${
-                    item.type === "EXPENSE"
-                      ? "text-red-700 dark:text-red-400"
-                      : "text-emerald-700 dark:text-emerald-400"
-                  }`}
+                <Link
+                  href={`/transactions/${item.id}/edit`}
+                  className="group flex items-center gap-4 px-4 py-3.5 transition-colors duration-200 hover:bg-[var(--dash-track)] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-lm-deep sm:px-5"
                 >
-                  {item.type === "EXPENSE" ? "−" : "+"}
-                  {formatVnd(item.amount)}
-                </p>
-              </Link>
-            </li>
-          ))}
+                  <span
+                    aria-hidden="true"
+                    className={`grid size-11 shrink-0 place-items-center rounded-full text-xl transition-transform duration-200 ease-lm group-hover:scale-105 ${
+                      income
+                        ? "bg-lm-mint dark:bg-emerald-900/60"
+                        : "bg-lm-aqua/60 dark:bg-[#123a55]"
+                    }`}
+                  >
+                    {item.category.icon ?? "•"}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-medium">
+                      {item.category.name}
+                      {item.category.archived ? (
+                        <span className="ml-2 text-sm font-normal text-[var(--dash-muted)]">
+                          (đã lưu trữ)
+                        </span>
+                      ) : null}
+                    </span>
+                    {item.note ? (
+                      <span className="block truncate text-sm text-[var(--dash-muted)]">
+                        {item.note}
+                      </span>
+                    ) : null}
+                  </span>
+                  <span className="shrink-0 text-right">
+                    <span
+                      className={`block font-bold tabular-nums ${
+                        income ? "text-emerald-700 dark:text-emerald-400" : ""
+                      }`}
+                    >
+                      {income ? "+" : "−"}
+                      {formatVnd(item.amount)}
+                    </span>
+                    <span className="block text-sm text-[var(--dash-muted)] tabular-nums">
+                      {dayLabel(item.occurredAt, timeZone)}
+                    </span>
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       )}
 
@@ -138,22 +195,24 @@ export function TransactionList({ result, filters, categories }: Props) {
           {page > 1 ? (
             <Link
               href={transactionsHref({ ...filters, month, page: page - 1 })}
-              className={linkClass}
+              className={brandSecondaryButton}
             >
-              ← Trang trước
+              <Chevron direction="left" />
+              Trang trước
             </Link>
           ) : (
             <span />
           )}
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="text-sm text-[var(--dash-muted)] tabular-nums">
             Trang {page}/{pageCount}
           </p>
           {page < pageCount ? (
             <Link
               href={transactionsHref({ ...filters, month, page: page + 1 })}
-              className={linkClass}
+              className={brandSecondaryButton}
             >
-              Trang sau →
+              Trang sau
+              <Chevron direction="right" />
             </Link>
           ) : (
             <span />

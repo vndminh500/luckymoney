@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
-import { FormAlert } from "@/components/ui/form";
+import { AppHeader } from "@/components/layout/app-header";
 import { TransactionList } from "@/components/transactions/transaction-list";
+import { BrandAlert, brandPrimaryButton } from "@/components/ui/brand-form";
 import { getCurrentUser } from "@/server/auth/session";
 import { listCategories } from "@/server/categories/service";
 import { ValidationError } from "@/server/errors";
@@ -13,29 +14,21 @@ export const metadata: Metadata = { title: "Giao dịch" };
 
 export default function TransactionsPage({ searchParams }: PageProps<"/transactions">) {
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-8">
-      <header className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-xl font-semibold">Giao dịch</h1>
-        <div className="flex items-center gap-4">
-          <Link
-            href="/"
-            className="text-sm font-medium text-emerald-800 underline dark:text-emerald-400"
-          >
-            Trang chủ
-          </Link>
-          <Link
-            href="/transactions/new"
-            className="inline-flex h-10 items-center rounded-lg bg-emerald-700 px-4 text-sm font-medium text-white hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
-          >
+    <div className="dash-shell flex flex-1 flex-col">
+      <AppHeader current="/transactions" />
+      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-8">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <h1 className="text-[1.75rem] leading-tight font-bold tracking-[-0.01em]">Giao dịch</h1>
+          <Link href="/transactions/new" className={brandPrimaryButton}>
             Thêm giao dịch
           </Link>
         </div>
-      </header>
-      {/* The list depends on the user and the URL, so it streams in. */}
-      <Suspense fallback={<p className="text-zinc-600 dark:text-zinc-400">Đang tải…</p>}>
-        <ListLoader searchParams={searchParams} />
-      </Suspense>
-    </main>
+        {/* The list depends on the user and the URL, so it streams in. */}
+        <Suspense fallback={<p className="text-[var(--dash-muted)]">Đang tải…</p>}>
+          <ListLoader searchParams={searchParams} />
+        </Suspense>
+      </main>
+    </div>
   );
 }
 
@@ -73,11 +66,11 @@ async function ListLoader({ searchParams }: Pick<PageProps<"/transactions">, "se
   const data = await loadList(user.id, query);
   if (!data) {
     return (
-      <div className="flex flex-col gap-3">
-        <FormAlert>Bộ lọc không hợp lệ.</FormAlert>
+      <div className="flex flex-col items-start gap-3">
+        <BrandAlert>Bộ lọc không hợp lệ.</BrandAlert>
         <Link
           href="/transactions"
-          className="text-sm font-medium text-emerald-800 underline dark:text-emerald-400"
+          className="font-medium text-lm-deep underline underline-offset-4 dark:text-lm-aqua"
         >
           Xem tháng này
         </Link>
