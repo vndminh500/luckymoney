@@ -15,7 +15,7 @@ async function registerAndSignIn(page: Page): Promise<void> {
 const row = (page: Page, list: string, name: string) =>
   page.getByRole("list", { name: list }).getByRole("listitem").filter({ hasText: name });
 
-test("add, rename, archive and restore a category", async ({ page }) => {
+test("add, edit and delete a category", async ({ page }) => {
   await registerAndSignIn(page);
   await page.getByRole("link", { name: "Danh mục" }).click();
   await expect(page).toHaveURL("/categories");
@@ -63,47 +63,44 @@ test("add, rename, archive and restore a category", async ({ page }) => {
   await expect(row(page, "Danh mục chi", "Cà phê sáng")).toHaveCount(1);
   await expect(row(page, "Danh mục chi", "Cà phê sáng")).toContainText("🧋");
 
-  // Archive: moves to the archived list
-  await row(page, "Danh mục chi", "Cà phê sáng").getByRole("button", { name: "Lưu trữ" }).click();
-  await expect(row(page, "Danh mục đã lưu trữ", "Cà phê sáng")).toHaveCount(1);
-  await expect(row(page, "Danh mục chi", "Cà phê sáng")).toHaveCount(0);
+  // Delete: a confirmation dialog first; Cancel keeps the category.
+  const morning = row(page, "Danh mục chi", "Cà phê sáng");
+  await expect(morning).toContainText("Chưa có giao dịch");
+  await morning.getByRole("button", { name: "Xóa" }).click();
+  const dialog = page.getByRole("dialog", { name: "Xóa danh mục?" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText("Cà phê sáng");
+  await dialog.getByRole("button", { name: "Hủy" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(morning).toHaveCount(1);
 
-  // Restore
-  await row(page, "Danh mục đã lưu trữ", "Cà phê sáng")
-    .getByRole("button", { name: "Khôi phục" })
-    .click();
-  await expect(row(page, "Danh mục chi", "Cà phê sáng")).toHaveCount(1);
+  await morning.getByRole("button", { name: "Xóa" }).click();
+  await dialog.getByRole("button", { name: "Xóa danh mục" }).click();
+  await expect(morning).toHaveCount(0);
 });
 
-test("an archived category is not offered for new transactions but stays on old ones", async ({
-  page,
-}) => {
+test("a category with transactions cannot be deleted; the dialog says why", async ({ page }) => {
   await registerAndSignIn(page);
-
-  // An old transaction in "Ăn uống"
   await page.goto("/transactions/new");
   await page.getByLabel("Số tiền").fill("45k");
   await page.getByLabel("Danh mục").selectOption({ label: "🍜 Ăn uống" });
-  await page.getByLabel("Ngày").fill("2026-07-10");
   await page.getByRole("button", { name: "Lưu giao dịch" }).click();
   await expect(page.getByRole("status")).toContainText("Đã lưu giao dịch.");
 
   await page.goto("/categories");
-  await row(page, "Danh mục chi", "Ăn uống").getByRole("button", { name: "Lưu trữ" }).click();
-  await expect(row(page, "Danh mục đã lưu trữ", "Ăn uống")).toHaveCount(1);
-
-  await page.goto("/transactions/new");
-  await expect(page.getByLabel("Danh mục").locator("option", { hasText: "Ăn uống" })).toHaveCount(
-    0,
-  );
-
-  await page.goto("/transactions?month=2026-07");
-  const list = page.getByRole("list", { name: "Giao dịch" });
-  await expect(list).toContainText("Ăn uống");
-  await expect(list).toContainText("(đã lưu trữ)");
+  const food = row(page, "Danh mục chi", "Ăn uống");
+  await expect(food).toContainText("1 giao dịch");
+  await food.getByRole("button", { name: "Xóa" }).click();
+  const dialog = page.getByRole("dialog", { name: "Chưa xóa được danh mục" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText("còn 1 giao dịch");
+  await expect(dialog.getByRole("button", { name: "Xóa danh mục" })).toHaveCount(0);
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await expect(food).toHaveCount(1);
 });
 
-test("category API: list, create, conflict, update, archive", async ({ page }) => {
+test("category API: list, create, conflict, update, delete", async ({ page }) => {
   await registerAndSignIn(page);
 
   const created = await page.request.post("/api/categories", {
@@ -118,14 +115,21 @@ test("category API: list, create, conflict, update, archive", async ({ page }) =
   expect(duplicate.status()).toBe(409);
 
   const renamed = await page.request.patch(`/api/categories/${id}`, { data: { name: "Mèo" } });
-  expect(await renamed.json()).toMatchObject({ id, name: "Mèo", icon: "🐶" });
+  expect(await renamed.json()).toMatchObject({ id, name: "Mèo", icon: "🐶", transactionCount: 0 });
 
-  expect((await page.request.post(`/api/categories/${id}/archive`)).status()).toBe(200);
-  const active = await (await page.request.get("/api/categories")).json();
-  const all = await (await page.request.get("/api/categories?includeArchived=true")).json();
-  expect(active.map((c: { id: string }) => c.id)).not.toContain(id);
-  expect(all.find((c: { id: string }) => c.id === id)).toMatchObject({ archived: true });
+  // A category with a transaction: 409 with the count in the message.
+  const spent = await page.request.post("/api/transactions", {
+    data: { type: "EXPENSE", amount: 1000, categoryId: id, occurredAt: "2026-11-05T05:00:00Z" },
+  });
+  const blocked = await page.request.delete(`/api/categories/${id}`);
+  expect(blocked.status()).toBe(409);
+  expect((await blocked.json()).message).toContain("1 giao dịch");
 
-  const restored = await page.request.post(`/api/categories/${id}/restore`);
-  expect(await restored.json()).toMatchObject({ archived: false });
+  // Once its transaction is deleted, the category can go.
+  expect((await page.request.delete(`/api/transactions/${(await spent.json()).id}`)).status()).toBe(
+    204,
+  );
+  expect((await page.request.delete(`/api/categories/${id}`)).status()).toBe(204);
+  const all = await (await page.request.get("/api/categories")).json();
+  expect(all.map((c: { id: string }) => c.id)).not.toContain(id);
 });

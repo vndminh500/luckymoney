@@ -30,8 +30,6 @@ import * as accountAvatarRoute from "@/app/api/account/avatar/route";
 import * as categoryActions from "@/app/(app)/categories/actions";
 import * as settingsActions from "@/app/(app)/settings/actions";
 import * as transactionActions from "@/app/(app)/transactions/actions";
-import * as categoryArchiveRoute from "@/app/api/categories/[id]/archive/route";
-import * as categoryRestoreRoute from "@/app/api/categories/[id]/restore/route";
 import * as categoryRoute from "@/app/api/categories/[id]/route";
 import * as categoriesRoute from "@/app/api/categories/route";
 import * as statsByCategoryRoute from "@/app/api/stats/by-category/route";
@@ -105,7 +103,6 @@ beforeEach(async () => {
       },
     })
   ).id;
-  await prisma.category.update({ where: { id: bob.salary }, data: { archivedAt: new Date() } });
   await prisma.userAvatar.create({
     data: {
       userId: bob.userId,
@@ -199,7 +196,7 @@ const endpoints: {
   {
     route: "categories",
     method: "GET",
-    attack: () => categoriesRoute.GET(request("GET", "/api/categories?includeArchived=true")),
+    attack: () => categoriesRoute.GET(),
     expectStatus: 200,
   },
   {
@@ -222,23 +219,11 @@ const endpoints: {
     expectStatus: 404,
   },
   {
-    route: "categories/[id]/archive",
-    method: "POST",
+    route: "categories/[id]",
+    method: "DELETE",
+    // Bob's empty "Lương" category: deletable by Bob, a 404 for Alice.
     attack: () =>
-      categoryArchiveRoute.POST(
-        request("POST", `/api/categories/${bob.food}/archive`),
-        context(bob.food),
-      ),
-    expectStatus: 404,
-  },
-  {
-    route: "categories/[id]/restore",
-    method: "POST",
-    attack: () =>
-      categoryRestoreRoute.POST(
-        request("POST", `/api/categories/${bob.salary}/restore`),
-        context(bob.salary),
-      ),
+      categoryRoute.DELETE(request("DELETE", `/api/categories/${bob.salary}`), context(bob.salary)),
     expectStatus: 404,
   },
   // Statistics for the month of Bob's 99,000 must not include it.
@@ -408,8 +393,7 @@ describe("server actions", () => {
     await expectNotFound(
       categoryActions.renameCategoryAction(bob.food, {}, form({ name: "Hacked", icon: "" })),
     );
-    await expectNotFound(categoryActions.archiveCategoryAction(bob.food));
-    await expectNotFound(categoryActions.restoreCategoryAction(bob.salary));
+    await expectNotFound(categoryActions.deleteCategoryAction(bob.salary));
 
     expect(await bobSnapshot()).toEqual(before);
   });
@@ -423,8 +407,7 @@ describe("server actions", () => {
       transactionActions.deleteTransactionAction(bobTx, form({})),
       categoryActions.createCategoryAction({}, form({ name: "X", type: "EXPENSE", icon: "" })),
       categoryActions.renameCategoryAction(bob.food, {}, form({ name: "X", icon: "" })),
-      categoryActions.archiveCategoryAction(bob.food),
-      categoryActions.restoreCategoryAction(bob.salary),
+      categoryActions.deleteCategoryAction(bob.salary),
       budgetActions.saveBudgetAction(
         {},
         form({ categoryId: bob.food, month: "2026-11", amount: "1k" }),

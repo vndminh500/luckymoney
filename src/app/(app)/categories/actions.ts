@@ -4,12 +4,7 @@ import { refresh } from "next/cache";
 import { notFound } from "next/navigation";
 
 import { requireUserId } from "@/server/auth/session";
-import {
-  archiveCategory,
-  createCategory,
-  restoreCategory,
-  updateCategory,
-} from "@/server/categories/service";
+import { createCategory, deleteCategory, updateCategory } from "@/server/categories/service";
 import { ConflictError, NotFoundError, ValidationError } from "@/server/errors";
 
 export type CategoryFormState = {
@@ -79,23 +74,26 @@ export async function renameCategoryAction(
   return saveWith(values, () => updateCategory(userId, id, values));
 }
 
-async function setArchived(id: string, archived: boolean): Promise<void> {
+export type DeleteCategoryState = {
+  /** Why the category could not be deleted (it still has transactions). */
+  error?: string;
+  deleted?: boolean;
+};
+
+/** Deletes an empty category; a category with transactions stays and says why. */
+export async function deleteCategoryAction(id: string): Promise<DeleteCategoryState> {
   const userId = await requireUserId();
   try {
-    await (archived ? archiveCategory(userId, id) : restoreCategory(userId, id));
+    await deleteCategory(userId, id);
   } catch (error) {
+    if (error instanceof ConflictError) {
+      return { error: error.message };
+    }
     if (error instanceof NotFoundError) {
       notFound();
     }
     throw error;
   }
   refresh();
-}
-
-export async function archiveCategoryAction(id: string): Promise<void> {
-  await setArchived(id, true);
-}
-
-export async function restoreCategoryAction(id: string): Promise<void> {
-  await setArchived(id, false);
+  return { deleted: true };
 }

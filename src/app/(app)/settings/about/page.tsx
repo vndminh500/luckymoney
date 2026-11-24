@@ -11,7 +11,7 @@ const FEATURES = [
   "Ghi thu chi nhanh, gõ số tiền kiểu 50k hay 1tr5",
   "Tổng quan tháng, thống kê theo tuần, tháng, năm",
   "Ngân sách theo danh mục, cảnh báo ở 80% và 100%",
-  "Danh mục riêng, có thể lưu trữ và khôi phục",
+  "Danh mục riêng: thêm, sửa, xóa, chọn biểu tượng",
 ];
 
 export default function AboutPage() {

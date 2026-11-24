@@ -32,7 +32,7 @@ export default function CategoriesPage() {
   );
 }
 
-type Group = { title: string; items: CategoryDto[]; empty: string; note?: string };
+type Group = { title: string; items: CategoryDto[]; empty: string };
 
 function GroupCard({ group }: { group: Group }) {
   return (
@@ -43,9 +43,6 @@ function GroupCard({ group }: { group: Group }) {
           {group.items.length} danh mục
         </span>
       </div>
-      {group.note ? (
-        <p className="px-4 pt-3 text-sm text-[var(--dash-muted)] sm:px-5">{group.note}</p>
-      ) : null}
       {group.items.length === 0 ? (
         <p className="px-4 py-6 text-center text-[var(--dash-muted)] sm:px-5">{group.empty}</p>
       ) : (
@@ -61,34 +58,24 @@ function GroupCard({ group }: { group: Group }) {
 
 async function CategoryLists() {
   const user = await getCurrentUser();
-  const categories = await listCategories(user.id, { includeArchived: "true" });
-  const active = categories.filter((category) => !category.archived);
-  const [expense, income, archived]: Group[] = [
+  const categories = await listCategories(user.id);
+  const [expense, income]: Group[] = [
     {
       title: "Chi",
-      items: active.filter((category) => category.type === "EXPENSE"),
+      items: categories.filter((category) => category.type === "EXPENSE"),
       empty: "Chưa có danh mục chi.",
     },
     {
       title: "Thu",
-      items: active.filter((category) => category.type === "INCOME"),
+      items: categories.filter((category) => category.type === "INCOME"),
       empty: "Chưa có danh mục thu.",
-    },
-    {
-      title: "Đã lưu trữ",
-      items: categories.filter((category) => category.archived),
-      empty: "Không có danh mục nào được lưu trữ.",
-      note: "Không chọn được cho giao dịch mới, nhưng vẫn hiện trên các giao dịch cũ.",
     },
   ];
 
   return (
     <div className="grid items-start gap-6 lg:grid-cols-2">
       <GroupCard group={expense} />
-      <div className="flex flex-col gap-6">
-        <GroupCard group={income} />
-        <GroupCard group={archived} />
-      </div>
+      <GroupCard group={income} />
     </div>
   );
 }

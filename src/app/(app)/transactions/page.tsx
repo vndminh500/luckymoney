@@ -44,11 +44,7 @@ function firstValues(params: Record<string, string | string[] | undefined>) {
 /** Loads the page data, or null when the URL holds an invalid filter. */
 async function loadList(userId: string, query: Record<string, string>) {
   try {
-    // The filter also offers archived categories: old transactions still use them.
-    return await Promise.all([
-      listTransactions(userId, query),
-      listCategories(userId, { includeArchived: "true" }),
-    ]);
+    return await Promise.all([listTransactions(userId, query), listCategories(userId)]);
   } catch (error) {
     if (error instanceof ValidationError) {
       return null;

@@ -70,7 +70,7 @@ describe("listTransactions", () => {
       amount: 1_000,
       occurredAt: new Date("2026-11-02T03:00:00Z"),
       note: "Sáng",
-      category: { id: alice.food, name: "Ăn uống", icon: "🍜", archived: false },
+      category: { id: alice.food, name: "Ăn uống", icon: "🍜" },
     });
     expect(result.items[0]).not.toHaveProperty("userId");
   });
@@ -165,14 +165,6 @@ describe("listTransactions", () => {
     expect(all).toHaveLength(5);
     expect(new Set(all).size).toBe(5);
     expect(amounts(page3)).toHaveLength(1);
-  });
-
-  it("shows archived categories on old transactions", async () => {
-    await seed(alice, [{ amount: 1, occurredAt: "2026-11-05T00:00:00Z" }]);
-    await prisma.category.update({ where: { id: alice.food }, data: { archivedAt: new Date() } });
-
-    const [item] = (await listTransactions(alice.userId, { month: "2026-11" })).items;
-    expect(item.category).toMatchObject({ id: alice.food, archived: true });
   });
 
   it.each([

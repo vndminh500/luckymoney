@@ -94,13 +94,13 @@ model Account {
 }
 
 model Category {
-  id         String          @id @default(cuid())
-  userId     String
-  name       String
-  type       TransactionType // danh mục thuộc thu hay chi
-  icon       String? // emoji hoặc tên icon
-  archivedAt DateTime? // lưu trữ thay vì xóa
-  createdAt  DateTime        @default(now())
+  id        String          @id @default(cuid())
+  userId    String
+  name      String
+  type      TransactionType // danh mục thuộc thu hay chi
+  icon      String? // emoji hoặc tên icon
+  deletedAt DateTime? // đã xóa nhưng còn giao dịch đã xóa mềm trỏ tới; ẩn khỏi mọi nơi
+  createdAt DateTime        @default(now())
 
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions Transaction[]

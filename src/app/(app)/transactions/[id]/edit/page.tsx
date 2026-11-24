@@ -55,19 +55,8 @@ async function EditLoader({ params }: Pick<PageProps<"/transactions/[id]/edit">,
     getTodayKeyForUser(user.id),
   ]);
 
-  // An archived category can no longer be picked, but the transaction keeps it.
   const { category } = transaction;
-  const categories = category.archived
-    ? [
-        ...selectable,
-        {
-          id: category.id,
-          name: `${category.name} (đã lưu trữ)`,
-          type: transaction.type,
-          icon: category.icon,
-        },
-      ]
-    : selectable;
+  const categories = selectable;
 
   const date = toDateKey(transaction.occurredAt, timeZone);
   const initialValues = {

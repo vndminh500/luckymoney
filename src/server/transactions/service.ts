@@ -35,7 +35,7 @@ const transactionSelect = {
 
 /**
  * Creates a transaction for `userId` (always the session user, never client input).
- * The category must be the user's own, not archived, and of the same type.
+ * The category must be the user's own (not deleted) and of the same type.
  */
 export async function createTransaction(userId: string, input: unknown): Promise<TransactionDto> {
   const parsed = createTransactionSchema.safeParse(input);
@@ -75,7 +75,7 @@ async function insertTransaction(
 }
 
 /**
- * Unknown, another user's, archived and wrong-type categories all fail the same
+ * Unknown, another user's, deleted and wrong-type categories all fail the same
  * way, so the error never reveals whether someone else's category exists.
  */
 async function assertSelectableCategory(
@@ -84,13 +84,11 @@ async function assertSelectableCategory(
   type: TransactionType,
 ): Promise<void> {
   const category = await prisma.category.findFirst({
-    where: { id: categoryId, userId, archivedAt: null, type },
+    where: { id: categoryId, userId, deletedAt: null, type },
     select: { id: true },
   });
   if (!category) {
-    throw new ValidationError([
-      { field: "categoryId", message: "Danh mục không hợp lệ hoặc đã được lưu trữ." },
-    ]);
+    throw new ValidationError([{ field: "categoryId", message: "Danh mục không hợp lệ." }]);
   }
 }
 
@@ -109,14 +107,14 @@ export async function getTodayKeyForUser(userId: string, now = new Date()): Prom
   return toDateKey(now, timeZone);
 }
 
-/** A transaction in the list, with the category it was saved under (archived or not). */
+/** A transaction in the list, with its category. */
 export type TransactionListItem = {
   id: string;
   type: TransactionType;
   amount: number;
   occurredAt: Date;
   note: string | null;
-  category: { id: string; name: string; icon: string | null; archived: boolean };
+  category: { id: string; name: string; icon: string | null };
 };
 
 export type TransactionPage = {
@@ -177,13 +175,13 @@ const listItemSelect = {
   amount: true,
   occurredAt: true,
   note: true,
-  category: { select: { id: true, name: true, icon: true, archivedAt: true } },
+  category: { select: { id: true, name: true, icon: true } },
 } as const;
 
 type ListItemRow = Prisma.TransactionGetPayload<{ select: typeof listItemSelect }>;
 
-function toListItem({ category: { archivedAt, ...category }, ...row }: ListItemRow) {
-  return { ...row, category: { ...category, archived: archivedAt !== null } };
+function toListItem(row: ListItemRow): TransactionListItem {
+  return row;
 }
 
 /** Only the user's own, not soft-deleted transaction; anything else is "not found". */
@@ -258,7 +256,7 @@ async function applyUpdate(
   const existing = await findOwnedActive(userId, id);
   const type = data.type ?? existing.type;
   const categoryId = data.categoryId ?? existing.categoryId;
-  // Keeping the current category is allowed even if it was archived since.
+  // The current category is valid by construction: a category with transactions cannot be deleted.
   if (type !== existing.type || categoryId !== existing.categoryId) {
     await assertSelectableCategory(userId, categoryId, type);
   }

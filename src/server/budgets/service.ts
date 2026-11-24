@@ -17,7 +17,6 @@ export type BudgetDto = { id: string; categoryId: string; month: string; amount:
 export type BudgetProgress = BudgetDto & {
   name: string;
   icon: string | null;
-  archived: boolean;
   spent: number;
   percentUsed: number;
   status: BudgetStatus;
@@ -46,13 +45,11 @@ export async function upsertBudgetFromForm(userId: string, input: unknown): Prom
 async function saveBudget(userId: string, data: UpsertBudgetInput): Promise<BudgetDto> {
   // Budgets limit spending, so only the user's own active expense categories qualify.
   const category = await prisma.category.findFirst({
-    where: { id: data.categoryId, userId, type: "EXPENSE", archivedAt: null },
+    where: { id: data.categoryId, userId, type: "EXPENSE", deletedAt: null },
     select: { id: true },
   });
   if (!category) {
-    throw new ValidationError([
-      { field: "categoryId", message: "Danh mục chi không hợp lệ hoặc đã được lưu trữ." },
-    ]);
+    throw new ValidationError([{ field: "categoryId", message: "Danh mục chi không hợp lệ." }]);
   }
   const { categoryId, month, amount } = data;
   return prisma.budget.upsert({
@@ -84,7 +81,7 @@ export async function listBudgets(
     where: { userId, month },
     select: {
       ...budgetSelect,
-      category: { select: { name: true, icon: true, archivedAt: true } },
+      category: { select: { name: true, icon: true } },
     },
   });
   const spending = await prisma.transaction.groupBy({
@@ -108,7 +105,6 @@ export async function listBudgets(
         ...budget,
         name: category.name,
         icon: category.icon,
-        archived: category.archivedAt !== null,
         spent,
         percentUsed: percent,
         status: budgetStatus(percent),

@@ -143,12 +143,6 @@ describe("getStatsByCategory", () => {
     ]);
   });
 
-  it("keeps archived categories, which old transactions still use", async () => {
-    await prisma.category.update({ where: { id: transport }, data: { archivedAt: new Date() } });
-    const result = await getStatsByCategory(alice.userId, { month: "2026-11" });
-    expect(result.items.map((item) => item.categoryId)).toContain(transport);
-  });
-
   it("is empty for a month without transactions", async () => {
     await expect(getStatsByCategory(alice.userId, { month: "2025-01" })).resolves.toMatchObject({
       items: [],

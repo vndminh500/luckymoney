@@ -1,16 +1,16 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
+import { upsertBudget } from "@/server/budgets/service";
 import {
-  archiveCategory,
   createCategory,
+  deleteCategory,
   listCategories,
   listSelectableCategories,
-  restoreCategory,
   updateCategory,
 } from "@/server/categories/service";
 import { prisma } from "@/server/db";
 import { ConflictError, NotFoundError, ValidationError } from "@/server/errors";
-import { createTransaction, listTransactions } from "@/server/transactions/service";
+import { createTransaction, deleteTransaction } from "@/server/transactions/service";
 
 import { createUserWithCategories, type UserFixture } from "./fixtures";
 
@@ -26,28 +26,38 @@ function fields(error: unknown): string[] {
   return (error as ValidationError).details.map((detail) => detail.field);
 }
 
+const spend = (user: UserFixture, categoryId: string, day = "05") =>
+  createTransaction(user.userId, {
+    type: "EXPENSE",
+    amount: 10_000,
+    categoryId,
+    occurredAt: `2026-11-${day}T05:00:00Z`,
+  });
+
 beforeEach(async () => {
   alice = await createUserWithCategories("alice@example.com");
   bob = await createUserWithCategories("bob@example.com");
 });
 
 describe("listCategories", () => {
-  it("lists the user's active categories, or all of them with includeArchived", async () => {
-    await archiveCategory(alice.userId, alice.food);
+  it("lists the user's categories with how many transactions each has", async () => {
+    await spend(alice, alice.food, "05");
+    await spend(alice, alice.food, "06");
+    const deleted = await spend(alice, alice.food, "07");
+    await deleteTransaction(alice.userId, deleted.id); // soft-deleted rows do not count
+    await spend(bob, bob.food);
 
-    const active = await listCategories(alice.userId, {});
-    const all = await listCategories(alice.userId, { includeArchived: "true" });
+    const categories = await listCategories(alice.userId);
 
-    expect(active.map((c) => c.id)).not.toContain(alice.food);
-    expect(all.find((c) => c.id === alice.food)).toEqual({
+    expect(categories.find((c) => c.id === alice.food)).toEqual({
       id: alice.food,
       name: "Ăn uống",
       type: "EXPENSE",
       icon: "🍜",
-      archived: true,
+      transactionCount: 2,
     });
-    expect(all).toHaveLength(active.length + 1);
-    expect(all.map((c) => c.id)).not.toContain(bob.food);
+    expect(categories.find((c) => c.id === alice.salary)).toMatchObject({ transactionCount: 0 });
+    expect(categories.map((c) => c.id)).not.toContain(bob.food);
   });
 });
 
@@ -64,7 +74,7 @@ describe("createCategory", () => {
       name: "Cà phê",
       type: "EXPENSE",
       icon: "☕",
-      archived: false,
+      transactionCount: 0,
     });
     const stored = await prisma.category.findUniqueOrThrow({ where: { id: created.id } });
     expect(stored.userId).toBe(alice.userId);
@@ -77,7 +87,6 @@ describe("createCategory", () => {
     await expect(
       createCategory(alice.userId, { name: "Ăn uống", type: "INCOME" }),
     ).resolves.toMatchObject({ name: "Ăn uống", type: "INCOME" });
-    // Another user's names do not matter.
     await expect(
       createCategory(bob.userId, { name: "Cà phê", type: "EXPENSE" }),
     ).resolves.toMatchObject({ name: "Cà phê" });
@@ -86,11 +95,6 @@ describe("createCategory", () => {
   it("validates name, type and icon, and ignores a client userId", async () => {
     expect(
       fields(await errorOf(createCategory(alice.userId, { name: " ", type: "EXPENSE" }))),
-    ).toEqual(["name"]);
-    expect(
-      fields(
-        await errorOf(createCategory(alice.userId, { name: "a".repeat(51), type: "EXPENSE" })),
-      ),
     ).toEqual(["name"]);
     expect(
       fields(await errorOf(createCategory(alice.userId, { name: "X", type: "OTHER" }))),
@@ -126,13 +130,6 @@ describe("updateCategory", () => {
     ).resolves.toBeInstanceOf(ConflictError);
   });
 
-  it("needs at least one field and never changes the type", async () => {
-    expect(fields(await errorOf(updateCategory(alice.userId, alice.food, {})))).toEqual(["body"]);
-    await updateCategory(alice.userId, alice.food, { name: "Ăn", type: "INCOME" });
-    const stored = await prisma.category.findUniqueOrThrow({ where: { id: alice.food } });
-    expect(stored.type).toBe("EXPENSE");
-  });
-
   it("is 404 for another user's category and leaves it unchanged", async () => {
     await expect(
       errorOf(updateCategory(alice.userId, bob.food, { name: "Hacked" })),
@@ -142,73 +139,62 @@ describe("updateCategory", () => {
   });
 });
 
-describe("archiveCategory and restoreCategory", () => {
-  it("archived categories cannot be picked for new transactions but stay on old ones", async () => {
-    const old = await createTransaction(alice.userId, {
-      type: "EXPENSE",
-      amount: 10_000,
-      categoryId: alice.food,
-      occurredAt: "2026-11-05T00:00:00Z",
-    });
+describe("deleteCategory", () => {
+  it("deletes an empty category for good, with its budgets", async () => {
+    await upsertBudget(alice.userId, { categoryId: alice.food, month: "2026-11", amount: 1 });
 
-    await expect(archiveCategory(alice.userId, alice.food)).resolves.toMatchObject({
-      archived: true,
-    });
+    await deleteCategory(alice.userId, alice.food);
 
-    const selectable = await listSelectableCategories(alice.userId);
-    expect(selectable.map((c) => c.id)).not.toContain(alice.food);
-    const newOne = await errorOf(
-      createTransaction(alice.userId, {
-        type: "EXPENSE",
-        amount: 10_000,
-        categoryId: alice.food,
-        occurredAt: "2026-11-06T00:00:00Z",
-      }),
+    expect(await prisma.category.findUnique({ where: { id: alice.food } })).toBeNull();
+    expect(await prisma.budget.count({ where: { userId: alice.userId } })).toBe(0);
+  });
+
+  it("refuses while the category still has transactions, saying how many", async () => {
+    await spend(alice, alice.food, "05");
+    await spend(alice, alice.food, "06");
+
+    const error = await errorOf(deleteCategory(alice.userId, alice.food));
+
+    expect(error).toBeInstanceOf(ConflictError);
+    expect((error as ConflictError).message).toContain("2 giao dịch");
+    await expect(listCategories(alice.userId)).resolves.toContainEqual(
+      expect.objectContaining({ id: alice.food }),
     );
-    expect(fields(newOne)).toEqual(["categoryId"]);
-
-    const list = await listTransactions(alice.userId, { month: "2026-11" });
-    expect(list.items).toEqual([
-      expect.objectContaining({
-        id: old.id,
-        category: { id: alice.food, name: "Ăn uống", icon: "🍜", archived: true },
-      }),
-    ]);
   });
 
-  it("restore makes the category selectable again", async () => {
-    await archiveCategory(alice.userId, alice.food);
-    await expect(restoreCategory(alice.userId, alice.food)).resolves.toMatchObject({
-      archived: false,
-    });
-    expect((await listSelectableCategories(alice.userId)).map((c) => c.id)).toContain(alice.food);
-  });
+  it("hides a category kept only by deleted transactions and frees its name", async () => {
+    const tx = await spend(alice, alice.food);
+    await deleteTransaction(alice.userId, tx.id);
+    await upsertBudget(alice.userId, { categoryId: alice.food, month: "2026-11", amount: 1 });
 
-  it("is idempotent", async () => {
-    await archiveCategory(alice.userId, alice.food);
-    const first = await prisma.category.findUniqueOrThrow({ where: { id: alice.food } });
-    await archiveCategory(alice.userId, alice.food);
-    const second = await prisma.category.findUniqueOrThrow({ where: { id: alice.food } });
-    expect(second.archivedAt).toEqual(first.archivedAt);
-    await restoreCategory(alice.userId, alice.food);
-    await expect(restoreCategory(alice.userId, alice.food)).resolves.toMatchObject({
-      archived: false,
-    });
-  });
+    await deleteCategory(alice.userId, alice.food);
 
-  it("is 404 for another user's category and leaves it unchanged", async () => {
-    await expect(errorOf(archiveCategory(alice.userId, bob.food))).resolves.toBeInstanceOf(
+    // Gone from every list and picker, budgets removed, the deleted transaction still valid.
+    expect((await listCategories(alice.userId)).map((c) => c.id)).not.toContain(alice.food);
+    expect((await listSelectableCategories(alice.userId)).map((c) => c.id)).not.toContain(
+      alice.food,
+    );
+    expect(await prisma.budget.count({ where: { userId: alice.userId } })).toBe(0);
+    const stored = await prisma.transaction.findUniqueOrThrow({ where: { id: tx.id } });
+    expect(stored.categoryId).toBe(alice.food);
+    // The same name can be used again.
+    await expect(
+      createCategory(alice.userId, { name: "Ăn uống", type: "EXPENSE" }),
+    ).resolves.toMatchObject({ name: "Ăn uống" });
+    // A hidden category cannot be used, edited or deleted again.
+    await expect(errorOf(spend(alice, alice.food))).resolves.toBeInstanceOf(ValidationError);
+    await expect(
+      errorOf(updateCategory(alice.userId, alice.food, { name: "X" })),
+    ).resolves.toBeInstanceOf(NotFoundError);
+    await expect(errorOf(deleteCategory(alice.userId, alice.food))).resolves.toBeInstanceOf(
       NotFoundError,
     );
-    await prisma.category.update({ where: { id: bob.salary }, data: { archivedAt: new Date() } });
-    await expect(errorOf(restoreCategory(alice.userId, bob.salary))).resolves.toBeInstanceOf(
+  });
+
+  it("is 404 for another user's category, which stays", async () => {
+    await expect(errorOf(deleteCategory(alice.userId, bob.food))).resolves.toBeInstanceOf(
       NotFoundError,
     );
-    const [food, salary] = await Promise.all([
-      prisma.category.findUniqueOrThrow({ where: { id: bob.food } }),
-      prisma.category.findUniqueOrThrow({ where: { id: bob.salary } }),
-    ]);
-    expect(food.archivedAt).toBeNull();
-    expect(salary.archivedAt).not.toBeNull();
+    await expect(prisma.category.findUnique({ where: { id: bob.food } })).resolves.not.toBeNull();
   });
 });

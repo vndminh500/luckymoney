@@ -30,8 +30,8 @@ Mọi người ghi chi tiêu bằng ghi chú hoặc bảng tính rồi bỏ sau 
 - Nghiệm thu: thêm, sửa, xóa hoạt động đúng; số tiền phải > 0; xóa mềm; danh sách có phân trang và lọc theo tháng, danh mục, loại; người dùng chỉ thấy giao dịch của mình.
 
 ### F3. Danh mục
-- Mỗi người dùng có sẵn danh mục mặc định; có thể thêm, đổi tên, lưu trữ danh mục.
-- Nghiệm thu: danh mục đã lưu trữ vẫn hiển thị trên giao dịch cũ nhưng không chọn được cho giao dịch mới.
+- Mỗi người dùng có sẵn danh mục mặc định; có thể thêm, sửa (tên, biểu tượng), xóa danh mục.
+- Nghiệm thu: chỉ xóa được danh mục không còn giao dịch; xóa phải qua hộp thoại xác nhận. (Đổi từ "lưu trữ" sang "xóa" theo yêu cầu ngày 2026-11-24.)
 
 ### F4. Dashboard theo tháng
 - Tổng thu, tổng chi, số dư, biểu đồ chi theo danh mục, xu hướng chi theo ngày.

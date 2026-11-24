@@ -2,12 +2,11 @@ import { requireUserId } from "@/server/auth/session";
 import { createCategory, listCategories } from "@/server/categories/service";
 import { errorResponse, readJson } from "@/server/http";
 
-/** GET /api/categories?includeArchived=false -> the user's categories. */
-export async function GET(request: Request): Promise<Response> {
+/** GET /api/categories -> the user's categories, each with its transactionCount. */
+export async function GET(): Promise<Response> {
   try {
     const userId = await requireUserId();
-    const query = Object.fromEntries(new URL(request.url).searchParams);
-    return Response.json(await listCategories(userId, query));
+    return Response.json(await listCategories(userId));
   } catch (error) {
     return errorResponse(error);
   }

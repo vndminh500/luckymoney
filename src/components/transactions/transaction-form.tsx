@@ -25,7 +25,7 @@ type FormAction = (
 ) => Promise<TransactionFormState>;
 
 type Props = {
-  /** Categories that can be picked (for an edit, plus the current one if archived). */
+  /** Categories that can be picked. */
   categories: SelectableCategory[];
   today: string;
   /** Defaults to creating a transaction; the edit page passes its bound update action. */

@@ -76,7 +76,7 @@ describe("upsertBudget", () => {
         "categoryId",
       ]);
     }
-    await prisma.category.update({ where: { id: alice.food }, data: { archivedAt: new Date() } });
+    await prisma.category.update({ where: { id: alice.food }, data: { deletedAt: new Date() } });
     await expect(
       fields(upsertBudget(alice.userId, { ...base, categoryId: alice.food })),
     ).resolves.toEqual(["categoryId"]);
@@ -137,7 +137,6 @@ describe("listBudgets", () => {
         categoryId: alice.food,
         name: "Ăn uống",
         icon: "🍜",
-        archived: false,
         month: "2026-11",
         amount: 100_000,
         spent: 80_000,
@@ -169,14 +168,6 @@ describe("listBudgets", () => {
     const { items } = await listBudgets(alice.userId, { month: "2026-11" });
     expect(items).toHaveLength(1);
     expect(items[0]).toMatchObject({ spent: 0, percentUsed: 0, status: "ok" });
-  });
-
-  it("keeps a budget whose category was archived later", async () => {
-    await upsertBudget(alice.userId, { categoryId: alice.food, month: "2026-11", amount: 100_000 });
-    await prisma.category.update({ where: { id: alice.food }, data: { archivedAt: new Date() } });
-
-    const { items } = await listBudgets(alice.userId, { month: "2026-11" });
-    expect(items[0]).toMatchObject({ categoryId: alice.food, archived: true });
   });
 });
 

@@ -98,7 +98,7 @@ export async function getStatsByCategory(
     where: { ...scope.where, type },
     _sum: { amount: true },
   });
-  // Archived categories are included: old transactions still belong to them.
+  // Every category with transactions is visible: one that still has them cannot be deleted.
   const categories = await prisma.category.findMany({
     where: { userId, id: { in: groups.map((group) => group.categoryId) } },
     select: { id: true, name: true, icon: true },

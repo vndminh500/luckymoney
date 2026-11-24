@@ -90,8 +90,8 @@ describe("createTransaction", () => {
     expect(await prisma.transaction.count()).toBe(0);
   });
 
-  it("rejects an archived category", async () => {
-    await prisma.category.update({ where: { id: alice.food }, data: { archivedAt: new Date() } });
+  it("rejects a deleted category", async () => {
+    await prisma.category.update({ where: { id: alice.food }, data: { deletedAt: new Date() } });
 
     await expect(
       validationFields(createTransaction(alice.userId, validInput(alice))),
@@ -159,8 +159,8 @@ describe("createTransactionFromForm", () => {
 });
 
 describe("listSelectableCategories", () => {
-  it("returns only the user's own categories that are not archived", async () => {
-    await prisma.category.update({ where: { id: alice.food }, data: { archivedAt: new Date() } });
+  it("returns only the user's own categories that are not deleted", async () => {
+    await prisma.category.update({ where: { id: alice.food }, data: { deletedAt: new Date() } });
 
     const categories = await listSelectableCategories(alice.userId);
     const ids = categories.map((category) => category.id);

@@ -104,8 +104,7 @@ export function TransactionList({ result, filters, categories, display }: Props)
               {categories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.icon ? `${category.icon} ` : ""}
-                  {category.name} ({category.type === "EXPENSE" ? "chi" : "thu"}
-                  {category.archived ? ", đã lưu trữ" : ""})
+                  {category.name} ({category.type === "EXPENSE" ? "chi" : "thu"})
                 </option>
               ))}
             </select>
@@ -153,14 +152,7 @@ export function TransactionList({ result, filters, categories, display }: Props)
                     {item.category.icon ?? "•"}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate font-medium">
-                      {item.category.name}
-                      {item.category.archived ? (
-                        <span className="ml-2 text-sm font-normal text-[var(--dash-muted)]">
-                          (đã lưu trữ)
-                        </span>
-                      ) : null}
-                    </span>
+                    <span className="block truncate font-medium">{item.category.name}</span>
                     {item.note ? (
                       <span className="block truncate text-sm text-[var(--dash-muted)]">
                         {item.note}

@@ -74,11 +74,6 @@ export function BudgetList({
               <p className="min-w-0 truncate text-lg font-bold">
                 {item.icon ? `${item.icon} ` : ""}
                 {item.name}
-                {item.archived ? (
-                  <span className="ml-2 text-sm font-normal text-[var(--dash-muted)]">
-                    (đã lưu trữ)
-                  </span>
-                ) : null}
               </p>
               <form action={deleteBudgetAction.bind(null, item.id)}>
                 <button

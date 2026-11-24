@@ -3,12 +3,11 @@
 import { useActionState, useState } from "react";
 
 import {
-  archiveCategoryAction,
   createCategoryAction,
   renameCategoryAction,
-  restoreCategoryAction,
   type CategoryFormState,
 } from "@/app/(app)/categories/actions";
+import { DeleteCategoryDialog } from "@/components/categories/delete-category-dialog";
 import { IconPicker } from "@/components/categories/icon-picker";
 import {
   BrandField,
@@ -104,6 +103,7 @@ export function AddCategoryForm() {
 
 export function CategoryRow({ category }: { category: CategoryDto }) {
   const [editing, setEditing] = useState(false);
+  const [confirming, setConfirming] = useState(false);
 
   return (
     <li className="flex flex-col border-t border-[var(--dash-border)] first:border-t-0">
@@ -111,20 +111,23 @@ export function CategoryRow({ category }: { category: CategoryDto }) {
         <span
           aria-hidden="true"
           className={`grid size-11 shrink-0 place-items-center rounded-full text-xl ${
-            category.archived
-              ? "bg-[var(--dash-track)] grayscale"
-              : category.type === "INCOME"
-                ? "bg-lm-mint dark:bg-[#0f828c]/45"
-                : "bg-lm-aqua/60 dark:bg-[#065084]/45"
+            category.type === "INCOME"
+              ? "bg-lm-mint dark:bg-[#0f828c]/45"
+              : "bg-lm-aqua/60 dark:bg-[#065084]/45"
           }`}
         >
           {category.icon ?? "•"}
         </span>
-        <p
-          className={`min-w-0 flex-1 truncate font-medium ${category.archived ? "text-[var(--dash-muted)]" : ""}`}
-        >
-          {category.icon ? <span className="sr-only">{category.icon} </span> : null}
-          {category.name}
+        <p className="min-w-0 flex-1">
+          <span className="block truncate font-medium">
+            {category.icon ? <span className="sr-only">{category.icon} </span> : null}
+            {category.name}
+          </span>
+          <span className="block text-sm text-[var(--dash-muted)] tabular-nums">
+            {category.transactionCount > 0
+              ? `${category.transactionCount} giao dịch`
+              : "Chưa có giao dịch"}
+          </span>
         </p>
         <div className="flex shrink-0 gap-2">
           <button
@@ -135,20 +138,22 @@ export function CategoryRow({ category }: { category: CategoryDto }) {
           >
             {editing ? "Đóng" : "Sửa"}
           </button>
-          <form
-            action={
-              category.archived
-                ? restoreCategoryAction.bind(null, category.id)
-                : archiveCategoryAction.bind(null, category.id)
-            }
+          <button
+            type="button"
+            aria-haspopup="dialog"
+            onClick={() => setConfirming(true)}
+            className={`${brandSecondaryButton} h-9 px-3 text-sm text-red-700 hover:border-red-400 dark:text-red-300`}
           >
-            <button type="submit" className={`${brandSecondaryButton} h-9 px-3 text-sm`}>
-              {category.archived ? "Khôi phục" : "Lưu trữ"}
-            </button>
-          </form>
+            Xóa
+          </button>
         </div>
       </div>
       {editing ? <EditForm category={category} onDone={() => setEditing(false)} /> : null}
+      <DeleteCategoryDialog
+        category={category}
+        open={confirming}
+        onClose={() => setConfirming(false)}
+      />
     </li>
   );
 }

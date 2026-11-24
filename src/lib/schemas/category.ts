@@ -41,13 +41,5 @@ export const updateCategorySchema = z
     path: ["body"],
   });
 
-/** Query of GET /api/categories. */
-export const listCategoriesQuerySchema = z.object({
-  includeArchived: z
-    .enum(["true", "false"], { error: "includeArchived phải là true hoặc false." })
-    .optional()
-    .transform((value) => value === "true"),
-});
-
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
 export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>;

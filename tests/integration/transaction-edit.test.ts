@@ -48,7 +48,7 @@ describe("getTransaction", () => {
       amount: 50_000,
       occurredAt: new Date("2026-11-10T05:30:00Z"),
       note: "Phở",
-      category: { id: alice.food, name: "Ăn uống", icon: "🍜", archived: false },
+      category: { id: alice.food, name: "Ăn uống", icon: "🍜" },
     });
   });
 
@@ -103,15 +103,6 @@ describe("updateTransaction", () => {
       const error = await errorOf(updateTransaction(alice.userId, aliceTx, { categoryId }));
       expect((error as ValidationError).details.map((d) => d.field)).toEqual(["categoryId"]);
     }
-  });
-
-  it("keeps an archived category when the category is not changed", async () => {
-    await prisma.category.update({ where: { id: alice.food }, data: { archivedAt: new Date() } });
-
-    await expect(updateTransaction(alice.userId, aliceTx, { amount: 1 })).resolves.toMatchObject({
-      amount: 1,
-      categoryId: alice.food,
-    });
   });
 
   it("does not let another user change the transaction", async () => {
