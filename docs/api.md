@@ -20,7 +20,7 @@ Ràng buộc: email hợp lệ, mật khẩu tối thiểu 8 ký tự. Giới h�
 ## Giao dịch
 | Method | Path | Mô tả |
 |---|---|---|
-| GET | `/api/transactions` | Query: `month=YYYY-MM`, `categoryId?`, `type?`, `page=1`, `pageSize=20`. Trả `{ items, page, pageSize, total }`, sắp xếp `occurredAt` giảm dần, bỏ qua bản ghi đã xóa mềm. |
+| GET | `/api/transactions` | Query: `month=YYYY-MM` (mặc định tháng hiện tại theo múi giờ user), `categoryId?`, `type?`, `page=1`, `pageSize=20` (tối đa 100). Trả `{ month, items, page, pageSize, total }`, sắp xếp `occurredAt` giảm dần, bỏ qua bản ghi đã xóa mềm. Mỗi item có `category: { id, name, icon, archived }`. |
 | POST | `/api/transactions` | Body: `{ type, amount, categoryId, occurredAt, note? }`. Trả `201`. `categoryId` phải thuộc user, chưa lưu trữ và khớp `type`. |
 | GET | `/api/transactions/:id` | Chi tiết một giao dịch. |
 | PATCH | `/api/transactions/:id` | Sửa một phần các trường trên. |

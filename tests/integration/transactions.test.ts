@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { registerUser } from "@/server/auth/users";
 import { prisma } from "@/server/db";
 import { ValidationError } from "@/server/errors";
 import { listSelectableCategories } from "@/server/categories/service";
@@ -10,21 +9,12 @@ import {
   getTodayKeyForUser,
 } from "@/server/transactions/service";
 
-type Ids = { userId: string; food: string; salary: string };
+import { createUserWithCategories, type UserFixture } from "./fixtures";
+
+type Ids = UserFixture;
 
 let alice: Ids;
 let bob: Ids;
-
-async function createUserWithCategories(email: string): Promise<Ids> {
-  const user = await registerUser({ email, password: "mat-khau-an-toan" });
-  const find = async (name: string, type: "EXPENSE" | "INCOME") =>
-    (await prisma.category.findFirstOrThrow({ where: { userId: user.id, name, type } })).id;
-  return {
-    userId: user.id,
-    food: await find("Ăn uống", "EXPENSE"),
-    salary: await find("Lương", "INCOME"),
-  };
-}
 
 function validInput(ids: Ids) {
   return {

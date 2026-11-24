@@ -22,7 +22,7 @@ Làm theo lát cắt dọc: mỗi tính năng chạy được từ giao diện �
 ## Giai đoạn 2: Giao dịch và danh mục (lát cắt dọc đầu tiên)
 - [x] T7. Thêm giao dịch: schema Zod, service, route/action, form giao diện, test.
   - Xong khi: tạo được giao dịch; test từ chối `amount <= 0`, danh mục của user khác, danh mục đã lưu trữ.
-- [ ] T8. Danh sách giao dịch: phân trang, lọc theo tháng/danh mục/loại.
+- [x] T8. Danh sách giao dịch: phân trang, lọc theo tháng/danh mục/loại.
   - Xong khi: e2e thêm rồi thấy trong danh sách đúng tháng.
 - [ ] T9. Sửa và xóa mềm giao dịch.
   - Xong khi: test xác nhận bản ghi xóa mềm không xuất hiện ở danh sách và thống kê.

@@ -71,3 +71,17 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Vitest: thêm `server.deps.inline: ["next-auth"]` cho project integration vì `next-auth` import `next/server` không có đuôi file. Request trong test cần header `x-forwarded-proto` như Next.js thật, nếu thiếu Auth.js coi là https.
 - Còn lại (đã có từ trước, không thuộc lỗi này): Vitest cảnh báo "ESM syntax in a file loaded as CommonJS (vitest.config.ts)" vì `package.json` không có `"type": "module"`. Test vẫn chạy đúng.
 - Lưu ý bảo mật còn mở: JWT không thu hồi được ở server, nên cookie bị lộ vẫn dùng được đến khi hết hạn. Xem xét ở T16.
+
+## Sửa lỗi: cảnh báo prerender `crypto.getRandomValues()` (2026-11-24)
+- Log server báo lỗi trên `/`, `/transactions/new`, `/transactions`: Auth.js tạo CSRF token ngẫu nhiên mỗi lần `auth()` đọc phiên, mà Next.js (Cache Components) cấm giá trị ngẫu nhiên khi prerender. Lỗi có cả ở `/` (trang từ T5) nên nhiều khả năng đã có từ trước, chỉ bị phát hiện khi đọc log e2e.
+- Sửa: `getSessionUserId` gọi `await connection()` trước `auth()` để đánh dấu là việc của request. Log e2e còn 0 lỗi.
+
+## T8. Danh sách giao dịch (2026-11-24)
+- `listTransactions(userId, query, now)` trong `src/server/transactions/service.ts`; query đọc từ URL bằng `listTransactionsQuerySchema` (chuỗi rỗng coi như không lọc, số được ép từ chuỗi). Thiếu `month` thì lấy tháng hiện tại theo múi giờ user.
+- Lọc: `userId`, `deletedAt = null`, `occurredAt` trong `[start, end)` của tháng theo múi giờ user, `categoryId?`, `type?`. Đếm `total` và lấy trang trong cùng một `$transaction`.
+- Sắp xếp `occurredAt desc, createdAt desc, id desc`: thêm `id` để các giao dịch cùng thời điểm (form lưu đầu ngày) không bị trùng hoặc sót giữa các trang.
+- Mỗi item kèm `category.archived` để giao dịch cũ vẫn hiện danh mục đã lưu trữ (phục vụ T10).
+- Lọc theo danh mục của user khác chỉ trả danh sách rỗng, không lỗi, vì truy vấn luôn lọc `userId`.
+- Trang `/transactions`: chuyển tháng trước/sau (giữ bộ lọc), form lọc GET không cần JS, phân trang, trạng thái rỗng, bộ lọc sai hiện thông báo. Ô lọc danh mục chỉ liệt kê danh mục chưa lưu trữ; lọc danh mục đã lưu trữ vẫn được qua URL. Xem lại ở T10.
+- Sau khi lưu ở `/transactions/new` có liên kết "Xem danh sách" tới đúng tháng của giao dịch.
+- Test: `tests/integration/transaction-list.test.ts` (ranh giới tháng UTC+7, mặc định tháng, phân quyền, xóa mềm, lọc, phân trang ổn định, danh mục lưu trữ, query sai), e2e thêm rồi thấy đúng tháng, không thấy ở tháng sau. Thêm `tests/integration/fixtures.ts` dùng chung.

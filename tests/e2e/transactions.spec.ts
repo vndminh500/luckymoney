@@ -24,7 +24,7 @@ test("add an expense from the form", async ({ page }) => {
   await page.getByLabel("Ghi chú (không bắt buộc)").fill("Phở");
   await page.getByRole("button", { name: "Lưu giao dịch" }).click();
 
-  await expect(page.getByRole("status")).toHaveText("Đã lưu giao dịch.");
+  await expect(page.getByRole("status")).toContainText("Đã lưu giao dịch.");
   // The form resets for the next entry.
   await expect(page.getByLabel("Số tiền")).toHaveValue("");
   await expect(page.getByLabel("Ghi chú (không bắt buộc)")).toHaveValue("");

@@ -35,12 +35,20 @@ async function Greeting() {
     <section>
       <h1 className="text-2xl font-semibold">Xin chào, {user.name ?? user.email}</h1>
       <p className="mt-2 text-zinc-600 dark:text-zinc-400">Bạn đã đăng nhập bằng {user.email}.</p>
-      <Link
-        href="/transactions/new"
-        className="mt-6 inline-flex h-11 items-center rounded-lg bg-emerald-700 px-4 font-medium text-white hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
-      >
-        Thêm giao dịch
-      </Link>
+      <div className="mt-6 flex flex-wrap gap-3">
+        <Link
+          href="/transactions/new"
+          className="inline-flex h-11 items-center rounded-lg bg-emerald-700 px-4 font-medium text-white hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+        >
+          Thêm giao dịch
+        </Link>
+        <Link
+          href="/transactions"
+          className="inline-flex h-11 items-center rounded-lg border border-zinc-300 px-4 font-medium hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 dark:border-zinc-600 dark:hover:bg-zinc-800"
+        >
+          Xem giao dịch
+        </Link>
+      </div>
     </section>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState } from "react";
 
 import {
@@ -32,7 +33,13 @@ export function TransactionForm({ categories, today }: Props) {
           role="status"
           className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200"
         >
-          Đã lưu giao dịch.
+          Đã lưu giao dịch.{" "}
+          <Link
+            href={`/transactions?month=${state.values?.date.slice(0, 7) ?? ""}`}
+            className="font-medium underline"
+          >
+            Xem danh sách
+          </Link>
         </p>
       ) : null}
       {/* Remount the fields after each save so they reset to the returned values. */}

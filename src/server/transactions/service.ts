@@ -1,8 +1,9 @@
 import type { TransactionType } from "@prisma/client";
 
-import { startOfZonedDay, toDateKey } from "@/lib/dates";
+import { getMonthRange, startOfZonedDay, toDateKey, toMonthKey } from "@/lib/dates";
 import {
   createTransactionSchema,
+  listTransactionsQuerySchema,
   transactionFormSchema,
   type CreateTransactionInput,
 } from "@/lib/schemas/transaction";
@@ -101,4 +102,79 @@ export async function getTodayKeyForUser(userId: string, now = new Date()): Prom
     select: { timeZone: true },
   });
   return toDateKey(now, timeZone);
+}
+
+/** A transaction in the list, with the category it was saved under (archived or not). */
+export type TransactionListItem = {
+  id: string;
+  type: TransactionType;
+  amount: number;
+  occurredAt: Date;
+  note: string | null;
+  category: { id: string; name: string; icon: string | null; archived: boolean };
+};
+
+export type TransactionPage = {
+  /** The month that was listed ("YYYY-MM"), resolved when the query had none. */
+  month: string;
+  /** The user's time zone, for showing each transaction's local date. */
+  timeZone: string;
+  items: TransactionListItem[];
+  page: number;
+  pageSize: number;
+  total: number;
+};
+
+/**
+ * One page of the user's transactions in a month of their time zone, newest
+ * first. Soft-deleted rows are skipped. `query` comes straight from the URL.
+ */
+export async function listTransactions(
+  userId: string,
+  query: unknown,
+  now = new Date(),
+): Promise<TransactionPage> {
+  const parsed = listTransactionsQuerySchema.safeParse(query);
+  if (!parsed.success) {
+    throw ValidationError.fromZod(parsed.error);
+  }
+  const { categoryId, type, page, pageSize } = parsed.data;
+  const { timeZone } = await prisma.user.findUniqueOrThrow({
+    where: { id: userId },
+    select: { timeZone: true },
+  });
+  const month = parsed.data.month ?? toMonthKey(now, timeZone);
+  const { start, end } = getMonthRange(month, timeZone);
+
+  const where = {
+    userId,
+    deletedAt: null,
+    occurredAt: { gte: start, lt: end },
+    ...(categoryId ? { categoryId } : {}),
+    ...(type ? { type } : {}),
+  };
+  const [rows, total] = await prisma.$transaction([
+    prisma.transaction.findMany({
+      where,
+      // id breaks ties so pages never overlap or skip rows with the same time.
+      orderBy: [{ occurredAt: "desc" }, { createdAt: "desc" }, { id: "desc" }],
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      select: {
+        id: true,
+        type: true,
+        amount: true,
+        occurredAt: true,
+        note: true,
+        category: { select: { id: true, name: true, icon: true, archivedAt: true } },
+      },
+    }),
+    prisma.transaction.count({ where }),
+  ]);
+
+  const items = rows.map(({ category: { archivedAt, ...category }, ...row }) => ({
+    ...row,
+    category: { ...category, archived: archivedAt !== null },
+  }));
+  return { month, timeZone, items, page, pageSize, total };
 }

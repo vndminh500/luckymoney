@@ -73,3 +73,35 @@ export const transactionFormSchema = z.object({
 
 export type CreateTransactionInput = z.infer<typeof createTransactionSchema>;
 export type TransactionFormInput = z.infer<typeof transactionFormSchema>;
+
+export const PAGE_SIZE_DEFAULT = 20;
+export const PAGE_SIZE_MAX = 100;
+
+/** Treats "" (an empty select or query value) as "not set". */
+const optional = <T extends z.ZodType>(schema: T) =>
+  z.preprocess((value) => (value === "" ? undefined : value), schema.optional());
+
+/**
+ * Query of GET /api/transactions and the list page (docs/api.md). Values come
+ * from the URL, so numbers arrive as strings. A missing month means the current
+ * month in the user's time zone.
+ */
+export const listTransactionsQuerySchema = z.object({
+  month: optional(
+    z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, { error: "Tháng không hợp lệ (YYYY-MM)." }),
+  ),
+  categoryId: optional(z.string()),
+  type: optional(type),
+  page: optional(z.coerce.number().int().min(1, { error: "Trang phải từ 1 trở lên." })).transform(
+    (value) => value ?? 1,
+  ),
+  pageSize: optional(
+    z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(PAGE_SIZE_MAX, { error: `Tối đa ${PAGE_SIZE_MAX} mục mỗi trang.` }),
+  ).transform((value) => value ?? PAGE_SIZE_DEFAULT),
+});
+
+export type ListTransactionsQuery = z.infer<typeof listTransactionsQuerySchema>;
