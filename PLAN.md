@@ -39,7 +39,7 @@ Làm theo lát cắt dọc: mỗi tính năng chạy được từ giao diện �
   - Xong khi: e2e kiểm tra số trên dashboard khớp dữ liệu seed.
 
 ## Giai đoạn 4: Ngân sách
-- [ ] T14. Ngân sách theo danh mục: đặt hạn mức, thanh tiến độ, cảnh báo 80% và 100%.
+- [x] T14. Ngân sách theo danh mục: đặt hạn mức, thanh tiến độ, cảnh báo 80% và 100%.
   - Xong khi: test `percentUsed` đúng; hiển thị cảnh báo đúng ngưỡng.
 
 ## Giai đoạn 5: Hoàn thiện và triển khai

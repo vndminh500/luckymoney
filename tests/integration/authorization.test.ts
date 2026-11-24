@@ -22,6 +22,9 @@ vi.mock("@/server/auth/session", async () => {
   };
 });
 
+import * as budgetRoute from "@/app/api/budgets/[id]/route";
+import * as budgetsRoute from "@/app/api/budgets/route";
+import * as budgetActions from "@/app/(app)/budgets/actions";
 import * as categoryActions from "@/app/(app)/categories/actions";
 import * as transactionActions from "@/app/(app)/transactions/actions";
 import * as categoryArchiveRoute from "@/app/api/categories/[id]/archive/route";
@@ -41,6 +44,8 @@ let alice: UserFixture;
 let bob: UserFixture;
 /** Bob's transaction: the target of every attack below. */
 let bobTx: string;
+/** Bob's budget for the same month. */
+let bobBudget: string;
 
 const signInAs = (user: UserFixture | null) => {
   session.userId = user?.userId ?? null;
@@ -66,11 +71,12 @@ function form(values: Record<string, string>): FormData {
 
 /** Bob's rows exactly as they are in the database, to prove nothing changed. */
 async function bobSnapshot() {
-  const [transactions, categories] = await Promise.all([
+  const [transactions, categories, budgets] = await Promise.all([
     prisma.transaction.findMany({ where: { userId: bob.userId }, orderBy: { id: "asc" } }),
     prisma.category.findMany({ where: { userId: bob.userId }, orderBy: { id: "asc" } }),
+    prisma.budget.findMany({ where: { userId: bob.userId }, orderBy: { id: "asc" } }),
   ]);
-  return { transactions, categories };
+  return { transactions, categories, budgets };
 }
 
 /** Next.js' notFound() throws an error whose digest marks a 404. */
@@ -95,6 +101,11 @@ beforeEach(async () => {
     })
   ).id;
   await prisma.category.update({ where: { id: bob.salary }, data: { archivedAt: new Date() } });
+  bobBudget = (
+    await prisma.budget.create({
+      data: { userId: bob.userId, categoryId: bob.food, month: "2026-11", amount: 123_456 },
+    })
+  ).id;
   signInAs(alice);
 });
 
@@ -222,6 +233,34 @@ const endpoints: {
     attack: () => statsDailyRoute.GET(request("GET", "/api/stats/daily?month=2026-11")),
     expectStatus: 200,
   },
+  {
+    route: "budgets",
+    method: "GET",
+    attack: () => budgetsRoute.GET(request("GET", "/api/budgets?month=2026-11")),
+    expectStatus: 200,
+  },
+  {
+    route: "budgets",
+    method: "PUT",
+    // A budget on Bob's category, claiming to be Bob.
+    attack: () =>
+      budgetsRoute.PUT(
+        request("PUT", "/api/budgets", {
+          categoryId: bob.food,
+          month: "2026-11",
+          amount: 1,
+          userId: bob.userId,
+        }),
+      ),
+    expectStatus: 400,
+  },
+  {
+    route: "budgets/[id]",
+    method: "DELETE",
+    attack: () =>
+      budgetRoute.DELETE(request("DELETE", `/api/budgets/${bobBudget}`), context(bobBudget)),
+    expectStatus: 404,
+  },
 ];
 
 describe("API endpoints", () => {
@@ -235,7 +274,16 @@ describe("API endpoints", () => {
       expect(response.status).toBe(expectStatus);
       const body = response.status === 204 ? "" : await response.text();
       // Nothing of Bob's leaks into the response...
-      for (const secret of [bobTx, bob.userId, bob.food, bob.salary, "Của Bob", "99000"]) {
+      for (const secret of [
+        bobTx,
+        bobBudget,
+        bob.userId,
+        bob.food,
+        bob.salary,
+        "Của Bob",
+        "99000",
+        "123456",
+      ]) {
         expect(body).not.toContain(secret);
       }
       // ...and nothing of Bob's changed.
@@ -297,6 +345,20 @@ describe("server actions", () => {
     expect(await bobSnapshot()).toEqual(before);
   });
 
+  it("budget actions reject Bob's category and are a 404 on Bob's budget", async () => {
+    const before = await bobSnapshot();
+
+    const state = await budgetActions.saveBudgetAction(
+      {},
+      form({ categoryId: bob.food, month: "2026-11", amount: "1k" }),
+    );
+    expect(state.fieldErrors).toHaveProperty("categoryId");
+    await expectNotFound(budgetActions.deleteBudgetAction(bobBudget));
+
+    expect(await prisma.budget.count({ where: { userId: alice.userId } })).toBe(0);
+    expect(await bobSnapshot()).toEqual(before);
+  });
+
   it("category actions are a 404 on Bob's categories", async () => {
     const before = await bobSnapshot();
 
@@ -320,6 +382,11 @@ describe("server actions", () => {
       categoryActions.renameCategoryAction(bob.food, {}, form({ name: "X", icon: "" })),
       categoryActions.archiveCategoryAction(bob.food),
       categoryActions.restoreCategoryAction(bob.salary),
+      budgetActions.saveBudgetAction(
+        {},
+        form({ categoryId: bob.food, month: "2026-11", amount: "1k" }),
+      ),
+      budgetActions.deleteBudgetAction(bobBudget),
     ];
 
     for (const attempt of attempts) {

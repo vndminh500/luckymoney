@@ -2,20 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
-import { logoutAction } from "@/app/(auth)/actions";
-import { Logo } from "@/components/brand/logo";
 import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
 import { DailyChart } from "@/components/dashboard/daily-chart";
 import { SummaryTiles } from "@/components/dashboard/summary-tiles";
+import { AppHeader } from "@/components/layout/app-header";
 import { addMonths } from "@/lib/dates";
 import { getCurrentUser } from "@/server/auth/session";
 import { ValidationError } from "@/server/errors";
 import { getDailyStats, getStatsByCategory, getSummary } from "@/server/stats/service";
 
 export const metadata: Metadata = { title: "Tổng quan" };
-
-const navLink =
-  "rounded-lg px-3 py-2 font-medium text-[var(--dash-muted)] transition-colors duration-200 hover:bg-[var(--dash-track)] hover:text-[var(--dash-text)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lm-deep";
 
 const monthButton =
   "grid size-10 place-items-center rounded-full border border-[var(--dash-border)] bg-[var(--dash-surface)] text-lg transition-[border-color,transform] duration-200 ease-lm hover:border-lm-sky active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lm-deep";
@@ -24,26 +20,7 @@ const monthButton =
 export default function DashboardPage({ searchParams }: PageProps<"/">) {
   return (
     <div className="dash-shell flex flex-1 flex-col">
-      <header className="border-b border-[var(--dash-border)] bg-[var(--dash-surface)]/80 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3">
-          <Link href="/" aria-label="Lucky Money, trang tổng quan" className="rounded-lg">
-            <Logo />
-          </Link>
-          <nav aria-label="Chính" className="flex items-center gap-1">
-            <Link href="/transactions" className={navLink}>
-              Giao dịch
-            </Link>
-            <Link href="/categories" className={navLink}>
-              Danh mục
-            </Link>
-            <form action={logoutAction}>
-              <button type="submit" className={navLink}>
-                Đăng xuất
-              </button>
-            </form>
-          </nav>
-        </div>
-      </header>
+      <AppHeader />
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8">
         {/* The user, the month and its numbers are request data: they stream in. */}
         <Suspense fallback={<p className="text-[var(--dash-muted)]">Đang tải…</p>}>

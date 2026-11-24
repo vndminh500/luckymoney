@@ -51,8 +51,8 @@ Thiếu `month` thì dùng tháng hiện tại theo múi giờ user. Không tín
 ## Ngân sách
 | Method | Path | Mô tả |
 |---|---|---|
-| GET | `/api/budgets?month=YYYY-MM` | Mỗi mục kèm `spent` và `percentUsed`. |
-| PUT | `/api/budgets` | Body: `{ categoryId, month, amount }`. Tạo hoặc cập nhật (upsert). |
+| GET | `/api/budgets?month=YYYY-MM` | Mỗi mục kèm `spent`, `percentUsed` (làm tròn xuống 1 chữ số) và `status` (`ok` < 80% ≤ `warning` < 100% ≤ `over`). |
+| PUT | `/api/budgets` | Body: `{ categoryId, month, amount }`. Tạo hoặc cập nhật (upsert). Chỉ danh mục chi của user, chưa lưu trữ. |
 | DELETE | `/api/budgets/:id` | Xóa ngân sách. |
 
 ## Ghi chú cài đặt
