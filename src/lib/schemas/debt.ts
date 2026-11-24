@@ -12,7 +12,7 @@ const dateKey = (message: string) =>
   z.string({ error: message }).refine(isValidDateKey, { error: message });
 
 /** A whole VND amount, also accepted as typed text ("2tr", "500k") from forms. */
-const amount = (label: string) =>
+export const vndAmount = (label: string) =>
   z
     .union([z.number(), z.string()], { error: `Vui lòng nhập ${label}.` })
     .transform((value, ctx) => {
@@ -51,12 +51,15 @@ export const debtSchema = z
       .trim()
       .min(1, { error: "Vui lòng nhập tên người." })
       .max(COUNTERPARTY_MAX_LENGTH, { error: `Tên tối đa ${COUNTERPARTY_MAX_LENGTH} ký tự.` }),
-    principal: amount("số tiền"),
+    principal: vndAmount("số tiền"),
     startDate: dateKey("Ngày vay không hợp lệ."),
     note,
     installments: z
       .array(
-        z.object({ dueDate: dateKey("Ngày trả không hợp lệ."), amount: amount("số tiền kỳ trả") }),
+        z.object({
+          dueDate: dateKey("Ngày trả không hợp lệ."),
+          amount: vndAmount("số tiền kỳ trả"),
+        }),
         {
           error: "Vui lòng thêm lịch trả.",
         },
@@ -76,7 +79,7 @@ export const debtSchema = z
   });
 
 export const paymentSchema = z.object({
-  amount: amount("số tiền trả"),
+  amount: vndAmount("số tiền trả"),
   paidOn: dateKey("Ngày trả không hợp lệ."),
   note,
 });
