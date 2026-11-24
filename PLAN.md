@@ -29,7 +29,7 @@ Làm theo lát cắt dọc: mỗi tính năng chạy được từ giao diện �
   - Trạng thái: sửa, xóa mềm và phần danh sách đã xong, có test. Còn phần thống kê: chưa có service thống kê, sẽ kiểm tra ở T12 rồi mới tick T9.
 - [x] T10. Quản lý danh mục: thêm, đổi tên, lưu trữ, khôi phục.
   - Xong khi: danh mục lưu trữ không chọn được cho giao dịch mới nhưng vẫn hiện ở giao dịch cũ.
-- [ ] T11. Test phân quyền tổng hợp: user A không đọc, sửa, xóa được dữ liệu của user B ở mọi endpoint.
+- [x] T11. Test phân quyền tổng hợp: user A không đọc, sửa, xóa được dữ liệu của user B ở mọi endpoint.
   - Xong khi: bộ test phân quyền pass cho giao dịch, danh mục.
 
 ## Giai đoạn 3: Dashboard

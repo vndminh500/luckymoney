@@ -107,3 +107,9 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Trang `/categories`: form thêm, nhóm Chi, Thu, Đã lưu trữ, đổi tên tại chỗ, nút lưu trữ/khôi phục. Server action gọi `refresh()` (Next 16) để tải lại dữ liệu trang.
 - Ô lọc ở `/transactions` giờ liệt kê cả danh mục đã lưu trữ (ghi chú mở từ T8).
 - Điều kiện xong được kiểm tra ở cả integration và e2e: danh mục lưu trữ không có trong ô chọn khi thêm giao dịch, bị từ chối nếu gửi thẳng qua API, và vẫn hiện "(đã lưu trữ)" trên giao dịch cũ.
+
+## T11. Test phân quyền tổng hợp (2026-11-24)
+- `tests/integration/authorization.test.ts`: gọi thật mọi route handler trong `src/app/api` (trừ Auth.js và đăng ký) và mọi server action, chỉ giả lập `@/server/auth/session` để đổi user. Mỗi endpoint có một "tấn công" vào dữ liệu của Bob khi đăng nhập là Alice.
+- Mỗi trường hợp kiểm tra: mã trạng thái (404 cho tài nguyên của người khác, 400 khi dùng danh mục của người khác), phản hồi không chứa id, ghi chú hay số tiền của Bob, và toàn bộ bản ghi của Bob không đổi (so sánh snapshot DB). Thêm trường hợp chưa đăng nhập trả 401 cho mọi endpoint và mọi action.
+- Test tự quét `src/app/api/**/route.ts`: thêm endpoint mới mà chưa có trường hợp phân quyền thì test đỏ.
+- Kiểm tra độ mạnh: bỏ điều kiện `userId` trong `getTransaction`/`findOwned` làm 8 test đỏ; bỏ `userId` trong truy vấn danh sách giao dịch và danh mục làm 2 test đỏ. Đã hoàn nguyên.
