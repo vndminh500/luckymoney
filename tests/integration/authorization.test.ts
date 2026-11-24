@@ -28,6 +28,7 @@ import * as accountActions from "@/app/(app)/account/actions";
 import * as budgetActions from "@/app/(app)/budgets/actions";
 import * as accountAvatarRoute from "@/app/api/account/avatar/route";
 import * as categoryActions from "@/app/(app)/categories/actions";
+import * as debtActions from "@/app/(app)/debts/actions";
 import * as settingsActions from "@/app/(app)/settings/actions";
 import * as transactionActions from "@/app/(app)/transactions/actions";
 import * as categoryRoute from "@/app/api/categories/[id]/route";
@@ -452,6 +453,15 @@ describe("API endpoints", () => {
 });
 
 describe("server actions", () => {
+  const debtForm = () =>
+    form({
+      direction: "I_OWE",
+      counterparty: "Hacked",
+      principal: "1k",
+      startDate: "2026-11-01",
+      note: "",
+      installments: JSON.stringify([{ dueDate: "2026-12-01", amount: 1000 }]),
+    });
   const txForm = (categoryId: string) =>
     form({ type: "EXPENSE", amount: "1k", categoryId, date: "2026-11-06", note: "" });
 
@@ -498,6 +508,20 @@ describe("server actions", () => {
     expect(await bobSnapshot()).toEqual(before);
   });
 
+  it("debt actions are a 404 on Bob's debt and payment", async () => {
+    const before = await bobSnapshot();
+
+    await expectNotFound(debtActions.saveDebtAction(bobDebt, {}, debtForm()));
+    await expectNotFound(
+      debtActions.addPaymentAction(bobDebt, {}, form({ amount: "1k", paidOn: "2026-11-02" })),
+    );
+    await expectNotFound(debtActions.deletePaymentAction(bobDebt, bobPayment));
+    await expectNotFound(debtActions.deleteDebtAction(bobDebt));
+
+    expect(await prisma.debt.count({ where: { userId: alice.userId } })).toBe(0);
+    expect(await bobSnapshot()).toEqual(before);
+  });
+
   it("every action requires a session", async () => {
     signInAs(null);
     const before = await bobSnapshot();
@@ -526,6 +550,11 @@ describe("server actions", () => {
       ),
       settingsActions.saveThemeAction("DARK"),
       settingsActions.saveNotificationsAction({}, form({})),
+      debtActions.saveDebtAction(null, {}, debtForm()),
+      debtActions.saveDebtAction(bobDebt, {}, debtForm()),
+      debtActions.addPaymentAction(bobDebt, {}, form({ amount: "1k", paidOn: "2026-11-02" })),
+      debtActions.deletePaymentAction(bobDebt, bobPayment),
+      debtActions.deleteDebtAction(bobDebt),
     ];
 
     for (const attempt of attempts) {

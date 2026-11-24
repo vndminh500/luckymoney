@@ -59,6 +59,16 @@ const NAV: NavItem[] = [
     ),
   },
   {
+    href: "/debts",
+    label: "Sổ nợ",
+    icon: (
+      <svg {...iconProps}>
+        <path d="M6 3.5h11a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5H6z" />
+        <path d="M6 3.5v17M9.5 8.5h5.5M9.5 12h5.5M9.5 15.5h3" />
+      </svg>
+    ),
+  },
+  {
     href: "/categories",
     label: "Danh mục",
     icon: (
