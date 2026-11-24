@@ -178,3 +178,14 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Trang `/stats` (mục "Thống kê" trong sidebar): tab Tuần/Tháng/Năm có thanh trượt, nút kỳ trước/sau, ba ô Thu/Chi/Số dư, biểu đồ cột Recharts với nút chuyển **Chi / Thu** (một chuỗi mỗi lần, một trục — thu và chi khác thang đo), tooltip và bảng số liệu. Trạng thái kỳ nằm trên URL (`?period=&date=`), đổi tab giữ nguyên ngày neo.
 - `SummaryTiles` nhận `{ income, expense, balance }` để dùng lại.
 - E2E `tests/e2e/stats.spec.ts`. Không đếm `.recharts-bar-rectangle` vì Recharts không vẽ cột giá trị 0; kiểm tra bảng số liệu thay thế.
+
+## Menu avatar và trang Tài khoản (2026-11-24, ngoài PLAN, theo yêu cầu)
+- Quyết định đã hỏi người dùng: avatar tải lên và lưu trong DB (cắt vuông, 256×256 trong trình duyệt); username chỉ để hiển thị, vẫn đăng nhập bằng email; email chỉ xem (chưa có xác minh email, và email gắn với liên kết Google).
+- Migration `20261124120000_profile_and_preferences` tạo bằng `prisma migrate diff --from-config-datasource --to-schema` (vì `migrate dev` từ chối shell không tương tác), áp dụng bằng `migrate deploy`; diff sau đó rỗng. Bảng `UserAvatar` tách riêng để truy vấn `User` không tải ảnh.
+- `src/server/account/service.ts`: `getAccount`, `updateProfile` (username chuẩn hóa chữ thường, trùng → 409 trên trường username; ngày sinh không ở tương lai theo múi giờ user và không trước 1900), `changePassword` (bắt buộc mật khẩu hiện tại nếu đã có; tài khoản chỉ Google được tạo mật khẩu), `setAvatar` (kiểm tra PNG/JPEG/WebP bằng chữ ký byte đầu, không tin `type` khai báo; tối đa 200 KB), `removeAvatar`, `getAvatar`.
+- `GET /api/account/avatar` chỉ trả ảnh của user trong phiên (không có tham số user), `Cache-Control: private, immutable` với `?v=` đổi theo mỗi lần tải; `x-content-type-options: nosniff`.
+- Thanh trên cùng: nút avatar vuông (ảnh hoặc chữ cái đầu trên nền gradient). Rê chuột mở menu, rời ra đóng sau 180 ms; bấm thì ghim mở; Esc/bấm ra ngoài/chọn mục thì đóng, Esc trả focus về nút. Menu có tên, @username hoặc email, Tài khoản, Cài đặt, Đăng xuất. Menu đóng dùng `invisible` + `inert`.
+- Trang `/account` (ảnh đại diện + thông tin cá nhân) và `/account/security` (đổi/tạo mật khẩu), tab con dùng chung `SectionTabs` (đọc `usePathname` trong `<Suspense>`).
+- Còn mở: đổi mật khẩu không thu hồi các phiên JWT khác (ghi chú cho người dùng trên trang); chưa giới hạn số lần thử mật khẩu hiện tại (T16).
+- Kiểm tra độ mạnh: bỏ bước kiểm tra mật khẩu hiện tại làm test đổi mật khẩu đỏ; cho route avatar trả ảnh bất kỳ làm test phân quyền (avatar của Bob chứa "BOBAVATAR") đỏ.
+- E2E đăng xuất giờ mở menu avatar trước (`signOut` helper).

@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense, useEffect, useState, type ReactNode } from "react";
 
-import { logoutAction } from "@/app/(auth)/actions";
 import { Logo } from "@/components/brand/logo";
 
 type NavItem = { href: string; label: string; icon: ReactNode; exact?: boolean };
@@ -131,9 +130,16 @@ function NavList({ pathname, onNavigate }: { pathname: string | null; onNavigate
 
 /**
  * Frame of every signed-in page: a left sidebar with the sections and a top bar
- * that only holds sign-out. Below `lg` the sidebar becomes a drawer.
+ * that only holds the avatar menu (account, settings, sign-out). Below `lg` the sidebar becomes a drawer.
  */
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({
+  children,
+  accountMenu,
+}: {
+  children: ReactNode;
+  /** The avatar menu, streamed in by the layout because it needs the signed-in user. */
+  accountMenu: ReactNode;
+}) {
   const [open, setOpen] = useState(false);
 
   // Escape closes the drawer.
@@ -191,17 +197,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Link href="/" aria-label="Lucky Money, trang tổng quan" className="mr-auto lg:hidden">
             <Logo />
           </Link>
-          <form action={logoutAction}>
-            <button
-              type="submit"
-              className="inline-flex h-10 items-center gap-2 rounded-xl border border-[var(--dash-border)] bg-[var(--dash-surface)] px-3 font-medium whitespace-nowrap transition-[border-color,transform] duration-200 ease-lm hover:border-lm-sky focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lm-deep active:scale-[0.98] sm:px-4"
-            >
-              <svg {...iconProps}>
-                <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 16l-4-4 4-4M6 12h10" />
-              </svg>
-              <span className="sr-only sm:not-sr-only">Đăng xuất</span>
-            </button>
-          </form>
+          {accountMenu}
         </header>
         {children}
       </div>

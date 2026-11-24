@@ -34,10 +34,10 @@ test("the sidebar lists the sections and marks the current one", async ({ page }
   );
   await expect(nav.getByRole("link", { name: "Tổng quan" })).not.toHaveAttribute("aria-current");
 
-  // The top bar only holds sign-out.
+  // The top bar only holds the avatar menu.
   const topBar = page.getByRole("banner");
-  await expect(topBar.getByRole("link")).toHaveCount(0);
-  await expect(topBar.getByRole("button", { name: "Đăng xuất" })).toBeVisible();
+  await expect(topBar.getByRole("button", { name: "Tài khoản của bạn" })).toBeVisible();
+  await expect(topBar.getByRole("link", { name: "Tài khoản" })).toBeHidden();
 });
 
 test.describe("on a phone", () => {

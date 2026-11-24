@@ -15,6 +15,12 @@ async function register(page: Page, email: string, name = "Người Thử"): Pro
   await page.getByRole("button", { name: "Đăng ký" }).click();
 }
 
+/** Sign-out lives in the avatar menu of the top bar. */
+async function signOut(page: Page): Promise<void> {
+  await page.getByRole("button", { name: "Tài khoản của bạn" }).click();
+  await page.getByRole("button", { name: "Đăng xuất" }).click();
+}
+
 async function login(page: Page, email: string, password = PASSWORD): Promise<void> {
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Mật khẩu", { exact: true }).fill(password);
@@ -62,7 +68,7 @@ test("register, sign out, and sign in again", async ({ page, context }) => {
   await page.goto("/login");
   await expect(page).toHaveURL("/");
 
-  await page.getByRole("button", { name: "Đăng xuất" }).click();
+  await signOut(page);
   await expect(page).toHaveURL("/login");
   await page.goto("/");
   await expect(page).toHaveURL("/login");
@@ -75,7 +81,7 @@ test("register, sign out, and sign in again", async ({ page, context }) => {
 test("wrong password shows an error and keeps the email", async ({ page }) => {
   const email = uniqueEmail();
   await register(page, email);
-  await page.getByRole("button", { name: "Đăng xuất" }).click();
+  await signOut(page);
   await expect(page).toHaveURL("/login");
 
   await login(page, email, "wrong-password");
@@ -90,7 +96,7 @@ test("wrong password shows an error and keeps the email", async ({ page }) => {
 test("registering an existing email shows a field error", async ({ page }) => {
   const email = uniqueEmail();
   await register(page, email);
-  await page.getByRole("button", { name: "Đăng xuất" }).click();
+  await signOut(page);
   await expect(page).toHaveURL("/login");
 
   await register(page, email.toUpperCase());
@@ -101,7 +107,7 @@ test("registering an existing email shows a field error", async ({ page }) => {
 test("login returns to the callbackUrl", async ({ page }) => {
   const email = uniqueEmail();
   await register(page, email);
-  await page.getByRole("button", { name: "Đăng xuất" }).click();
+  await signOut(page);
   await expect(page).toHaveURL("/login");
 
   await page.goto("/login?callbackUrl=%2F%3Ffrom%3De2e");

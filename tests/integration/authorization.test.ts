@@ -24,7 +24,9 @@ vi.mock("@/server/auth/session", async () => {
 
 import * as budgetRoute from "@/app/api/budgets/[id]/route";
 import * as budgetsRoute from "@/app/api/budgets/route";
+import * as accountActions from "@/app/(app)/account/actions";
 import * as budgetActions from "@/app/(app)/budgets/actions";
+import * as accountAvatarRoute from "@/app/api/account/avatar/route";
 import * as categoryActions from "@/app/(app)/categories/actions";
 import * as transactionActions from "@/app/(app)/transactions/actions";
 import * as categoryArchiveRoute from "@/app/api/categories/[id]/archive/route";
@@ -72,12 +74,13 @@ function form(values: Record<string, string>): FormData {
 
 /** Bob's rows exactly as they are in the database, to prove nothing changed. */
 async function bobSnapshot() {
-  const [transactions, categories, budgets] = await Promise.all([
+  const [transactions, categories, budgets, avatar] = await Promise.all([
     prisma.transaction.findMany({ where: { userId: bob.userId }, orderBy: { id: "asc" } }),
     prisma.category.findMany({ where: { userId: bob.userId }, orderBy: { id: "asc" } }),
     prisma.budget.findMany({ where: { userId: bob.userId }, orderBy: { id: "asc" } }),
+    prisma.userAvatar.findUnique({ where: { userId: bob.userId } }),
   ]);
-  return { transactions, categories, budgets };
+  return { transactions, categories, budgets, avatar };
 }
 
 /** Next.js' notFound() throws an error whose digest marks a 404. */
@@ -102,6 +105,28 @@ beforeEach(async () => {
     })
   ).id;
   await prisma.category.update({ where: { id: bob.salary }, data: { archivedAt: new Date() } });
+  await prisma.userAvatar.create({
+    data: {
+      userId: bob.userId,
+      // A WebP header followed by "BOBAVATAR", so a leak is easy to spot.
+      data: new Uint8Array([
+        0x52,
+        0x49,
+        0x46,
+        0x46,
+        0,
+        0,
+        0,
+        0,
+        0x57,
+        0x45,
+        0x42,
+        0x50,
+        ...new TextEncoder().encode("BOBAVATAR"),
+      ]),
+      mimeType: "image/webp",
+    },
+  });
   bobBudget = (
     await prisma.budget.create({
       data: { userId: bob.userId, categoryId: bob.food, month: "2026-11", amount: 123_456 },
@@ -270,6 +295,13 @@ const endpoints: {
       budgetRoute.DELETE(request("DELETE", `/api/budgets/${bobBudget}`), context(bobBudget)),
     expectStatus: 404,
   },
+  {
+    route: "account/avatar",
+    method: "GET",
+    // Only the session user's own avatar exists at this URL; Alice has none.
+    attack: () => accountAvatarRoute.GET(),
+    expectStatus: 404,
+  },
 ];
 
 describe("API endpoints", () => {
@@ -292,6 +324,7 @@ describe("API endpoints", () => {
         "Của Bob",
         "99000",
         "123456",
+        "BOBAVATAR",
       ]) {
         expect(body).not.toContain(secret);
       }
@@ -396,6 +429,13 @@ describe("server actions", () => {
         form({ categoryId: bob.food, month: "2026-11", amount: "1k" }),
       ),
       budgetActions.deleteBudgetAction(bobBudget),
+      accountActions.updateProfileAction({}, form({ name: "X", username: "", birthDate: "" })),
+      accountActions.changePasswordAction(
+        {},
+        form({ newPassword: "12345678", confirmPassword: "12345678" }),
+      ),
+      accountActions.uploadAvatarAction({}, form({})),
+      accountActions.removeAvatarAction(),
     ];
 
     for (const attempt of attempts) {
