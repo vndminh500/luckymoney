@@ -98,3 +98,12 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Xóa không hỏi xác nhận (không dùng hộp thoại trình duyệt); chấp nhận vì là xóa mềm. Có thể thêm bước xác nhận hoặc hoàn tác ở T15.
 - Gom việc đọc múi giờ user thành `getUserTimeZone` trong service giao dịch.
 - Phần "không xuất hiện ở thống kê" chưa kiểm tra được vì chưa có service thống kê; đã ghi vào điều kiện xong của T12.
+
+## T10. Quản lý danh mục (2026-11-24)
+- Service `src/server/categories/service.ts`: `listCategories` (`includeArchived`), `createCategory`, `updateCategory` (chỉ `name`, `icon`; không đổi `type` vì giao dịch cũ phải khớp loại), `archiveCategory`, `restoreCategory`. Schema ở `src/lib/schemas/category.ts`.
+- Tên chuẩn hóa NFC và cắt khoảng trắng; tối đa 50 ký tự. Biểu tượng tối đa 16 đơn vị UTF-16 (đủ cho emoji có bổ ngữ).
+- Trùng `(name, type)` trả `409`, kể cả khi danh mục trùng đang lưu trữ (ràng buộc unique của DB bao gồm cả bản lưu trữ), nên khôi phục không bao giờ gây trùng. So sánh tên phân biệt hoa thường theo ràng buộc DB; chưa chặn "ăn uống" và "Ăn uống" cùng tồn tại.
+- Lưu trữ và khôi phục là idempotent: lưu trữ lần hai giữ nguyên `archivedAt` cũ. Danh mục của user khác hoặc không tồn tại trả `404`.
+- Trang `/categories`: form thêm, nhóm Chi, Thu, Đã lưu trữ, đổi tên tại chỗ, nút lưu trữ/khôi phục. Server action gọi `refresh()` (Next 16) để tải lại dữ liệu trang.
+- Ô lọc ở `/transactions` giờ liệt kê cả danh mục đã lưu trữ (ghi chú mở từ T8).
+- Điều kiện xong được kiểm tra ở cả integration và e2e: danh mục lưu trữ không có trong ô chọn khi thêm giao dịch, bị từ chối nếu gửi thẳng qua API, và vẫn hiện "(đã lưu trữ)" trên giao dịch cũ.

@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { addMonths, toDateKey } from "@/lib/dates";
 import { formatVnd } from "@/lib/money";
-import type { SelectableCategory } from "@/server/categories/service";
+import type { CategoryDto } from "@/server/categories/service";
 import type { TransactionPage } from "@/server/transactions/service";
 
 /** Filters kept in the URL of /transactions. */
@@ -35,7 +35,7 @@ function dayLabel(date: Date, timeZone: string): string {
 type Props = {
   result: TransactionPage;
   filters: ListFilters;
-  categories: SelectableCategory[];
+  categories: CategoryDto[];
 };
 
 export function TransactionList({ result, filters, categories }: Props) {
@@ -78,7 +78,8 @@ export function TransactionList({ result, filters, categories }: Props) {
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.icon ? `${category.icon} ` : ""}
-                {category.name} ({category.type === "EXPENSE" ? "chi" : "thu"})
+                {category.name} ({category.type === "EXPENSE" ? "chi" : "thu"}
+                {category.archived ? ", đã lưu trữ" : ""})
               </option>
             ))}
           </select>
