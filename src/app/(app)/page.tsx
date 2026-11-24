@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
-import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
+import { CategoryDonut } from "@/components/dashboard/category-donut";
 import { DailyChart } from "@/components/dashboard/daily-chart";
 import { SummaryTiles } from "@/components/dashboard/summary-tiles";
 import { addMonths } from "@/lib/dates";
@@ -115,7 +115,7 @@ async function Dashboard({ searchParams }: Pick<PageProps<"/">, "searchParams">)
         <SummaryTiles summary={summary} />
       </section>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)]">
         <section className="rounded-2xl border border-[var(--dash-border)] bg-[var(--dash-surface)] p-5">
           <div className="mb-5 flex items-baseline justify-between gap-3">
             <h2 className="text-lg font-bold">Chi theo danh mục</h2>
@@ -126,7 +126,7 @@ async function Dashboard({ searchParams }: Pick<PageProps<"/">, "searchParams">)
               Xem giao dịch
             </Link>
           </div>
-          <CategoryBreakdown items={byCategory.items} />
+          <CategoryDonut items={byCategory.items} />
         </section>
         <section className="rounded-2xl border border-[var(--dash-border)] bg-[var(--dash-surface)] p-5">
           <h2 className="mb-5 text-lg font-bold">Chi theo ngày</h2>

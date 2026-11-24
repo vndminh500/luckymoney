@@ -53,9 +53,13 @@ test("dashboard numbers match the seeded transactions", async ({ page }) => {
   const byCategory = page.getByRole("list", { name: "Chi tiêu theo danh mục" });
   const rows = byCategory.getByRole("listitem");
   await expect(rows).toHaveCount(2);
-  await expect(rows.nth(0)).toContainText(/Ăn uống\s*45\.000\s₫\s*60%/);
-  await expect(rows.nth(1)).toContainText(/Đi lại\s*30\.000\s₫\s*40%/);
+  await expect(rows.nth(0)).toContainText(/Ăn uống\s*60%\s*45\.000\s₫/);
+  await expect(rows.nth(1)).toContainText(/Đi lại\s*40%\s*30\.000\s₫/);
   await expect(byCategory).not.toContainText("Mua sắm");
+  const donut = page.getByRole("img", { name: /Biểu đồ tròn chi tiêu theo danh mục/ });
+  await expect(donut).toBeVisible();
+  await expect(donut).toContainText(/Tổng chi\s*75\.000\s₫/);
+  await expect(donut.locator(".recharts-pie-sector")).toHaveCount(2);
 
   await page.getByText("Xem dạng bảng").click();
   const table = page.getByRole("table", { name: "Thu và chi theo ngày" });

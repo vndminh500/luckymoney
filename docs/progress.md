@@ -164,3 +164,10 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Dưới `lg`: sidebar thành ngăn kéo trượt từ trái (nút "Mở menu", `aria-expanded`, lớp phủ mờ), đóng khi chọn mục, bấm lớp phủ hoặc Esc; khi đóng dùng `invisible` + `inert` để không vào được bằng bàn phím hay trình đọc màn hình. Trên màn hình nhỏ nút đăng xuất chỉ hiện biểu tượng, chữ "Đăng xuất" vẫn là tên truy cập.
 - Next (Cache Components) đòi `usePathname()` nằm trong `<Suspense>` ở route động (`/transactions/[id]/edit` làm build lỗi). Chỉ danh sách menu đọc `usePathname`, bọc trong `<Suspense>` với dự phòng là cùng danh sách chưa đánh dấu.
 - E2E mới `tests/e2e/navigation.spec.ts`: mục hiện tại có `aria-current`, thanh trên chỉ có nút đăng xuất, ngăn kéo mở/đóng trên điện thoại.
+
+## Tổng quan: "Chi theo danh mục" thành biểu đồ tròn (2026-11-24, theo yêu cầu)
+- Người dùng đổi ý so với lựa chọn ở T13 (thanh xếp hạng): dùng biểu đồ tròn. `src/components/dashboard/category-donut.tsx` thay `category-breakdown.tsx`.
+- Donut Recharts: tối đa 5 lát có màu riêng (bảng categorical đã validate), phần còn lại gộp thành "Khác (n danh mục)" màu xám; giữa vòng là tổng chi. Chú giải bên cạnh có chấm màu, tên, % và số tiền, nên không nhận diện bằng màu đơn thuần.
+- Rê chuột vào lát hoặc dòng chú giải: làm mờ phần còn lại, nhãn giữa vòng đổi sang tên, số tiền và % của lát đó. Bỏ tooltip của Recharts vì đè lên nhãn giữa (phát hiện khi chụp màn hình); hiệu ứng lát phình ra (`activeShape`) chỉ chạy khi có tooltip nên cũng bỏ.
+- Chú giải hai tầng (tên + % / số tiền) vì cột hẹp làm tên bị cắt thành "K…" ở phiên bản đầu.
+- Cột "Chi theo danh mục" rộng hơn cột "Chi theo ngày" (6fr/5fr). E2E kiểm tra donut có 2 lát và "Tổng chi 75.000 ₫".
