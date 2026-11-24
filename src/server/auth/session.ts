@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 
 import { auth } from "@/auth";
 import { prisma } from "@/server/db";
@@ -11,6 +12,9 @@ import { UnauthenticatedError } from "@/server/errors";
  */
 
 export async function getSessionUserId(): Promise<string | null> {
+  // Auth.js creates a random CSRF token while reading the session, which Next.js
+  // forbids during prerendering; mark this as request-time work first.
+  await connection();
   const session = await auth();
   return session?.user?.id ?? null;
 }
