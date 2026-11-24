@@ -9,6 +9,7 @@ import {
   startOfWeekKey,
   toDateKey,
   toMonthKey,
+  type WeekStart,
 } from "@/lib/dates";
 import {
   periodStatsQuerySchema,
@@ -173,9 +174,14 @@ export type PeriodStats = {
 };
 
 /** Calendar layout of a period: its first day, its buckets and the UTC range to query. */
-function periodLayout(period: StatsPeriod, dateKey: string, timeZone: string) {
+function periodLayout(
+  period: StatsPeriod,
+  dateKey: string,
+  timeZone: string,
+  weekStart: WeekStart,
+) {
   if (period === "week") {
-    const start = startOfWeekKey(dateKey);
+    const start = startOfWeekKey(dateKey, weekStart);
     const keys = Array.from({ length: 7 }, (_, index) => addDays(start, index));
     return {
       start,
@@ -218,8 +224,8 @@ function periodLayout(period: StatsPeriod, dateKey: string, timeZone: string) {
 }
 
 /**
- * GET /api/stats/period: income and expense of a week (Monday to Sunday, one
- * bucket per day), a month (one per day) or a year (one per month), in the
+ * GET /api/stats/period: income and expense of a week (from the user's first day
+ * of the week, one bucket per day), a month (one per day) or a year (one per month), in the
  * user's time zone. Soft-deleted transactions never count.
  */
 export async function getPeriodStats(
@@ -228,8 +234,11 @@ export async function getPeriodStats(
   now = new Date(),
 ): Promise<PeriodStats> {
   const { period, date } = parse(periodStatsQuerySchema, query);
-  const timeZone = await getUserTimeZone(userId);
-  const layout = periodLayout(period, date ?? toDateKey(now, timeZone), timeZone);
+  const { timeZone, weekStart } = await prisma.user.findUniqueOrThrow({
+    where: { id: userId },
+    select: { timeZone: true, weekStart: true },
+  });
+  const layout = periodLayout(period, date ?? toDateKey(now, timeZone), timeZone, weekStart);
 
   const rows = await prisma.transaction.findMany({
     where: {

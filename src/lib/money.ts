@@ -101,3 +101,15 @@ export function formatVndCompact(amount: number): string {
   }
   return `${sign}${compactNumber.format(value / unit.size)}${unit.suffix}`;
 }
+
+/** How amounts are shown (Cài đặt > Tùy chỉnh tài chính); same values as the Prisma enum. */
+export type AmountFormat = "SYMBOL" | "DONG" | "SHORT";
+
+/** Formats an amount in the user's chosen style: "50.000 ₫", "50.000 đ" or "50k". */
+export function formatMoney(amount: number, format: AmountFormat): string {
+  if (format === "SHORT") {
+    return formatVndCompact(amount);
+  }
+  const text = formatVnd(amount);
+  return format === "DONG" ? text.replace("₫", "đ") : text;
+}

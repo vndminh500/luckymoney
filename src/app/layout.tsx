@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
 
+import { THEME_COOKIE } from "@/lib/theme";
+
 // Roboto ships a Vietnamese subset, so diacritics render in the same font.
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -14,9 +16,25 @@ export const metadata: Metadata = {
   description: "Quản lý chi tiêu cá nhân",
 };
 
+/**
+ * Applies the saved theme (Cài đặt > Giao diện) before the first paint, from a
+ * cookie the settings page writes. Reading it here in the browser keeps the
+ * root layout static; without the cookie the theme follows the system.
+ */
+const themeScript = `(function(){try{var m=document.cookie.match(/(?:^|; )${THEME_COOKIE}=(light|dark|system)/);if(m)document.documentElement.dataset.theme=m[1];}catch(e){}})();`;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="vi" className={`${roboto.variable} h-full antialiased`}>
+    // The script may change data-theme before React hydrates.
+    <html
+      lang="vi"
+      data-theme="system"
+      className={`${roboto.variable} h-full antialiased`}
+      suppressHydrationWarning
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );

@@ -1,9 +1,10 @@
 import Link from "next/link";
 
 import { brandControlCompact, brandSecondaryButton } from "@/components/ui/brand-form";
-import { addMonths, toDateKey } from "@/lib/dates";
-import { formatVnd } from "@/lib/money";
+import { addMonths, formatDateKey, toDateKey } from "@/lib/dates";
+import { formatMoney } from "@/lib/money";
 import type { CategoryDto } from "@/server/categories/service";
+import type { DisplayPreferences } from "@/server/settings/service";
 import type { TransactionPage } from "@/server/transactions/service";
 
 /** Filters kept in the URL of /transactions. */
@@ -25,11 +26,6 @@ function monthLabel(month: string): string {
   return `Tháng ${Number(value)}/${year}`;
 }
 
-function dayLabel(date: Date, timeZone: string): string {
-  const [year, month, day] = toDateKey(date, timeZone).split("-");
-  return `${day}/${month}/${year}`;
-}
-
 function Chevron({ direction }: { direction: "left" | "right" }) {
   return (
     <svg viewBox="0 0 20 20" className="size-4" aria-hidden="true">
@@ -49,9 +45,10 @@ type Props = {
   result: TransactionPage;
   filters: ListFilters;
   categories: CategoryDto[];
+  display: DisplayPreferences;
 };
 
-export function TransactionList({ result, filters, categories }: Props) {
+export function TransactionList({ result, filters, categories, display }: Props) {
   const { month, timeZone, items, page, pageSize, total } = result;
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
   const sameFilters = { type: filters.type, categoryId: filters.categoryId };
@@ -177,10 +174,10 @@ export function TransactionList({ result, filters, categories }: Props) {
                       }`}
                     >
                       {income ? "+" : "−"}
-                      {formatVnd(item.amount)}
+                      {formatMoney(item.amount, display.amountFormat)}
                     </span>
                     <span className="block text-sm text-[var(--dash-muted)] tabular-nums">
-                      {dayLabel(item.occurredAt, timeZone)}
+                      {formatDateKey(toDateKey(item.occurredAt, timeZone), display.dateFormat)}
                     </span>
                   </span>
                 </Link>

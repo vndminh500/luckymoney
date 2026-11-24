@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { TransactionList } from "@/components/transactions/transaction-list";
 import { BrandAlert, brandPrimaryButton } from "@/components/ui/brand-form";
 import { getCurrentUser } from "@/server/auth/session";
+import { getPreferences } from "@/server/settings/service";
 import { listCategories } from "@/server/categories/service";
 import { ValidationError } from "@/server/errors";
 import { listTransactions } from "@/server/transactions/service";
@@ -59,7 +60,7 @@ async function loadList(userId: string, query: Record<string, string>) {
 async function ListLoader({ searchParams }: Pick<PageProps<"/transactions">, "searchParams">) {
   const user = await getCurrentUser();
   const query = firstValues(await searchParams);
-  const data = await loadList(user.id, query);
+  const [data, display] = await Promise.all([loadList(user.id, query), getPreferences(user.id)]);
   if (!data) {
     return (
       <div className="flex flex-col items-start gap-3">
@@ -80,5 +81,7 @@ async function ListLoader({ searchParams }: Pick<PageProps<"/transactions">, "se
     categoryId: query.categoryId || undefined,
     page: result.page,
   };
-  return <TransactionList result={result} filters={filters} categories={categories} />;
+  return (
+    <TransactionList result={result} filters={filters} categories={categories} display={display} />
+  );
 }

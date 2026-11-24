@@ -5,12 +5,15 @@ import { useEffect, useId, useRef, useState } from "react";
 
 import { logoutAction } from "@/app/(auth)/actions";
 import { UserAvatar } from "@/components/account/user-avatar";
+import { applyTheme } from "@/lib/theme";
 
 type Props = {
   name: string | null;
   email: string;
   username: string | null;
   avatarVersion: number | null;
+  /** The saved theme; applied here so a new device follows the account's choice. */
+  theme: "SYSTEM" | "LIGHT" | "DARK";
 };
 
 const itemClass =
@@ -32,7 +35,7 @@ const icon = {
  * after the pointer leaves); a click pins it open, and Escape, a click
  * outside or choosing an item closes it. Keyboard users open it with the button.
  */
-export function UserMenu({ name, email, username, avatarVersion }: Props) {
+export function UserMenu({ name, email, username, avatarVersion, theme }: Props) {
   const [open, setOpen] = useState(false);
   const [pinned, setPinned] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -69,6 +72,14 @@ export function UserMenu({ name, email, username, avatarVersion }: Props) {
   }, [open]);
 
   useEffect(() => cancelClose, []);
+
+  // A device without the theme cookie yet (new browser, cleared cookies) catches up here.
+  useEffect(() => {
+    const wanted = theme.toLowerCase() as "system" | "light" | "dark";
+    if (document.documentElement.dataset.theme !== wanted) {
+      applyTheme(wanted);
+    }
+  }, [theme]);
 
   return (
     <div

@@ -1,8 +1,27 @@
 @import "tailwindcss";
 
+/* Theme (Cài đặt > Giao diện): <html data-theme="system|light|dark">. "system"
+   follows the OS; "light"/"dark" override it. A script in the root layout sets
+   the attribute from a cookie before the first paint, so there is no flash. */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where([data-theme="system"], [data-theme="system"] *) {
+      @slot;
+    }
+  }
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  @variant dark {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
 }
 
 @theme inline {
@@ -57,13 +76,6 @@
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 html {
   font-size: 16px;
 }
@@ -87,10 +99,8 @@ body {
   --auth-tab-pill: #ffffff;
   background: var(--auth-bg);
   color: var(--auth-text);
-}
 
-@media (prefers-color-scheme: dark) {
-  .auth-shell {
+  @variant dark {
     --auth-bg: #061b2b;
     --auth-surface: #0b2639;
     --auth-text: #e8f8ff;
@@ -122,10 +132,8 @@ body {
   color-scheme: light;
   background: var(--dash-bg);
   color: var(--dash-text);
-}
 
-@media (prefers-color-scheme: dark) {
-  .dash-shell {
+  @variant dark {
     --dash-bg: #061b2b;
     --dash-surface: #0b2639;
     --dash-text: #e8f8ff;

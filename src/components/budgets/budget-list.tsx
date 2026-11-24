@@ -1,7 +1,8 @@
 import { deleteBudgetAction } from "@/app/(app)/budgets/actions";
 import type { BudgetStatus } from "@/lib/budget";
-import { formatVnd } from "@/lib/money";
+import { formatMoney } from "@/lib/money";
 import type { BudgetProgress } from "@/server/budgets/service";
+import type { DisplayPreferences } from "@/server/settings/service";
 
 const percentFormat = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 1 });
 
@@ -42,7 +43,14 @@ function StatusIcon({ status }: { status: BudgetStatus }) {
   );
 }
 
-export function BudgetList({ items }: { items: BudgetProgress[] }) {
+export function BudgetList({
+  items,
+  display,
+}: {
+  items: BudgetProgress[];
+  display: DisplayPreferences;
+}) {
+  const money = (amount: number) => formatMoney(amount, display.amountFormat);
   if (items.length === 0) {
     return (
       <p className="rounded-2xl border border-dashed border-[var(--dash-border)] px-4 py-10 text-center text-[var(--dash-muted)]">
@@ -84,8 +92,8 @@ export function BudgetList({ items }: { items: BudgetProgress[] }) {
             </div>
 
             <p className="tabular-nums">
-              <span className="font-bold">{formatVnd(item.spent)}</span>
-              <span className="text-[var(--dash-muted)]"> / {formatVnd(item.amount)}</span>
+              <span className="font-bold">{money(item.spent)}</span>
+              <span className="text-[var(--dash-muted)]"> / {money(item.amount)}</span>
             </p>
 
             <div
@@ -117,13 +125,13 @@ export function BudgetList({ items }: { items: BudgetProgress[] }) {
                 </span>
               ) : (
                 <span className="text-[var(--dash-muted)] tabular-nums">
-                  Còn {formatVnd(remaining)}
+                  Còn {money(remaining)}
                 </span>
               )}
             </div>
             {item.status === "over" ? (
               <p className={`text-sm tabular-nums ${STATUS.over?.text ?? ""}`}>
-                Đã vượt {formatVnd(-remaining)}
+                Đã vượt {money(-remaining)}
               </p>
             ) : null}
           </li>

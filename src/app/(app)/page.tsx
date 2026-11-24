@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { BudgetAlerts } from "@/components/dashboard/budget-alerts";
 import { CategoryDonut } from "@/components/dashboard/category-donut";
 import { DailyChart } from "@/components/dashboard/daily-chart";
 import { SummaryTiles } from "@/components/dashboard/summary-tiles";
 import { addMonths } from "@/lib/dates";
 import { getCurrentUser } from "@/server/auth/session";
+import { getBudgetAlerts, getPreferences } from "@/server/settings/service";
 import { ValidationError } from "@/server/errors";
 import { getDailyStats, getStatsByCategory, getSummary } from "@/server/stats/service";
 
@@ -52,7 +54,7 @@ async function loadStats(userId: string, month: string | undefined) {
 async function Dashboard({ searchParams }: Pick<PageProps<"/">, "searchParams">) {
   const [user, params] = await Promise.all([getCurrentUser(), searchParams]);
   const month = typeof params.month === "string" && params.month ? params.month : undefined;
-  const stats = await loadStats(user.id, month);
+  const [stats, display] = await Promise.all([loadStats(user.id, month), getPreferences(user.id)]);
 
   const greeting = (
     <h1 className="text-[1.75rem] leading-tight font-bold tracking-[-0.01em]">
@@ -79,6 +81,7 @@ async function Dashboard({ searchParams }: Pick<PageProps<"/">, "searchParams">)
 
   const [summary, byCategory, daily] = stats;
   const current = summary.month;
+  const alerts = await getBudgetAlerts(user.id, current);
 
   return (
     <>
@@ -112,8 +115,10 @@ async function Dashboard({ searchParams }: Pick<PageProps<"/">, "searchParams">)
       </div>
 
       <section aria-label="Tổng quan tháng">
-        <SummaryTiles summary={summary} />
+        <SummaryTiles summary={summary} display={display} />
       </section>
+
+      <BudgetAlerts alerts={alerts} month={current} />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)]">
         <section className="rounded-2xl border border-[var(--dash-border)] bg-[var(--dash-surface)] p-5">
@@ -126,11 +131,11 @@ async function Dashboard({ searchParams }: Pick<PageProps<"/">, "searchParams">)
               Xem giao dịch
             </Link>
           </div>
-          <CategoryDonut items={byCategory.items} />
+          <CategoryDonut items={byCategory.items} display={display} />
         </section>
         <section className="rounded-2xl border border-[var(--dash-border)] bg-[var(--dash-surface)] p-5">
           <h2 className="mb-5 text-lg font-bold">Chi theo ngày</h2>
-          <DailyChart days={daily.days} />
+          <DailyChart days={daily.days} display={display} />
         </section>
       </div>
     </>

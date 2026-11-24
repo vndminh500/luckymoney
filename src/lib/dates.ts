@@ -189,10 +189,26 @@ export function addDays(dateKey: string, delta: number): string {
   return utcToDateKey(dateKeyToUtc(dateKey) + delta * DAY_MS);
 }
 
-/** The Monday that starts the week of a day (weeks run Monday to Sunday). */
-export function startOfWeekKey(dateKey: string): string {
+/** First day of the week; same values as the Prisma enum. */
+export type WeekStart = "MONDAY" | "SUNDAY";
+
+/** The first day of the week containing a day (Monday by default, or Sunday). */
+export function startOfWeekKey(dateKey: string, weekStart: WeekStart = "MONDAY"): string {
   const weekday = new Date(dateKeyToUtc(dateKey)).getUTCDay(); // 0 = Sunday
-  return addDays(dateKey, -((weekday + 6) % 7));
+  const offset = weekStart === "MONDAY" ? (weekday + 6) % 7 : weekday;
+  return addDays(dateKey, -offset);
+}
+
+/** How dates are shown; same values as the Prisma enum. */
+export type DateFormat = "DMY" | "ISO";
+
+/** "2026-11-24" as "24/11/2026" (DMY) or unchanged (ISO). */
+export function formatDateKey(dateKey: string, format: DateFormat): string {
+  if (format === "ISO") {
+    return dateKey;
+  }
+  const [year, month, day] = dateKey.split("-");
+  return `${day}/${month}/${year}`;
 }
 
 /** UTC range `[start, end)` covering `days` whole local days starting at `startKey`. */

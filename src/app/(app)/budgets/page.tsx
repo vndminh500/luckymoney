@@ -6,6 +6,7 @@ import { BudgetForm } from "@/components/budgets/budget-form";
 import { BudgetList } from "@/components/budgets/budget-list";
 import { addMonths } from "@/lib/dates";
 import { getCurrentUser } from "@/server/auth/session";
+import { getPreferences } from "@/server/settings/service";
 import { listBudgets } from "@/server/budgets/service";
 import { listSelectableCategories } from "@/server/categories/service";
 import { ValidationError } from "@/server/errors";
@@ -45,7 +46,7 @@ async function loadBudgets(userId: string, month: string | undefined) {
 async function Budgets({ searchParams }: Pick<PageProps<"/budgets">, "searchParams">) {
   const [user, params] = await Promise.all([getCurrentUser(), searchParams]);
   const month = typeof params.month === "string" && params.month ? params.month : undefined;
-  const data = await loadBudgets(user.id, month);
+  const [data, display] = await Promise.all([loadBudgets(user.id, month), getPreferences(user.id)]);
 
   if (!data) {
     return (
@@ -87,7 +88,7 @@ async function Budgets({ searchParams }: Pick<PageProps<"/budgets">, "searchPara
         </div>
       </div>
       <BudgetForm month={current} categories={expenseCategories} />
-      <BudgetList items={items} />
+      <BudgetList items={items} display={display} />
     </>
   );
 }

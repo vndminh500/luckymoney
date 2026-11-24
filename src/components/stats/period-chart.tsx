@@ -4,7 +4,9 @@ import { useState } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import type { StatsPeriod } from "@/lib/schemas/stats";
-import { formatVnd, formatVndCompact } from "@/lib/money";
+import { formatDateKey, type DateFormat } from "@/lib/dates";
+import { formatMoney, formatVndCompact, type AmountFormat } from "@/lib/money";
+import type { DisplayPreferences } from "@/server/settings/service";
 import type { PeriodBucket } from "@/server/stats/service";
 
 type Series = "expense" | "income";
@@ -29,39 +31,44 @@ function tickLabel(period: StatsPeriod, key: string): string {
 }
 
 /** Full label of a bucket for the tooltip and the table. */
-function fullLabel(period: StatsPeriod, key: string): string {
+function fullLabel(period: StatsPeriod, key: string, dateFormat: DateFormat): string {
   if (period === "year") {
     return `Tháng ${Number(key.slice(5, 7))}/${key.slice(0, 4)}`;
   }
-  const [year, month, day] = key.split("-");
-  const date = `${day}/${month}/${year}`;
+  const date = formatDateKey(key, dateFormat);
   return period === "week" ? `${tickLabel(period, key)}, ${date}` : date;
 }
 
-type TooltipProps = { active?: boolean; payload?: { payload: PeriodBucket }[] };
+type TooltipProps = {
+  active?: boolean;
+  payload?: { payload: PeriodBucket }[];
+  period: StatsPeriod;
+  amountFormat: AmountFormat;
+  dateFormat: DateFormat;
+};
 
-function BucketTooltip({ active, payload, period }: TooltipProps & { period: StatsPeriod }) {
+function BucketTooltip({ active, payload, period, amountFormat, dateFormat }: TooltipProps) {
   const bucket = active ? payload?.[0]?.payload : undefined;
   if (!bucket) {
     return null;
   }
   return (
     <div className="rounded-xl border border-[var(--dash-border)] bg-[var(--dash-surface)] px-3 py-2 text-sm shadow-[0_8px_24px_rgb(6_43_69/0.12)]">
-      <p className="font-medium">{fullLabel(period, bucket.key)}</p>
-      <p className="tabular-nums">Chi {formatVnd(bucket.expense)}</p>
-      <p className="tabular-nums">Thu {formatVnd(bucket.income)}</p>
+      <p className="font-medium">{fullLabel(period, bucket.key, dateFormat)}</p>
+      <p className="tabular-nums">Chi {formatMoney(bucket.expense, amountFormat)}</p>
+      <p className="tabular-nums">Thu {formatMoney(bucket.income, amountFormat)}</p>
     </div>
   );
 }
 
-type Props = { period: StatsPeriod; buckets: PeriodBucket[] };
+type Props = { period: StatsPeriod; buckets: PeriodBucket[]; display: DisplayPreferences };
 
 /**
  * Bars of the period's buckets for one series at a time: income and expense
  * have different scales (one salary dwarfs daily spending), so the reader
  * switches between them instead of sharing one axis.
  */
-export function PeriodChart({ period, buckets }: Props) {
+export function PeriodChart({ period, buckets, display }: Props) {
   const [series, setSeries] = useState<Series>("expense");
   const current = SERIES.find((option) => option.value === series) ?? SERIES[0];
   const hasData = buckets.some((bucket) => bucket[series] > 0);
@@ -127,7 +134,13 @@ export function PeriodChart({ period, buckets }: Props) {
                 tick={{ fill: "var(--dash-muted)", fontSize: 13 }}
               />
               <Tooltip
-                content={<BucketTooltip period={period} />}
+                content={
+                  <BucketTooltip
+                    period={period}
+                    amountFormat={display.amountFormat}
+                    dateFormat={display.dateFormat}
+                  />
+                }
                 cursor={{ fill: "var(--dash-track)" }}
                 isAnimationActive={false}
               />
@@ -176,10 +189,14 @@ export function PeriodChart({ period, buckets }: Props) {
               .map((bucket) => (
                 <tr key={bucket.key} className="border-t border-[var(--dash-border)]">
                   <th scope="row" className="py-1.5 text-left font-normal">
-                    {fullLabel(period, bucket.key)}
+                    {fullLabel(period, bucket.key, display.dateFormat)}
                   </th>
-                  <td className="py-1.5 text-right">{formatVnd(bucket.expense)}</td>
-                  <td className="py-1.5 text-right">{formatVnd(bucket.income)}</td>
+                  <td className="py-1.5 text-right">
+                    {formatMoney(bucket.expense, display.amountFormat)}
+                  </td>
+                  <td className="py-1.5 text-right">
+                    {formatMoney(bucket.income, display.amountFormat)}
+                  </td>
                 </tr>
               ))}
           </tbody>

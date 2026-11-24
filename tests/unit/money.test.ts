@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatVnd, formatVndCompact, parseVnd } from "@/lib/money";
+import { formatMoney, formatVnd, formatVndCompact, parseVnd } from "@/lib/money";
 
 // Intl puts a non-breaking space (U+00A0) between the number and the currency sign.
 const NBSP = " ";
@@ -109,5 +109,18 @@ describe("formatVndCompact", () => {
     [-45_000, "-45k"],
   ])("formats %i as %s", (amount, expected) => {
     expect(formatVndCompact(amount)).toBe(expected);
+  });
+});
+
+describe("formatMoney", () => {
+  it.each([
+    ["SYMBOL", 50_000, `50.000${NBSP}₫`],
+    ["DONG", 50_000, `50.000${NBSP}đ`],
+    ["SHORT", 50_000, "50k"],
+    ["SHORT", 1_500_000, "1,5tr"],
+    ["SYMBOL", -45_000, `-45.000${NBSP}₫`],
+    ["DONG", -45_000, `-45.000${NBSP}đ`],
+  ] as const)("%s formats %i as %s", (format, amount, expected) => {
+    expect(formatMoney(amount, format)).toBe(expected);
   });
 });

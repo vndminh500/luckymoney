@@ -189,3 +189,12 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Còn mở: đổi mật khẩu không thu hồi các phiên JWT khác (ghi chú cho người dùng trên trang); chưa giới hạn số lần thử mật khẩu hiện tại (T16).
 - Kiểm tra độ mạnh: bỏ bước kiểm tra mật khẩu hiện tại làm test đổi mật khẩu đỏ; cho route avatar trả ảnh bất kỳ làm test phân quyền (avatar của Bob chứa "BOBAVATAR") đỏ.
 - E2E đăng xuất giờ mở menu avatar trước (`signOut` helper).
+
+## Cài đặt: tùy chỉnh tài chính, giao diện, thông báo, về ứng dụng (2026-11-24, ngoài PLAN, theo yêu cầu)
+- Quyết định đã hỏi người dùng: chỉ VND (cài đặt đổi cách hiển thị, không đa tiền tệ); thông báo chỉ trong ứng dụng (chưa có dịch vụ email/đẩy).
+- `src/server/settings/service.ts`: `getPreferences`, `updateDisplayPreferences` (kiểu số tiền SYMBOL/DONG/SHORT, định dạng ngày DMY/ISO, ngày đầu tuần, múi giờ IANA hợp lệ), `updateTheme`, `updateNotificationPreferences`, `getBudgetAlerts(userId, month)` (ngân sách ở mức cảnh báo/vượt theo hai công tắc).
+- Mọi tùy chọn có tác dụng: `formatMoney`/`formatDateKey` (unit test) được truyền qua prop `display` tới ô tổng, biểu đồ tròn, biểu đồ theo ngày/kỳ, danh sách giao dịch, thẻ ngân sách; ngày đầu tuần áp vào `getPeriodStats` (`startOfWeekKey(date, weekStart)`); múi giờ là `User.timeZone` sẵn có.
+- Giao diện Sáng/Tối/Theo hệ thống: `<html data-theme>`; Tailwind `@custom-variant dark` (dark khi `data-theme="dark"`, hoặc `"system"` + hệ điều hành tối) và các khối màu dùng `@variant dark`. Script nhỏ trong `<head>` của layout gốc đọc cookie `lm-theme` trước lần vẽ đầu (không nháy, layout gốc vẫn tĩnh). Lưu giao diện ghi DB và cookie; menu avatar đồng bộ lại cookie trên thiết bị mới.
+- Thông báo: dải "Cảnh báo ngân sách" trên Tổng quan (biểu tượng + chữ + %), ẩn theo công tắc.
+- Trang `/settings`, `/settings/appearance`, `/settings/notifications`, `/settings/about` (phiên bản lấy từ `package.json`).
+- Ghi chú quy trình: một lệnh `node - <<'EOF'` dài chứa nhiều dấu nháy/backtick làm bash lỗi cú pháp (không chạy gì); chuyển sang ghi script ra file bằng Write rồi chạy, đúng như mục "Lỗi hay gặp".

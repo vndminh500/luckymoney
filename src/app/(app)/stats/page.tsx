@@ -8,6 +8,7 @@ import { BrandAlert } from "@/components/ui/brand-form";
 import { addDays } from "@/lib/dates";
 import { STATS_PERIODS, type StatsPeriod } from "@/lib/schemas/stats";
 import { getCurrentUser } from "@/server/auth/session";
+import { getPreferences } from "@/server/settings/service";
 import { ValidationError } from "@/server/errors";
 import { getPeriodStats, type PeriodStats } from "@/server/stats/service";
 
@@ -63,7 +64,10 @@ async function loadStats(userId: string, period?: string, date?: string) {
 async function Stats({ searchParams }: Pick<PageProps<"/stats">, "searchParams">) {
   const [user, params] = await Promise.all([getCurrentUser(), searchParams]);
   const date = first(params.date);
-  const stats = await loadStats(user.id, first(params.period), date);
+  const [stats, display] = await Promise.all([
+    loadStats(user.id, first(params.period), date),
+    getPreferences(user.id),
+  ]);
 
   if (!stats) {
     return (
@@ -126,11 +130,12 @@ async function Stats({ searchParams }: Pick<PageProps<"/stats">, "searchParams">
       </div>
 
       <section aria-label="Tổng kết kỳ">
-        <SummaryTiles summary={stats.totals} />
+        <SummaryTiles summary={stats.totals} display={display} />
       </section>
 
       <section className="animate-lm-rise rounded-2xl border border-[var(--dash-border)] bg-[var(--dash-surface)] p-5">
         <PeriodChart
+          display={display}
           key={`${stats.period}-${stats.start}`}
           period={stats.period}
           buckets={stats.buckets}

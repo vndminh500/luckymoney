@@ -28,6 +28,7 @@ import * as accountActions from "@/app/(app)/account/actions";
 import * as budgetActions from "@/app/(app)/budgets/actions";
 import * as accountAvatarRoute from "@/app/api/account/avatar/route";
 import * as categoryActions from "@/app/(app)/categories/actions";
+import * as settingsActions from "@/app/(app)/settings/actions";
 import * as transactionActions from "@/app/(app)/transactions/actions";
 import * as categoryArchiveRoute from "@/app/api/categories/[id]/archive/route";
 import * as categoryRestoreRoute from "@/app/api/categories/[id]/restore/route";
@@ -436,6 +437,12 @@ describe("server actions", () => {
       ),
       accountActions.uploadAvatarAction({}, form({})),
       accountActions.removeAvatarAction(),
+      settingsActions.saveDisplayAction(
+        {},
+        form({ amountFormat: "DONG", dateFormat: "ISO", weekStart: "SUNDAY", timeZone: "UTC" }),
+      ),
+      settingsActions.saveThemeAction("DARK"),
+      settingsActions.saveNotificationsAction({}, form({})),
     ];
 
     for (const attempt of attempts) {

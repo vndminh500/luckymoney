@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 
-import { formatVnd } from "@/lib/money";
+import { formatMoney } from "@/lib/money";
+import type { DisplayPreferences } from "@/server/settings/service";
 import type { CategoryTotal } from "@/server/stats/service";
 
 /** Categories that get their own slice; the rest fold into "Khác" (other). */
@@ -52,8 +53,15 @@ function toSlices(items: CategoryTotal[]): Slice[] {
  * with every figure, so a slice is never identified by color alone.
  * Hovering a slice or a legend row highlights the pair and shows it in the centre.
  */
-export function CategoryDonut({ items }: { items: CategoryTotal[] }) {
+export function CategoryDonut({
+  items,
+  display,
+}: {
+  items: CategoryTotal[];
+  display: DisplayPreferences;
+}) {
   const [active, setActive] = useState<number | null>(null);
+  const money = (amount: number) => formatMoney(amount, display.amountFormat);
 
   if (items.length === 0) {
     return (
@@ -110,7 +118,7 @@ export function CategoryDonut({ items }: { items: CategoryTotal[] }) {
             <p className="truncate text-sm text-[var(--dash-muted)]">
               {shown ? shown.name : "Tổng chi"}
             </p>
-            <p className="font-bold tabular-nums">{formatVnd(shown ? shown.total : total)}</p>
+            <p className="font-bold tabular-nums">{money(shown ? shown.total : total)}</p>
             {shown ? (
               <p className="text-sm text-[var(--dash-muted)] tabular-nums">
                 {percentFormat.format(shown.percent)}%
@@ -147,7 +155,7 @@ export function CategoryDonut({ items }: { items: CategoryTotal[] }) {
             <span className="text-right text-[var(--dash-muted)] tabular-nums">
               {percentFormat.format(slice.percent)}%
             </span>
-            <span className="col-start-2 text-sm tabular-nums">{formatVnd(slice.total)}</span>
+            <span className="col-start-2 text-sm tabular-nums">{money(slice.total)}</span>
           </li>
         ))}
       </ol>

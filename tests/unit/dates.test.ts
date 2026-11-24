@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   addDays,
   addMonths,
+  formatDateKey,
   getDayRange,
   getMonthRange,
   isValidDateKey,
@@ -210,5 +211,22 @@ describe("isValidDateKey", () => {
     ["", false],
   ])("%j is %s", (value, expected) => {
     expect(isValidDateKey(value)).toBe(expected);
+  });
+});
+
+describe("startOfWeekKey with Sunday as the first day", () => {
+  it.each([
+    ["2026-11-22", "2026-11-22"], // Sunday
+    ["2026-11-24", "2026-11-22"], // Tuesday
+    ["2026-11-28", "2026-11-22"], // Saturday
+  ])("the week of %s starts on %s", (dateKey, expected) => {
+    expect(startOfWeekKey(dateKey, "SUNDAY")).toBe(expected);
+  });
+});
+
+describe("formatDateKey", () => {
+  it("writes day/month/year or ISO", () => {
+    expect(formatDateKey("2026-11-24", "DMY")).toBe("24/11/2026");
+    expect(formatDateKey("2026-11-24", "ISO")).toBe("2026-11-24");
   });
 });

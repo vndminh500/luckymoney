@@ -1,11 +1,14 @@
-import { formatVnd } from "@/lib/money";
+import { formatMoney } from "@/lib/money";
+import type { DisplayPreferences } from "@/server/settings/service";
 import type { Summary } from "@/server/stats/service";
 
 /** Income, expense and balance of the month: the numbers are the chart. */
 export function SummaryTiles({
   summary,
+  display,
 }: {
   summary: Pick<Summary, "income" | "expense" | "balance">;
+  display: DisplayPreferences;
 }) {
   const tiles = [
     { label: "Thu", value: summary.income, sign: summary.income > 0 ? "+" : "" },
@@ -33,7 +36,7 @@ export function SummaryTiles({
           </dt>
           <dd className="mt-1 text-[1.75rem] leading-tight font-bold tracking-[-0.01em] tabular-nums">
             {tile.sign}
-            {formatVnd(tile.value)}
+            {formatMoney(tile.value, display.amountFormat)}
           </dd>
         </div>
       ))}

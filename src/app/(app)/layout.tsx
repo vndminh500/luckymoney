@@ -3,6 +3,7 @@ import { Suspense, type ReactNode } from "react";
 import { UserMenu } from "@/components/account/user-menu";
 import { AppShell } from "@/components/layout/app-shell";
 import { getAccount } from "@/server/account/service";
+import { getPreferences } from "@/server/settings/service";
 import { getCurrentUser } from "@/server/auth/session";
 
 /** Every signed-in page shares the sidebar and top bar, kept mounted across navigation. */
@@ -27,13 +28,14 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
 async function AccountMenu() {
   const user = await getCurrentUser();
-  const account = await getAccount(user.id);
+  const [account, { theme }] = await Promise.all([getAccount(user.id), getPreferences(user.id)]);
   return (
     <UserMenu
       name={account.name}
       email={account.email}
       username={account.username}
       avatarVersion={account.avatarVersion}
+      theme={theme}
     />
   );
 }
