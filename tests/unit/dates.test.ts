@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  addDays,
   addMonths,
+  getDayRange,
   getMonthRange,
+  isValidDateKey,
+  startOfWeekKey,
   isValidMonthKey,
   isValidTimeZone,
   startOfZonedDay,
@@ -147,5 +151,64 @@ describe("validators", () => {
     ["", false],
   ])("isValidTimeZone(%j) = %s", (value, expected) => {
     expect(isValidTimeZone(value)).toBe(expected);
+  });
+});
+
+describe("addDays", () => {
+  it.each([
+    ["2026-11-24", 1, "2026-11-25"],
+    ["2026-11-30", 1, "2026-12-01"],
+    ["2026-12-31", 1, "2027-01-01"],
+    ["2028-02-28", 1, "2028-02-29"], // leap year
+    ["2027-02-28", 1, "2027-03-01"],
+    ["2026-01-01", -1, "2025-12-31"],
+    ["2026-11-24", 7, "2026-12-01"],
+  ])("%s + %i = %s", (dateKey, days, expected) => {
+    expect(addDays(dateKey, days)).toBe(expected);
+  });
+
+  it("rejects an invalid date key", () => {
+    expect(() => addDays("2026-02-30", 1)).toThrow(RangeError);
+  });
+});
+
+describe("startOfWeekKey", () => {
+  it.each([
+    ["2026-11-23", "2026-11-23"], // Monday
+    ["2026-11-24", "2026-11-23"], // Tuesday
+    ["2026-11-29", "2026-11-23"], // Sunday belongs to the week that started Monday
+    ["2026-11-30", "2026-11-30"], // next Monday
+    ["2027-01-01", "2026-12-28"], // across a year boundary
+  ])("the week of %s starts on %s", (dateKey, expected) => {
+    expect(startOfWeekKey(dateKey)).toBe(expected);
+  });
+});
+
+describe("getDayRange", () => {
+  it("covers whole local days, end exclusive", () => {
+    // A week in Vietnam (UTC+7): Monday 00:00 local to next Monday 00:00 local.
+    expect(getDayRange("2026-11-23", 7, VN)).toEqual({
+      start: utc("2026-11-22T17:00:00Z"),
+      end: utc("2026-11-29T17:00:00Z"),
+    });
+  });
+
+  it("follows DST in New York (the week of 2026-11-01 has 7 days + 1 hour)", () => {
+    const { start, end } = getDayRange("2026-10-26", 7, NY);
+    expect(start).toEqual(utc("2026-10-26T04:00:00Z"));
+    expect(end).toEqual(utc("2026-11-02T05:00:00Z"));
+  });
+});
+
+describe("isValidDateKey", () => {
+  it.each([
+    ["2026-11-24", true],
+    ["2028-02-29", true],
+    ["2027-02-29", false],
+    ["2026-13-01", false],
+    ["24/11/2026", false],
+    ["", false],
+  ])("%j is %s", (value, expected) => {
+    expect(isValidDateKey(value)).toBe(expected);
   });
 });

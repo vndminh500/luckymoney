@@ -16,6 +16,7 @@ test("the sidebar lists the sections and marks the current one", async ({ page }
 
   await expect(nav.getByRole("link")).toHaveText([
     "Tổng quan",
+    "Thống kê",
     "Giao dịch",
     "Ngân sách",
     "Danh mục",

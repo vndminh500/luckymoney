@@ -154,3 +154,51 @@ function assertMonthKey(monthKey: string): [year: number, month: number] {
   }
   return [Number(match[1]), Number(match[2])];
 }
+
+/** Parses "YYYY-MM-DD" into UTC midnight of that calendar day; throws if not a real date. */
+function dateKeyToUtc(dateKey: string): number {
+  const match = DATE_KEY.exec(dateKey);
+  if (!match) {
+    throw new RangeError(`Invalid date key "${dateKey}", expected YYYY-MM-DD`);
+  }
+  const [year, month, day] = match.slice(1).map(Number);
+  const utc = Date.UTC(year, month - 1, day);
+  if (new Date(utc).getUTCDate() !== day || new Date(utc).getUTCMonth() !== month - 1) {
+    throw new RangeError(`Invalid calendar date "${dateKey}"`);
+  }
+  return utc;
+}
+
+function utcToDateKey(utc: number): string {
+  const date = new Date(utc);
+  return `${pad(date.getUTCFullYear(), 4)}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
+}
+
+/** True for a real calendar date written as YYYY-MM-DD. */
+export function isValidDateKey(value: string): boolean {
+  try {
+    dateKeyToUtc(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Shifts a calendar day by `delta` days (pure calendar math, no time zone involved). */
+export function addDays(dateKey: string, delta: number): string {
+  return utcToDateKey(dateKeyToUtc(dateKey) + delta * DAY_MS);
+}
+
+/** The Monday that starts the week of a day (weeks run Monday to Sunday). */
+export function startOfWeekKey(dateKey: string): string {
+  const weekday = new Date(dateKeyToUtc(dateKey)).getUTCDay(); // 0 = Sunday
+  return addDays(dateKey, -((weekday + 6) % 7));
+}
+
+/** UTC range `[start, end)` covering `days` whole local days starting at `startKey`. */
+export function getDayRange(startKey: string, days: number, timeZone: string): MonthRange {
+  return {
+    start: startOfZonedDay(startKey, timeZone),
+    end: startOfZonedDay(addDays(startKey, days), timeZone),
+  };
+}

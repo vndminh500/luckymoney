@@ -1,8 +1,21 @@
 import type { TransactionType } from "@prisma/client";
 import type { z } from "zod";
 
-import { getMonthRange, toDateKey, toMonthKey } from "@/lib/dates";
-import { statsByCategoryQuerySchema, statsQuerySchema } from "@/lib/schemas/stats";
+import {
+  addDays,
+  addMonths,
+  getDayRange,
+  getMonthRange,
+  startOfWeekKey,
+  toDateKey,
+  toMonthKey,
+} from "@/lib/dates";
+import {
+  periodStatsQuerySchema,
+  statsByCategoryQuerySchema,
+  statsQuerySchema,
+  type StatsPeriod,
+} from "@/lib/schemas/stats";
 import { prisma } from "@/server/db";
 import { ValidationError } from "@/server/errors";
 import { getUserTimeZone } from "@/server/transactions/service";
@@ -143,4 +156,106 @@ export async function getDailyStats(
     }
   }
   return { month: scope.month, days };
+}
+
+/** Income and expense of one bucket: a day ("YYYY-MM-DD") or, for a year, a month ("YYYY-MM"). */
+export type PeriodBucket = { key: string; income: number; expense: number };
+
+export type PeriodStats = {
+  period: StatsPeriod;
+  /** First day of the period ("YYYY-MM-DD"). */
+  start: string;
+  /** A date inside the previous and the next period, for navigation. */
+  previous: string;
+  next: string;
+  totals: { income: number; expense: number; balance: number };
+  buckets: PeriodBucket[];
+};
+
+/** Calendar layout of a period: its first day, its buckets and the UTC range to query. */
+function periodLayout(period: StatsPeriod, dateKey: string, timeZone: string) {
+  if (period === "week") {
+    const start = startOfWeekKey(dateKey);
+    const keys = Array.from({ length: 7 }, (_, index) => addDays(start, index));
+    return {
+      start,
+      keys,
+      range: getDayRange(start, 7, timeZone),
+      bucketOf: (date: Date) => toDateKey(date, timeZone),
+      previous: addDays(start, -7),
+      next: addDays(start, 7),
+    };
+  }
+  if (period === "month") {
+    const month = dateKey.slice(0, 7);
+    const start = `${month}-01`;
+    const keys = Array.from({ length: daysInMonth(month) }, (_, index) => addDays(start, index));
+    return {
+      start,
+      keys,
+      range: getMonthRange(month, timeZone),
+      bucketOf: (date: Date) => toDateKey(date, timeZone),
+      previous: `${addMonths(month, -1)}-01`,
+      next: `${addMonths(month, 1)}-01`,
+    };
+  }
+  const year = Number(dateKey.slice(0, 4));
+  const keys = Array.from(
+    { length: 12 },
+    (_, index) => `${year}-${String(index + 1).padStart(2, "0")}`,
+  );
+  return {
+    start: `${year}-01-01`,
+    keys,
+    range: {
+      start: getMonthRange(`${year}-01`, timeZone).start,
+      end: getMonthRange(`${year + 1}-01`, timeZone).start,
+    },
+    bucketOf: (date: Date) => toMonthKey(date, timeZone),
+    previous: `${year - 1}-01-01`,
+    next: `${year + 1}-01-01`,
+  };
+}
+
+/**
+ * GET /api/stats/period: income and expense of a week (Monday to Sunday, one
+ * bucket per day), a month (one per day) or a year (one per month), in the
+ * user's time zone. Soft-deleted transactions never count.
+ */
+export async function getPeriodStats(
+  userId: string,
+  query: unknown,
+  now = new Date(),
+): Promise<PeriodStats> {
+  const { period, date } = parse(periodStatsQuerySchema, query);
+  const timeZone = await getUserTimeZone(userId);
+  const layout = periodLayout(period, date ?? toDateKey(now, timeZone), timeZone);
+
+  const rows = await prisma.transaction.findMany({
+    where: {
+      userId,
+      deletedAt: null,
+      occurredAt: { gte: layout.range.start, lt: layout.range.end },
+    },
+    select: { type: true, amount: true, occurredAt: true },
+  });
+
+  const buckets: PeriodBucket[] = layout.keys.map((key) => ({ key, income: 0, expense: 0 }));
+  const byKey = new Map(buckets.map((bucket) => [bucket.key, bucket]));
+  for (const row of rows) {
+    const bucket = byKey.get(layout.bucketOf(row.occurredAt));
+    if (bucket) {
+      bucket[row.type === "INCOME" ? "income" : "expense"] += row.amount;
+    }
+  }
+  const income = buckets.reduce((total, bucket) => total + bucket.income, 0);
+  const expense = buckets.reduce((total, bucket) => total + bucket.expense, 0);
+  return {
+    period,
+    start: layout.start,
+    previous: layout.previous,
+    next: layout.next,
+    totals: { income, expense, balance: income - expense },
+    buckets,
+  };
 }

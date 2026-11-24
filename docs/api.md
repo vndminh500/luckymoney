@@ -46,7 +46,9 @@ Danh mục mặc định được tạo khi đăng ký (ví dụ: Ăn uống, Đ
 | GET | `/api/stats/by-category?month=YYYY-MM&type=EXPENSE` | `[{ categoryId, name, icon, total, percent }]`, lớn nhất trước. `percent` làm tròn 1 chữ số thập phân. Có cả danh mục đã lưu trữ. |
 | GET | `/api/stats/daily?month=YYYY-MM` | `[{ date: "YYYY-MM-DD", income, expense }]`, đủ mọi ngày trong tháng (ngày trống là 0). |
 
-Thiếu `month` thì dùng tháng hiện tại theo múi giờ user. Không tính giao dịch đã xóa mềm.
+| GET | `/api/stats/period?period=week|month|year&date=YYYY-MM-DD` | `{ period, start, previous, next, totals: { income, expense, balance }, buckets: [{ key, income, expense }] }`. Tuần chạy Thứ Hai–Chủ Nhật, mỗi ngày một bucket; tháng mỗi ngày một bucket; năm mỗi tháng một bucket (`key` = `YYYY-MM`). `previous`/`next` là một ngày nằm trong kỳ trước/sau. |
+
+Thiếu `month` thì dùng tháng hiện tại theo múi giờ user (với `/period`: thiếu `period` là `month`, thiếu `date` là hôm nay). Không tính giao dịch đã xóa mềm.
 
 ## Ngân sách
 | Method | Path | Mô tả |

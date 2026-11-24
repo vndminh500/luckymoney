@@ -32,6 +32,15 @@ const NAV: NavItem[] = [
     ),
   },
   {
+    href: "/stats",
+    label: "Thống kê",
+    icon: (
+      <svg {...iconProps}>
+        <path d="M4 20h16M7 16v-5M12 16V6M17 16v-8" />
+      </svg>
+    ),
+  },
+  {
     href: "/transactions",
     label: "Giao dịch",
     icon: (

@@ -171,3 +171,10 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Rê chuột vào lát hoặc dòng chú giải: làm mờ phần còn lại, nhãn giữa vòng đổi sang tên, số tiền và % của lát đó. Bỏ tooltip của Recharts vì đè lên nhãn giữa (phát hiện khi chụp màn hình); hiệu ứng lát phình ra (`activeShape`) chỉ chạy khi có tooltip nên cũng bỏ.
 - Chú giải hai tầng (tên + % / số tiền) vì cột hẹp làm tên bị cắt thành "K…" ở phiên bản đầu.
 - Cột "Chi theo danh mục" rộng hơn cột "Chi theo ngày" (6fr/5fr). E2E kiểm tra donut có 2 lát và "Tổng chi 75.000 ₫".
+
+## Thống kê theo tuần / tháng / năm (2026-11-24, ngoài PLAN, theo yêu cầu)
+- `src/lib/dates.ts` thêm `addDays`, `startOfWeekKey` (tuần bắt đầu Thứ Hai), `getDayRange(startKey, days, timeZone)`, `isValidDateKey`; unit test gồm năm nhuận, qua năm, DST New York (tuần có 7 ngày + 1 giờ).
+- `getPeriodStats` trong `src/server/stats/service.ts` + `GET /api/stats/period`: kỳ tuần (7 bucket ngày), tháng (bucket ngày), năm (12 bucket tháng), theo múi giờ user, bỏ giao dịch xóa mềm; trả `previous`/`next` để điều hướng. Đã thêm vào bộ test phân quyền.
+- Trang `/stats` (mục "Thống kê" trong sidebar): tab Tuần/Tháng/Năm có thanh trượt, nút kỳ trước/sau, ba ô Thu/Chi/Số dư, biểu đồ cột Recharts với nút chuyển **Chi / Thu** (một chuỗi mỗi lần, một trục — thu và chi khác thang đo), tooltip và bảng số liệu. Trạng thái kỳ nằm trên URL (`?period=&date=`), đổi tab giữ nguyên ngày neo.
+- `SummaryTiles` nhận `{ income, expense, balance }` để dùng lại.
+- E2E `tests/e2e/stats.spec.ts`. Không đếm `.recharts-bar-rectangle` vì Recharts không vẽ cột giá trị 0; kiểm tra bảng số liệu thay thế.

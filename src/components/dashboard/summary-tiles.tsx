@@ -2,7 +2,11 @@ import { formatVnd } from "@/lib/money";
 import type { Summary } from "@/server/stats/service";
 
 /** Income, expense and balance of the month: the numbers are the chart. */
-export function SummaryTiles({ summary }: { summary: Summary }) {
+export function SummaryTiles({
+  summary,
+}: {
+  summary: Pick<Summary, "income" | "expense" | "balance">;
+}) {
   const tiles = [
     { label: "Thu", value: summary.income, sign: summary.income > 0 ? "+" : "" },
     { label: "Chi", value: summary.expense, sign: summary.expense > 0 ? "−" : "" },

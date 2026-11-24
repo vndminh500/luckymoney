@@ -33,6 +33,7 @@ import * as categoryRoute from "@/app/api/categories/[id]/route";
 import * as categoriesRoute from "@/app/api/categories/route";
 import * as statsByCategoryRoute from "@/app/api/stats/by-category/route";
 import * as statsDailyRoute from "@/app/api/stats/daily/route";
+import * as statsPeriodRoute from "@/app/api/stats/period/route";
 import * as statsSummaryRoute from "@/app/api/stats/summary/route";
 import * as transactionRoute from "@/app/api/transactions/[id]/route";
 import * as transactionsRoute from "@/app/api/transactions/route";
@@ -231,6 +232,14 @@ const endpoints: {
     route: "stats/daily",
     method: "GET",
     attack: () => statsDailyRoute.GET(request("GET", "/api/stats/daily?month=2026-11")),
+    expectStatus: 200,
+  },
+  {
+    route: "stats/period",
+    method: "GET",
+    // The year of Bob's 99,000 (the widest period) must not include it.
+    attack: () =>
+      statsPeriodRoute.GET(request("GET", "/api/stats/period?period=year&date=2026-11-05")),
     expectStatus: 200,
   },
   {

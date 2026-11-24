@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { isValidMonthKey } from "@/lib/dates";
+import { isValidDateKey, isValidMonthKey } from "@/lib/dates";
 import { TRANSACTION_TYPES } from "@/lib/schemas/transaction";
 
 /** Treats "" (an empty query value) as "not set". */
@@ -23,5 +23,26 @@ export const statsByCategoryQuerySchema = z.object({
       .enum(TRANSACTION_TYPES, { error: "Loại giao dịch không hợp lệ." })
       .optional()
       .transform((value) => value ?? "EXPENSE"),
+  ),
+});
+
+export const STATS_PERIODS = ["week", "month", "year"] as const;
+export type StatsPeriod = (typeof STATS_PERIODS)[number];
+
+/**
+ * Query of /api/stats/period and the stats page: the period (default month)
+ * containing `date` (default today in the user's time zone).
+ */
+export const periodStatsQuerySchema = z.object({
+  period: z.preprocess(
+    blankToUndefined,
+    z
+      .enum(STATS_PERIODS, { error: "Kỳ thống kê không hợp lệ (week, month, year)." })
+      .optional()
+      .transform((value) => value ?? "month"),
+  ),
+  date: z.preprocess(
+    blankToUndefined,
+    z.string().refine(isValidDateKey, { error: "Ngày không hợp lệ (YYYY-MM-DD)." }).optional(),
   ),
 });
