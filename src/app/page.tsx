@@ -10,7 +10,7 @@ export default function HomePage() {
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-8">
       <header className="flex items-center justify-between gap-4">
         <p className="text-xl font-semibold tracking-tight text-emerald-800 dark:text-emerald-400">
-          Spendly
+          Lucky Money
         </p>
         <form action={logoutAction}>
           <button

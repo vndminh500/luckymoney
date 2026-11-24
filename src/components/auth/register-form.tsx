@@ -1,10 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useActionState } from "react";
 
 import { registerAction, type AuthFormState } from "@/app/(auth)/actions";
-import { Field, FormAlert, SubmitButton } from "@/components/ui/form";
+import { AuthAlert, AuthField, AuthSubmit, PasswordField } from "@/components/auth/auth-fields";
 import { PASSWORD_MIN_LENGTH } from "@/lib/schemas/auth";
 
 export function RegisterForm() {
@@ -12,27 +11,28 @@ export function RegisterForm() {
   const errors = state.fieldErrors ?? {};
 
   return (
-    <form action={formAction} className="flex flex-col gap-4" noValidate>
-      {state.error ? <FormAlert>{state.error}</FormAlert> : null}
-      <Field
+    <form action={formAction} className="flex flex-col gap-5" noValidate>
+      {state.error ? <AuthAlert>{state.error}</AuthAlert> : null}
+      <AuthField
         name="name"
         label="Tên (không bắt buộc)"
         autoComplete="name"
+        placeholder="Bạn muốn được gọi là gì?"
         defaultValue={state.values?.name}
         error={errors.name}
       />
-      <Field
+      <AuthField
         name="email"
         type="email"
         label="Email"
         autoComplete="email"
+        placeholder="ban@email.com"
         required
         defaultValue={state.values?.email}
         error={errors.email}
       />
-      <Field
+      <PasswordField
         name="password"
-        type="password"
         label="Mật khẩu"
         autoComplete="new-password"
         required
@@ -40,16 +40,7 @@ export function RegisterForm() {
         hint={`Ít nhất ${PASSWORD_MIN_LENGTH} ký tự.`}
         error={errors.password}
       />
-      <SubmitButton pending={pending}>{pending ? "Đang tạo tài khoản…" : "Đăng ký"}</SubmitButton>
-      <p className="text-center text-sm text-zinc-600 dark:text-zinc-400">
-        Đã có tài khoản?{" "}
-        <Link
-          href="/login"
-          className="font-medium text-emerald-800 underline dark:text-emerald-400"
-        >
-          Đăng nhập
-        </Link>
-      </p>
+      <AuthSubmit pending={pending}>{pending ? "Đang tạo tài khoản…" : "Đăng ký"}</AuthSubmit>
     </form>
   );
 }

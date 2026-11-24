@@ -7,7 +7,7 @@ async function registerAndSignIn(page: Page): Promise<void> {
   await page
     .getByLabel("Email")
     .fill(`e2e-list-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`);
-  await page.getByLabel("Mật khẩu").fill(PASSWORD);
+  await page.getByLabel("Mật khẩu", { exact: true }).fill(PASSWORD);
   await page.getByRole("button", { name: "Đăng ký" }).click();
   await expect(page).toHaveURL("/");
 }

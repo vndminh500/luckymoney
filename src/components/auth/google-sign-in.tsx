@@ -8,7 +8,7 @@ export function GoogleSignIn({ callbackUrl }: { callbackUrl?: string }) {
         {callbackUrl ? <input type="hidden" name="callbackUrl" value={callbackUrl} /> : null}
         <button
           type="submit"
-          className="flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-zinc-300 bg-white px-4 font-medium text-zinc-900 hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+          className="flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-[var(--auth-border)] bg-[var(--auth-surface)] px-4 font-medium text-[var(--auth-text)] transition-[border-color,box-shadow,transform] duration-200 ease-lm hover:border-lm-sky hover:shadow-[0_6px_16px_rgb(48_175_255/0.18)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lm-deep active:scale-[0.98]"
         >
           <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5">
             <path
@@ -31,10 +31,10 @@ export function GoogleSignIn({ callbackUrl }: { callbackUrl?: string }) {
           Tiếp tục với Google
         </button>
       </form>
-      <div className="my-6 flex items-center gap-3 text-sm text-zinc-600 dark:text-zinc-400">
-        <span className="h-px flex-1 bg-zinc-200 dark:bg-zinc-700" />
-        hoặc
-        <span className="h-px flex-1 bg-zinc-200 dark:bg-zinc-700" />
+      <div className="my-6 flex items-center gap-3 text-sm text-[var(--auth-muted)]">
+        <span className="h-px flex-1 bg-[var(--auth-border)]" />
+        hoặc dùng email
+        <span className="h-px flex-1 bg-[var(--auth-border)]" />
       </div>
     </>
   );

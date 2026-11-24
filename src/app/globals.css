@@ -8,7 +8,44 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-roboto), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Lucky Money brand palette. Sky on white is too light for text (2.4:1), so text
+   and links use ink and deep; sky is a fill with ink text on top. */
+@theme {
+  --color-lm-sky: #30afff;
+  --color-lm-aqua: #92eeff;
+  --color-lm-lime: #d8ffc5;
+  --color-lm-mint: #c4f7ca;
+  --color-lm-ink: #062b45;
+  --color-lm-deep: #0a6fb0;
+
+  --ease-lm: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --animate-lm-rise: lm-rise 520ms var(--ease-lm) both;
+  --animate-lm-drift: lm-drift 22s ease-in-out infinite alternate;
+  --animate-lm-drift-slow: lm-drift 30s ease-in-out infinite alternate-reverse;
+
+  @keyframes lm-rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes lm-drift {
+    from {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    to {
+      transform: translate3d(6%, -8%, 0) scale(1.12);
+    }
+  }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -18,8 +55,49 @@
   }
 }
 
+html {
+  font-size: 16px;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* Sign-in and sign-up screens: light and dark surfaces around the brand palette. */
+.auth-shell {
+  --auth-bg: #f4fbff;
+  --auth-surface: #ffffff;
+  --auth-text: #062b45;
+  --auth-muted: #3d6680;
+  --auth-border: #c9e6f6;
+  --auth-tab-track: #e3f5fd;
+  --auth-tab-pill: #ffffff;
+  background: var(--auth-bg);
+  color: var(--auth-text);
+}
+
+@media (prefers-color-scheme: dark) {
+  .auth-shell {
+    --auth-bg: #061b2b;
+    --auth-surface: #0b2639;
+    --auth-text: #e8f8ff;
+    --auth-muted: #9cc3d8;
+    --auth-border: #1d4560;
+    --auth-tab-track: #0f3048;
+    --auth-tab-pill: #1b5378;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

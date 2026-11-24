@@ -9,7 +9,7 @@ function uniqueEmail(): string {
 async function registerAndSignIn(page: Page): Promise<void> {
   await page.goto("/register");
   await page.getByLabel("Email").fill(uniqueEmail());
-  await page.getByLabel("Mật khẩu").fill(PASSWORD);
+  await page.getByLabel("Mật khẩu", { exact: true }).fill(PASSWORD);
   await page.getByRole("button", { name: "Đăng ký" }).click();
   await expect(page).toHaveURL("/");
 }

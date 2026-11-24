@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 import { isGoogleSignInEnabled } from "@/auth";
+import { AuthAlert } from "@/components/auth/auth-fields";
 import { GoogleSignIn } from "@/components/auth/google-sign-in";
 import { LoginForm } from "@/components/auth/login-form";
-import { FormAlert } from "@/components/ui/form";
 import { safeRedirectPath } from "@/lib/safe-redirect";
 
 export const metadata: Metadata = { title: "Đăng nhập" };
@@ -31,10 +31,11 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
 
   return (
     <>
-      <h1 className="mb-6 text-xl font-semibold">Đăng nhập</h1>
+      <h1 className="text-[1.75rem] leading-tight font-bold tracking-[-0.01em]">Đăng nhập</h1>
+      <p className="mt-2 mb-8 text-[var(--auth-muted)]">Tiếp tục ghi lại chi tiêu của bạn.</p>
       {errorCode ? (
-        <div className="mb-4">
-          <FormAlert>{SIGN_IN_ERRORS[errorCode] ?? DEFAULT_SIGN_IN_ERROR}</FormAlert>
+        <div className="mb-5">
+          <AuthAlert>{SIGN_IN_ERRORS[errorCode] ?? DEFAULT_SIGN_IN_ERROR}</AuthAlert>
         </div>
       ) : null}
       {isGoogleSignInEnabled ? <GoogleSignIn callbackUrl={safeCallbackUrl} /> : null}

@@ -113,3 +113,12 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Mỗi trường hợp kiểm tra: mã trạng thái (404 cho tài nguyên của người khác, 400 khi dùng danh mục của người khác), phản hồi không chứa id, ghi chú hay số tiền của Bob, và toàn bộ bản ghi của Bob không đổi (so sánh snapshot DB). Thêm trường hợp chưa đăng nhập trả 401 cho mọi endpoint và mọi action.
 - Test tự quét `src/app/api/**/route.ts`: thêm endpoint mới mà chưa có trường hợp phân quyền thì test đỏ.
 - Kiểm tra độ mạnh: bỏ điều kiện `userId` trong `getTransaction`/`findOwned` làm 8 test đỏ; bỏ `userId` trong truy vấn danh sách giao dịch và danh mục làm 2 test đỏ. Đã hoàn nguyên.
+
+## Thiết kế lại đăng nhập/đăng ký, thương hiệu Lucky Money (2026-11-24, ngoài PLAN, theo yêu cầu)
+- Bảng màu do người dùng chọn: `#30AFFF`, `#92EEFF`, `#D8FFC5`, `#C4F7CA`, thêm `#062B45` (chữ) và `#0A6FB0` (viền focus). Token Tailwind `lm-*` trong `globals.css`. `#30AFFF` với chữ trắng chỉ 2,4:1 nên nút chính dùng chữ `#062B45` trên nền `#30AFFF`.
+- Font Roboto (400/500/700, subset `vietnamese`) thay Inter cho toàn app; cỡ chữ gốc 16px.
+- Logo: đồng xu xanh có cỏ bốn lá (`src/components/brand/logo.tsx`), favicon `src/app/icon.svg`, bỏ `favicon.ico` mặc định. Tiêu đề trang đổi sang "Lucky Money".
+- Bố cục: desktop chia hai cột (mảng màu thương hiệu với ba giao dịch mẫu bên trái, form bên phải); mobile chỉ còn logo và form. Có chế độ tối qua biến `--auth-*` trong `.auth-shell`.
+- Chuyển động: ba giao dịch mẫu lần lượt trượt lên khi tải trang, nền trôi chậm, tab trượt khi chuyển Đăng nhập/Đăng ký (layout giữ nguyên nên thanh trượt có hiệu ứng), form hiện dần khi đổi trang, ô nhập đổi viền khi focus, nút lún khi bấm, vòng quay khi đang gửi. Tắt toàn bộ khi `prefers-reduced-motion`.
+- Thêm nút ẩn/hiện mật khẩu (`aria-pressed`). Vì nhãn nút có chữ "mật khẩu", e2e đổi sang `getByLabel("Mật khẩu", { exact: true })`.
+- Các trang trong app (trang chủ, giao dịch, danh mục) vẫn dùng màu emerald cũ; nên chuyển sang bảng màu mới ở T15.
