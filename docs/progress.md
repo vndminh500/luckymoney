@@ -235,3 +235,11 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Loading: `LoadingState` (khung xương có `role="status"`, "Đang tải…" cho trình đọc màn hình, dừng nhấp nháy khi người dùng giảm chuyển động) thay dòng chữ ở 16 trang.
 - Lỗi: `src/app/(app)/error.tsx` (giữ sidebar, nút "Thử lại" và "Về trang tổng quan") và `src/app/global-error.tsx` (khi chính layout gốc lỗi, HTML tự định dạng). Hai file này chỉ được kiểm qua build, chưa có test tự động vì khó gây lỗi server có kiểm soát trong e2e.
 - Rỗng: đã có từ trước ở mọi danh sách và biểu đồ; kiểm lại bằng ảnh chụp tài khoản mới ở 360px. Trang không tìm thấy giờ ghi chung chung và dẫn về Tổng quan (trước dẫn về Giao dịch).
+
+## Bộ chọn ngày riêng (2026-11-24, theo yêu cầu)
+- `DatePicker` (src/components/ui/date-picker.tsx) thay `<input type="date">` ở 6 chỗ: ngày giao dịch, ngày sinh, ngày vay, kỳ đầu tiên, từng kỳ trả, ngày trả nợ. Không thêm dependency.
+- Ô gõ được `dd/mm/yyyy` (nhận cả `24112026`, `24-11-2026`, `2026-11-24`); gõ sai thì báo ngay. Giá trị gửi lên server vẫn là `YYYY-MM-DD` qua input ẩn, nên action và Zod không đổi; chuỗi gõ sai được gửi nguyên để server báo lỗi như cũ.
+- Lịch: tuần bắt đầu Thứ Hai, Chủ Nhật màu đỏ, luôn 6 hàng để không nhảy chiều cao, ngày ngoài tháng hiện mờ, hôm nay có viền, ngày chọn tô xanh. Bấm tiêu đề để chọn tháng, rồi chọn năm (khối 12 năm). Nút tắt "Hôm nay", "Hôm qua" (giao dịch, ngày vay, ngày trả), "Xóa" cho ô không bắt buộc. `min`/`max` khóa ngày, tháng, năm ngoài khoảng.
+- Bàn phím theo mẫu APG date picker: mũi tên theo ngày/tuần, Home/End đầu/cuối tuần, PageUp/PageDown theo tháng (Shift: theo năm), Enter chọn, Esc đóng và trả focus về nút lịch; Alt+↓ trong ô mở lịch. Lịch tự canh phải khi sát mép phải màn hình (360px không cuộn ngang).
+- Hàm thuần trong `src/lib/calendar.ts` (đọc ngày gõ, lưới tháng, nhãn đọc màn hình) có unit test; e2e `date-picker.spec.ts` kiểm chọn bằng chuột, bàn phím, phím tắt, gõ tay, lưu đúng ngày, và đi tới ngày sinh 1995 qua bảng năm. Hai e2e cũ đổi giá trị mong đợi sang `dd/mm/yyyy`.
+- Lịch luôn hiện `dd/mm/yyyy`, chưa theo tùy chọn định dạng ngày ISO trong Cài đặt.

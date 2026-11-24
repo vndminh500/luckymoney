@@ -51,7 +51,7 @@ test("edit a transaction from the list", async ({ browser }) => {
   await page.getByRole("link", { name: /Cà phê/ }).click();
   await expect(page.getByRole("heading", { name: "Sửa giao dịch" })).toBeVisible();
   await expect(page.getByLabel("Số tiền")).toHaveValue("40000");
-  await expect(page.getByLabel("Ngày")).toHaveValue("2026-08-20");
+  await expect(page.getByLabel("Ngày")).toHaveValue("20/08/2026");
 
   await page.getByLabel("Số tiền").fill("55k");
   await page.getByLabel("Ghi chú (không bắt buộc)").fill("Cà phê sữa");

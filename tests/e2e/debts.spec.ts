@@ -28,7 +28,7 @@ test("add a debt with an even schedule, pay part of it, then delete it", async (
 
   const schedule = page.getByRole("list", { name: "Các kỳ trả" });
   await expect(schedule.getByRole("listitem")).toHaveCount(3);
-  await expect(page.getByLabel("Ngày trả kỳ 3")).toHaveValue("2030-03-05");
+  await expect(page.getByLabel("Ngày trả kỳ 3")).toHaveValue("05/03/2030");
   await expect(page.getByText("✓ Khớp số tiền nợ")).toBeVisible();
 
   // A schedule that no longer adds up is refused with a clear message.

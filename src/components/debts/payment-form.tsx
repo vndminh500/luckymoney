@@ -4,6 +4,7 @@ import { useActionState, useEffect, useRef } from "react";
 
 import { addPaymentAction, type DebtFormState } from "@/app/(app)/debts/actions";
 import { BrandField, brandPrimaryButton, Spinner } from "@/components/ui/brand-form";
+import { DatePicker } from "@/components/ui/date-picker";
 
 type Props = { debtId: string; suggested: number; today: string; payLabel: string };
 
@@ -38,11 +39,12 @@ export function PaymentForm({ debtId, suggested, today, payLabel }: Props) {
           error={errors.amount}
           required
         />
-        <BrandField
+        <DatePicker
           name="paidOn"
           label="Ngày trả"
-          type="date"
           defaultValue={today}
+          today={today}
+          shortcuts="recent"
           error={errors.paidOn}
           required
         />

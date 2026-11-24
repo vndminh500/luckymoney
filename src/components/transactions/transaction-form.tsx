@@ -9,6 +9,7 @@ import {
   type TransactionFormValues,
 } from "@/app/(app)/transactions/actions";
 import { BrandField, BrandSelect, brandPrimaryButton, Spinner } from "@/components/ui/brand-form";
+import { DatePicker } from "@/components/ui/date-picker";
 import { NOTE_MAX_LENGTH } from "@/lib/schemas/transaction";
 import type { SelectableCategory } from "@/server/categories/service";
 
@@ -192,12 +193,13 @@ function TransactionFields({
       </BrandSelect>
 
       <div className="grid gap-5 sm:grid-cols-[11rem_minmax(0,1fr)]">
-        <BrandField
+        <DatePicker
           name="date"
-          type="date"
           label="Ngày"
           required
           defaultValue={values?.date || today}
+          today={today}
+          shortcuts="recent"
           error={errors.date}
         />
         <BrandField

@@ -4,6 +4,7 @@ import { useActionState } from "react";
 
 import { updateProfileAction, type AccountFormState } from "@/app/(app)/account/actions";
 import { BrandField, brandPrimaryButton, Spinner } from "@/components/ui/brand-form";
+import { DatePicker } from "@/components/ui/date-picker";
 import { BIRTH_DATE_MIN, NAME_MAX_LENGTH } from "@/lib/schemas/account";
 
 type Props = {
@@ -59,12 +60,12 @@ export function ProfileForm({ name, username, birthDate, email, googleLinked, to
           hint="Tên hiển thị duy nhất. Bạn vẫn đăng nhập bằng email."
           error={errors.username}
         />
-        <BrandField
+        <DatePicker
           name="birthDate"
-          type="date"
           label="Ngày sinh"
           min={BIRTH_DATE_MIN}
           max={today}
+          today={today}
           defaultValue={values?.birthDate ?? birthDate ?? ""}
           error={errors.birthDate}
         />

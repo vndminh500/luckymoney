@@ -13,6 +13,7 @@ import {
   FieldMessages,
   Spinner,
 } from "@/components/ui/brand-form";
+import { DatePicker } from "@/components/ui/date-picker";
 import { addMonthsToDateKey, splitEvenly } from "@/lib/debt";
 import { formatVnd, parseVnd } from "@/lib/money";
 
@@ -148,12 +149,13 @@ export function DebtForm({ debtId, initial, today }: Props) {
             error={errors.principal}
             required
           />
-          <BrandField
+          <DatePicker
             name="startDate"
             label="Ngày vay"
-            type="date"
             value={startDate}
-            onChange={(event) => setStartDate(event.target.value)}
+            onChange={setStartDate}
+            today={today}
+            shortcuts="recent"
             error={errors.startDate}
             required
           />
@@ -194,15 +196,15 @@ export function DebtForm({ debtId, initial, today }: Props) {
               className={`${brandControl} w-24`}
             />
           </label>
-          <label className="flex flex-col gap-2">
-            <span className="font-medium">Kỳ đầu tiên</span>
-            <input
-              type="date"
+          <div className="w-48">
+            <DatePicker
+              label="Kỳ đầu tiên"
               value={firstDue}
-              onChange={(event) => setFirstDue(event.target.value)}
-              className={`${brandControl} w-44`}
+              onChange={setFirstDue}
+              today={today}
+              required
             />
-          </label>
+          </div>
           <button
             type="button"
             onClick={split}
@@ -223,13 +225,15 @@ export function DebtForm({ debtId, initial, today }: Props) {
                 <span className="text-sm font-medium text-[var(--dash-muted)] tabular-nums">
                   {index + 1}.
                 </span>
-                <input
-                  type="date"
-                  aria-label={`Ngày trả kỳ ${index + 1}`}
-                  value={row.dueDate}
-                  onChange={(event) => updateRow(row.key, { dueDate: event.target.value })}
-                  className={`${brandControl} col-span-2 sm:col-span-1`}
-                />
+                <div className="col-span-2 sm:col-span-1">
+                  <DatePicker
+                    ariaLabel={`Ngày trả kỳ ${index + 1}`}
+                    value={row.dueDate}
+                    onChange={(dueDate) => updateRow(row.key, { dueDate })}
+                    today={today}
+                    required
+                  />
+                </div>
                 <input
                   inputMode="numeric"
                   aria-label={`Số tiền kỳ ${index + 1}`}
