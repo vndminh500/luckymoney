@@ -37,6 +37,12 @@ enum DebtDirection {
   THEY_OWE
 }
 
+// Tích góp: tiền nạp vào hoặc rút ra khỏi một hũ.
+enum SavingsEntryKind {
+  DEPOSIT
+  WITHDRAW
+}
+
 enum ThemePreference {
   SYSTEM
   LIGHT
@@ -68,6 +74,7 @@ model User {
   transactions Transaction[]
   budgets      Budget[]
   debts        Debt[]
+  savingsJars  SavingsJar[]
 }
 
 // Ảnh đại diện (đã cắt vuông, 256x256) tách bảng riêng để truy vấn User không phải tải ảnh.
@@ -201,4 +208,35 @@ model DebtPayment {
   debt Debt @relation(fields: [debtId], references: [id], onDelete: Cascade)
 
   @@index([debtId])
+}
+
+// Tích góp: hũ tiền / quỹ (vd: Quỹ khẩn cấp). Không phải thu/chi, không vào thống kê.
+// Số dư = tổng nạp - tổng rút, tính từ các lần nạp/rút; không bao giờ âm.
+model SavingsJar {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  icon      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entries SavingsEntry[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model SavingsEntry {
+  id         String           @id @default(cuid())
+  jarId      String
+  kind       SavingsEntryKind
+  amount     Int // luôn dương; chiều nằm ở `kind`
+  occurredOn String // "YYYY-MM-DD" theo múi giờ user
+  note       String?
+  createdAt  DateTime         @default(now())
+
+  jar SavingsJar @relation(fields: [jarId], references: [id], onDelete: Cascade)
+
+  @@index([jarId, occurredOn])
 }
