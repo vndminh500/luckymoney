@@ -108,6 +108,10 @@ test("a birth date far in the past is quick to reach through the year view", asy
   await expect(field).toHaveValue("30/04/1995");
 
   await page.getByRole("button", { name: "Lưu thay đổi" }).click();
+  // Wait for the save itself before reloading.
+  await expect(
+    page.getByRole("status").filter({ hasText: "Đã lưu thông tin cá nhân." }),
+  ).toBeVisible();
   await page.reload();
   await expect(page.getByLabel("Ngày sinh")).toHaveValue("30/04/1995");
 });

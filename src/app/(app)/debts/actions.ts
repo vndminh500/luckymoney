@@ -9,9 +9,11 @@ import {
   createDebt,
   deleteDebt,
   deletePayment,
+  settleDebt,
+  todayForUser,
   updateDebt,
 } from "@/server/debts/service";
-import { NotFoundError, ValidationError } from "@/server/errors";
+import { ConflictError, NotFoundError, ValidationError } from "@/server/errors";
 
 export type DebtFormState = {
   /** First message per field; every schedule problem is reported as "installments". */
@@ -115,4 +117,24 @@ export async function deleteDebtAction(id: string): Promise<void> {
   const userId = await requireUserId();
   await run(() => deleteDebt(userId, id));
   redirect("/debts");
+}
+
+export type SettleDebtState = { error?: string };
+
+/** "Đã tất toán": one payment for everything left, dated today in the user's time zone. */
+export async function settleDebtAction(id: string): Promise<SettleDebtState> {
+  const userId = await requireUserId();
+  try {
+    await settleDebt(userId, id, await todayForUser(userId));
+  } catch (error) {
+    if (error instanceof ConflictError) {
+      return { error: error.message };
+    }
+    if (error instanceof NotFoundError) {
+      notFound();
+    }
+    throw error;
+  }
+  refresh();
+  return {};
 }

@@ -5,7 +5,7 @@ import { toDateKey } from "@/lib/dates";
 import { scheduleStatus, type ScheduleStatus } from "@/lib/debt";
 import { debtSchema, paymentSchema, type DebtInput } from "@/lib/schemas/debt";
 import { prisma } from "@/server/db";
-import { NotFoundError, ValidationError } from "@/server/errors";
+import { ConflictError, NotFoundError, ValidationError } from "@/server/errors";
 
 /**
  * Sổ nợ. Every query is scoped to the user through Debt.userId; installments
@@ -208,4 +208,23 @@ export async function todayForUser(userId: string, now: Date = new Date()): Prom
     select: { timeZone: true },
   });
   return toDateKey(now, user.timeZone);
+}
+
+export const SETTLE_NOTE = "Tất toán";
+
+/**
+ * "Đã tất toán": pays off everything that is left in one payment dated
+ * `today`, so every installment becomes paid. Undo it like any payment.
+ */
+export async function settleDebt(userId: string, id: string, today: string): Promise<void> {
+  const existing = await findOwned(userId, id);
+  const principal = existing.installments.reduce((sum, item) => sum + item.amount, 0);
+  const paid = existing.payments.reduce((sum, payment) => sum + payment.amount, 0);
+  const remaining = principal - paid;
+  if (remaining <= 0) {
+    throw new ConflictError("Khoản nợ này đã trả xong.");
+  }
+  await prisma.debtPayment.create({
+    data: { debtId: id, amount: remaining, paidOn: today, note: SETTLE_NOTE },
+  });
 }

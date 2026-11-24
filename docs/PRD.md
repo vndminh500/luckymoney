@@ -43,6 +43,7 @@ Mọi người ghi chi tiêu bằng ghi chú hoặc bảng tính rồi bỏ sau 
 ### F6. Sổ nợ (thêm theo yêu cầu ngày 2026-11-24)
 - Ghi khoản "Tôi nợ" và "Nợ tôi": người, số tiền, ngày vay, ghi chú, lịch trả dự kiến nhiều kỳ (có nút chia đều theo tháng).
 - Ghi các lần trả (được trả một phần); tiền trả phủ các kỳ sớm nhất trước. Kỳ quá hạn từ ngày sau ngày hạn.
+- Khoản nhiều kỳ chưa trả xong có nút "Đã tất toán" (có hộp xác nhận): ghi một lần trả bằng toàn bộ số còn lại, ngày hôm nay; hoàn tác được như mọi lần trả.
 - Tổng "Tôi đang nợ", "Người khác nợ tôi", số kỳ quá hạn. Không tính vào thu chi và thống kê.
 - Email nhắc mỗi ngày (bật/tắt trong Cài đặt > Thông báo) cho kỳ còn 3 ngày đến hạn và kỳ quá hạn.
 - Nghiệm thu: tổng các kỳ phải bằng số tiền nợ; không trả quá số còn nợ; mỗi kỳ chỉ nhắc một lần mỗi loại; user A không xem/sửa được sổ nợ của user B.

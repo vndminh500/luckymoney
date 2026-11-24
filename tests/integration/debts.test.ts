@@ -9,9 +9,10 @@ import {
   deletePayment,
   getDebt,
   listDebts,
+  settleDebt,
   updateDebt,
 } from "@/server/debts/service";
-import { NotFoundError, ValidationError } from "@/server/errors";
+import { ConflictError, NotFoundError, ValidationError } from "@/server/errors";
 
 let aliceId: string;
 let bobId: string;
@@ -213,5 +214,36 @@ describe("deleteDebt", () => {
     expect(await prisma.debt.count()).toBe(0);
     expect(await prisma.debtInstallment.count()).toBe(0);
     expect(await prisma.debtPayment.count()).toBe(0);
+  });
+});
+
+describe("settleDebt", () => {
+  it("pays off everything that is left in one payment dated today", async () => {
+    const { id } = await createDebt(aliceId, loan);
+    await addPayment(aliceId, id, { amount: 1_200_000, paidOn: "2026-10-05" });
+
+    await settleDebt(aliceId, id, TODAY);
+
+    const debt = await getDebt(aliceId, id, TODAY);
+    expect(debt.status).toMatchObject({ remaining: 0, settled: true, overdueCount: 0 });
+    expect(debt.payments[0]).toMatchObject({
+      amount: 1_800_000,
+      paidOn: TODAY,
+      note: "Tất toán",
+    });
+  });
+
+  it("refuses a debt that is already settled", async () => {
+    const { id } = await createDebt(aliceId, loan);
+    await settleDebt(aliceId, id, TODAY);
+    const error = await settleDebt(aliceId, id, TODAY).catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(ConflictError);
+    expect((await getDebt(aliceId, id, TODAY)).payments).toHaveLength(1);
+  });
+
+  it("is a 404 on another user's debt, which stays untouched", async () => {
+    const { id } = await createDebt(bobId, loan);
+    await notFound(settleDebt(aliceId, id, TODAY));
+    expect((await getDebt(bobId, id, TODAY)).payments).toEqual([]);
   });
 });

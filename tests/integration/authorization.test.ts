@@ -525,6 +525,7 @@ describe("server actions", () => {
     );
     await expectNotFound(debtActions.deletePaymentAction(bobDebt, bobPayment));
     await expectNotFound(debtActions.deleteDebtAction(bobDebt));
+    await expectNotFound(debtActions.settleDebtAction(bobDebt));
 
     expect(await prisma.debt.count({ where: { userId: alice.userId } })).toBe(0);
     expect(await bobSnapshot()).toEqual(before);
@@ -563,6 +564,7 @@ describe("server actions", () => {
       debtActions.addPaymentAction(bobDebt, {}, form({ amount: "1k", paidOn: "2026-11-02" })),
       debtActions.deletePaymentAction(bobDebt, bobPayment),
       debtActions.deleteDebtAction(bobDebt),
+      debtActions.settleDebtAction(bobDebt),
     ];
 
     for (const attempt of attempts) {

@@ -74,9 +74,18 @@ async function expectNoSidewaysScroll(page: Page, path: string): Promise<void> {
       })
       .slice(0, 3)
       .map((el) => `${el.tagName.toLowerCase()}.${el.className.toString().slice(0, 60)}`);
-    return { scroll: document.documentElement.scrollWidth - width, wide };
+    // Text wider than its own box spills onto its neighbours even when the page
+    // does not scroll (e.g. numbers in narrow columns running into each other).
+    const spill = [
+      ...document.querySelectorAll<HTMLElement>("main dd, main dt, main p, main h1, main h2"),
+    ]
+      .filter((el) => getComputedStyle(el).overflowX === "visible")
+      .filter((el) => el.clientWidth > 0 && el.scrollWidth > el.clientWidth + 1)
+      .slice(0, 3)
+      .map((el) => `${el.tagName.toLowerCase()}: ${el.textContent?.slice(0, 40)}`);
+    return { scroll: document.documentElement.scrollWidth - width, wide, spill };
   });
-  expect(overflow, `${path} scrolls sideways at 360px`).toEqual({ scroll: 0, wide: [] });
+  expect(overflow, `${path} overflows at 360px`).toEqual({ scroll: 0, wide: [], spill: [] });
 }
 
 test("every page fits a 360px wide screen", async ({ page }) => {

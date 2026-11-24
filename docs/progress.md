@@ -243,3 +243,8 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Bàn phím theo mẫu APG date picker: mũi tên theo ngày/tuần, Home/End đầu/cuối tuần, PageUp/PageDown theo tháng (Shift: theo năm), Enter chọn, Esc đóng và trả focus về nút lịch; Alt+↓ trong ô mở lịch. Lịch tự canh phải khi sát mép phải màn hình (360px không cuộn ngang).
 - Hàm thuần trong `src/lib/calendar.ts` (đọc ngày gõ, lưới tháng, nhãn đọc màn hình) có unit test; e2e `date-picker.spec.ts` kiểm chọn bằng chuột, bàn phím, phím tắt, gõ tay, lưu đúng ngày, và đi tới ngày sinh 1995 qua bảng năm. Hai e2e cũ đổi giá trị mong đợi sang `dd/mm/yyyy`.
 - Lịch luôn hiện `dd/mm/yyyy`, chưa theo tùy chọn định dạng ngày ISO trong Cài đặt.
+
+## "Đã tất toán" cho khoản nợ nhiều kỳ (2026-11-24, theo yêu cầu)
+- Tất toán = ghi một `DebtPayment` bằng toàn bộ số còn lại, ngày hôm nay theo múi giờ user, ghi chú "Tất toán". Không thêm cột hay trạng thái mới: mọi kỳ thành "Đã trả" nhờ `scheduleStatus`, khoản nợ vào "Đã xong", và hoàn tác bằng nút "Hoàn tác" của lần trả đó. Khoản đã trả xong thì `409`.
+- Nút chỉ hiện với khoản có từ 2 kỳ và chưa trả xong; bấm thì mở `<dialog>` xác nhận (số còn lại, ngày, số kỳ còn lại). Chưa có route API riêng; chỉ có server action, được thêm vào bộ test phân quyền.
+- Ảnh chụp 360px lộ lỗi có sẵn: ba số "Số tiền nợ / Đã trả / Còn lại" đè lên nhau. Test T15 thêm kiểm tra "chữ tràn khỏi ô của nó" (bắt được lỗi trước khi sửa); trên điện thoại ba số giờ xếp thành dòng.

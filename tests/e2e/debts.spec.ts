@@ -96,3 +96,70 @@ test("an overdue installment shows on the list and the debt page", async ({ page
   await expect(page.getByRole("form", { name: "Ghi lần thu" })).toBeVisible();
   await expect(page.getByRole("list", { name: "Lịch trả" })).toContainText("Quá hạn");
 });
+
+test("settle a debt with several installments after confirming, then undo it", async ({ page }) => {
+  await registerAndSignIn(page);
+  const created = await page.request.post("/api/debts", {
+    data: {
+      direction: "I_OWE",
+      counterparty: "Ngân hàng",
+      principal: 3_000_000,
+      startDate: "2026-01-01",
+      installments: [
+        { dueDate: "2030-01-05", amount: 1_000_000 },
+        { dueDate: "2030-02-05", amount: 1_000_000 },
+        { dueDate: "2030-03-05", amount: 1_000_000 },
+      ],
+    },
+  });
+  const { id } = await created.json();
+  await page.request.post(`/api/debts/${id}/payments`, {
+    data: { amount: 500_000, paidOn: "2026-02-01" },
+  });
+
+  await page.goto(`/debts/${id}`);
+  const settle = page.getByRole("button", { name: "Đã tất toán" });
+  const dialog = page.getByRole("dialog", { name: "Tất toán khoản nợ với Ngân hàng?" });
+
+  // Cancel changes nothing.
+  await settle.click();
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText("2.500.000");
+  await expect(dialog).toContainText("3 kỳ còn lại");
+  await dialog.getByRole("button", { name: "Hủy" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(page.getByRole("list", { name: "Lịch trả" })).not.toContainText("Đã trả");
+
+  // Confirm: everything paid, the debt is done, the button is gone.
+  await settle.click();
+  await dialog.getByRole("button", { name: "Xác nhận tất toán" }).click();
+  await expect(dialog).toBeHidden();
+  const installments = page.getByRole("list", { name: "Lịch trả" }).getByRole("listitem");
+  await expect(installments.filter({ hasText: "Đã trả" })).toHaveCount(3);
+  await expect(page.getByRole("heading", { name: "Đã trả xong" })).toBeVisible();
+  await expect(settle).toHaveCount(0);
+  const payments = page.getByRole("list", { name: "Các lần đã trả" }).getByRole("listitem");
+  await expect(payments.first()).toContainText("2.500.000");
+  await expect(payments.first()).toContainText("Tất toán");
+
+  // A mistake can be undone like any payment.
+  await payments
+    .first()
+    .getByRole("button", { name: /^Hoàn tác/ })
+    .click();
+  await expect(settle).toBeVisible();
+
+  // A single-installment debt has no settle button.
+  const single = await page.request.post("/api/debts", {
+    data: {
+      direction: "THEY_OWE",
+      counterparty: "Lan",
+      principal: 100_000,
+      startDate: "2026-01-01",
+      installments: [{ dueDate: "2030-01-01", amount: 100_000 }],
+    },
+  });
+  await page.goto(`/debts/${(await single.json()).id}`);
+  await expect(page.getByRole("heading", { name: "Lan" })).toBeVisible();
+  await expect(settle).toHaveCount(0);
+});

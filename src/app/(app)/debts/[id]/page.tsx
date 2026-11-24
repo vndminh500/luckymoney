@@ -6,6 +6,7 @@ import { Suspense } from "react";
 
 import { deletePaymentAction } from "@/app/(app)/debts/actions";
 import { DeleteDebtButton } from "@/components/debts/delete-debt-dialog";
+import { SettleDebtButton } from "@/components/debts/settle-debt-dialog";
 import { DIRECTION, Monogram, PaidMeter, StateBadge, dueText } from "@/components/debts/debt-ui";
 import { PaymentForm } from "@/components/debts/payment-form";
 import { brandSecondaryButton } from "@/components/ui/brand-form";
@@ -75,24 +76,35 @@ async function Debt({ params }: Pick<PageProps<"/debts/[id]">, "params">) {
               {debt.note ? ` · ${debt.note}` : ""}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Link href={`/debts/${debt.id}/edit`} className={brandSecondaryButton}>
               Sửa
             </Link>
+            {status.installments.length > 1 && !status.settled ? (
+              <SettleDebtButton
+                debtId={debt.id}
+                name={debt.counterparty}
+                remaining={money(status.remaining)}
+                date={date(today)}
+                openInstallments={status.installments.filter((i) => i.state !== "paid").length}
+                verb={debt.direction === "I_OWE" ? "trả" : "thu"}
+              />
+            ) : null}
             <DeleteDebtButton debtId={debt.id} name={debt.counterparty} />
           </div>
         </div>
 
-        <dl className="grid grid-cols-3 gap-3 tabular-nums">
-          <div>
+        {/* One row per figure on phones, three columns from sm up. */}
+        <dl className="grid gap-2 tabular-nums sm:grid-cols-3 sm:gap-3">
+          <div className="flex items-baseline justify-between gap-3 sm:block">
             <dt className="text-sm text-[var(--dash-muted)]">Số tiền nợ</dt>
             <dd className="text-lg font-bold">{money(status.principal)}</dd>
           </div>
-          <div>
+          <div className="flex items-baseline justify-between gap-3 sm:block">
             <dt className="text-sm text-[var(--dash-muted)]">Đã trả</dt>
             <dd className="text-lg font-bold">{money(status.paid)}</dd>
           </div>
-          <div>
+          <div className="flex items-baseline justify-between gap-3 sm:block">
             <dt className="text-sm text-[var(--dash-muted)]">Còn lại</dt>
             <dd className="text-lg font-bold">{money(status.remaining)}</dd>
           </div>
