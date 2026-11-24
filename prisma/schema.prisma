@@ -1,4 +1,4 @@
-// Mô hình dữ liệu cho Spendly.
+// Mô hình dữ liệu cho Lucky Money.
 // Quy ước: tiền là Int (VND), thời gian lưu UTC, mọi bảng dữ liệu người dùng đều có userId.
 
 generator client {
@@ -14,19 +14,62 @@ enum TransactionType {
   EXPENSE
 }
 
-model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  name         String?
-  passwordHash String? // null nếu chỉ đăng nhập bằng Google
-  timeZone     String    @default("Asia/Ho_Chi_Minh")
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+// Tùy chọn hiển thị (Cài đặt > Tùy chỉnh tài chính). Tiền vẫn luôn là VND số nguyên.
+enum AmountFormat {
+  SYMBOL // 50.000 ₫
+  DONG // 50.000 đ
+  SHORT // 50k
+}
 
+enum DateFormat {
+  DMY // 24/11/2026
+  ISO // 2026-11-24
+}
+
+enum WeekStart {
+  MONDAY
+  SUNDAY
+}
+
+enum ThemePreference {
+  SYSTEM
+  LIGHT
+  DARK
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String? // họ tên
+  username     String?  @unique // tên hiển thị duy nhất (@minh); đăng nhập vẫn bằng email
+  birthDate    String? // "YYYY-MM-DD"
+  passwordHash String? // null nếu chỉ đăng nhập bằng Google
+  timeZone     String   @default("Asia/Ho_Chi_Minh")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  amountFormat        AmountFormat    @default(SYMBOL)
+  dateFormat          DateFormat      @default(DMY)
+  weekStart           WeekStart       @default(MONDAY)
+  theme               ThemePreference @default(SYSTEM)
+  notifyBudgetWarning Boolean         @default(true) // cảnh báo khi dùng 80% ngân sách
+  notifyBudgetOver    Boolean         @default(true) // cảnh báo khi vượt ngân sách
+
+  avatar       UserAvatar?
   accounts     Account[]
   categories   Category[]
   transactions Transaction[]
   budgets      Budget[]
+}
+
+// Ảnh đại diện (đã cắt vuông, 256x256) tách bảng riêng để truy vấn User không phải tải ảnh.
+model UserAvatar {
+  userId    String   @id
+  data      Bytes
+  mimeType  String
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // Dùng cho Google OAuth (Auth.js Prisma adapter).
