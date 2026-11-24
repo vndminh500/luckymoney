@@ -31,6 +31,12 @@ enum WeekStart {
   SUNDAY
 }
 
+// Sổ nợ: "Tôi nợ" người khác, hoặc người khác "nợ tôi".
+enum DebtDirection {
+  I_OWE
+  THEY_OWE
+}
+
 enum ThemePreference {
   SYSTEM
   LIGHT
@@ -54,12 +60,14 @@ model User {
   theme               ThemePreference @default(SYSTEM)
   notifyBudgetWarning Boolean         @default(true) // cảnh báo khi dùng 80% ngân sách
   notifyBudgetOver    Boolean         @default(true) // cảnh báo khi vượt ngân sách
+  notifyDebtEmail     Boolean         @default(true) // email nhắc kỳ trả nợ sắp đến hạn / quá hạn
 
   avatar       UserAvatar?
   accounts     Account[]
   categories   Category[]
   transactions Transaction[]
   budgets      Budget[]
+  debts        Debt[]
 }
 
 // Ảnh đại diện (đã cắt vuông, 256x256) tách bảng riêng để truy vấn User không phải tải ảnh.
@@ -143,4 +151,54 @@ model Budget {
 
   @@unique([userId, categoryId, month])
   @@index([userId, month])
+}
+
+// Sổ nợ: không phải thu/chi, nên tách khỏi Transaction và không vào thống kê.
+// Ngày là ngày lịch theo múi giờ của user ("YYYY-MM-DD"). Tiền là VND số nguyên.
+model Debt {
+  id           String        @id @default(cuid())
+  userId       String
+  direction    DebtDirection
+  counterparty String // người cho vay / người vay
+  principal    Int // tổng số tiền nợ
+  startDate    String // "YYYY-MM-DD"
+  note         String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  installments DebtInstallment[]
+  payments     DebtPayment[]
+
+  @@index([userId])
+}
+
+// Lịch trả dự kiến: tổng các kỳ = principal (kiểm tra ở service).
+model DebtInstallment {
+  id      String @id @default(cuid())
+  debtId  String
+  dueDate String // "YYYY-MM-DD"
+  amount  Int
+
+  // Email nhắc đã gửi cho kỳ này (mỗi loại một lần).
+  upcomingRemindedAt DateTime?
+  overdueRemindedAt  DateTime?
+
+  debt Debt @relation(fields: [debtId], references: [id], onDelete: Cascade)
+
+  @@index([debtId, dueDate])
+}
+
+// Các lần trả thực tế (có thể trả một phần).
+model DebtPayment {
+  id        String   @id @default(cuid())
+  debtId    String
+  amount    Int
+  paidOn    String // "YYYY-MM-DD"
+  note      String?
+  createdAt DateTime @default(now())
+
+  debt Debt @relation(fields: [debtId], references: [id], onDelete: Cascade)
+
+  @@index([debtId])
 }
