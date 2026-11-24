@@ -43,8 +43,10 @@ Danh mục mặc định được tạo khi đăng ký (ví dụ: Ăn uống, Đ
 | Method | Path | Mô tả |
 |---|---|---|
 | GET | `/api/stats/summary?month=YYYY-MM` | `{ income, expense, balance }` của tháng theo múi giờ user. |
-| GET | `/api/stats/by-category?month=YYYY-MM&type=EXPENSE` | `[{ categoryId, name, total, percent }]`. |
-| GET | `/api/stats/daily?month=YYYY-MM` | `[{ date: "YYYY-MM-DD", income, expense }]`. |
+| GET | `/api/stats/by-category?month=YYYY-MM&type=EXPENSE` | `[{ categoryId, name, icon, total, percent }]`, lớn nhất trước. `percent` làm tròn 1 chữ số thập phân. Có cả danh mục đã lưu trữ. |
+| GET | `/api/stats/daily?month=YYYY-MM` | `[{ date: "YYYY-MM-DD", income, expense }]`, đủ mọi ngày trong tháng (ngày trống là 0). |
+
+Thiếu `month` thì dùng tháng hiện tại theo múi giờ user. Không tính giao dịch đã xóa mềm.
 
 ## Ngân sách
 | Method | Path | Mô tả |

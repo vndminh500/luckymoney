@@ -122,3 +122,12 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Chuyển động: ba giao dịch mẫu lần lượt trượt lên khi tải trang, nền trôi chậm, tab trượt khi chuyển Đăng nhập/Đăng ký (layout giữ nguyên nên thanh trượt có hiệu ứng), form hiện dần khi đổi trang, ô nhập đổi viền khi focus, nút lún khi bấm, vòng quay khi đang gửi. Tắt toàn bộ khi `prefers-reduced-motion`.
 - Thêm nút ẩn/hiện mật khẩu (`aria-pressed`). Vì nhãn nút có chữ "mật khẩu", e2e đổi sang `getByLabel("Mật khẩu", { exact: true })`.
 - Các trang trong app (trang chủ, giao dịch, danh mục) vẫn dùng màu emerald cũ; nên chuyển sang bảng màu mới ở T15.
+
+## T12. Service và API thống kê (2026-11-24) — đóng luôn T9
+- `src/server/stats/service.ts`: `getSummary`, `getStatsByCategory`, `getDailyStats`. Chung một phạm vi: `userId`, `deletedAt = null`, `occurredAt` trong `[start, end)` của tháng theo múi giờ user (`getMonthRange`). Thiếu `month` thì lấy tháng hiện tại theo múi giờ user.
+- Summary và by-category tổng hợp bằng `groupBy` + `_sum` trong Postgres. Daily lấy các dòng của tháng rồi gom theo ngày địa phương bằng `toDateKey`, để dùng đúng quy tắc múi giờ đã test ở T4 thay vì viết lại bằng `AT TIME ZONE` trong SQL. Trả đủ mọi ngày của tháng (ngày trống là 0) cho biểu đồ.
+- `percent` tính trên số nguyên: `round(total * 1000 / tổng) / 10`, một chữ số thập phân; tổng các phần trăm có thể lệch 0,1 do làm tròn.
+- By-category gồm cả danh mục đã lưu trữ, sắp xếp tổng giảm dần rồi theo tên.
+- Test dữ liệu mẫu (UTC+7): ranh giới 16:59:59Z/17:00Z ở cả đầu và cuối tháng, đổi sang Europe/London, giao dịch xóa mềm, dữ liệu user khác, tháng nhuận (2028-02), tổng daily khớp summary. Lúc đầu test London kỳ vọng sai (đã nhầm ranh giới), service đúng.
+- Test phân quyền T11 tự phát hiện 3 endpoint mới chưa có trường hợp; đã thêm. Bỏ `userId` khỏi phạm vi thống kê làm 7 test đỏ.
+- T9 được tick: điều kiện "xóa mềm không xuất hiện ở thống kê" đã có test.

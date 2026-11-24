@@ -28,6 +28,9 @@ import * as categoryArchiveRoute from "@/app/api/categories/[id]/archive/route";
 import * as categoryRestoreRoute from "@/app/api/categories/[id]/restore/route";
 import * as categoryRoute from "@/app/api/categories/[id]/route";
 import * as categoriesRoute from "@/app/api/categories/route";
+import * as statsByCategoryRoute from "@/app/api/stats/by-category/route";
+import * as statsDailyRoute from "@/app/api/stats/daily/route";
+import * as statsSummaryRoute from "@/app/api/stats/summary/route";
 import * as transactionRoute from "@/app/api/transactions/[id]/route";
 import * as transactionsRoute from "@/app/api/transactions/route";
 import { prisma } from "@/server/db";
@@ -199,6 +202,25 @@ const endpoints: {
         context(bob.salary),
       ),
     expectStatus: 404,
+  },
+  // Statistics for the month of Bob's 99,000 must not include it.
+  {
+    route: "stats/summary",
+    method: "GET",
+    attack: () => statsSummaryRoute.GET(request("GET", "/api/stats/summary?month=2026-11")),
+    expectStatus: 200,
+  },
+  {
+    route: "stats/by-category",
+    method: "GET",
+    attack: () => statsByCategoryRoute.GET(request("GET", "/api/stats/by-category?month=2026-11")),
+    expectStatus: 200,
+  },
+  {
+    route: "stats/daily",
+    method: "GET",
+    attack: () => statsDailyRoute.GET(request("GET", "/api/stats/daily?month=2026-11")),
+    expectStatus: 200,
   },
 ];
 
