@@ -1,3 +1,4 @@
+import { LoadingState } from "@/components/ui/loading-state";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -22,7 +23,7 @@ export default function TransactionsPage({ searchParams }: PageProps<"/transacti
         </Link>
       </div>
       {/* The list depends on the user and the URL, so it streams in. */}
-      <Suspense fallback={<p className="text-[var(--dash-muted)]">Đang tải…</p>}>
+      <Suspense fallback={<LoadingState />}>
         <ListLoader searchParams={searchParams} />
       </Suspense>
     </main>

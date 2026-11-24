@@ -1,3 +1,4 @@
+import { LoadingState } from "@/components/ui/loading-state";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -25,7 +26,7 @@ export default function NewTransactionPage() {
       </div>
       <section className="animate-lm-rise rounded-2xl border border-[var(--dash-border)] bg-[var(--dash-surface)] p-5 sm:p-6">
         {/* Categories and "today" depend on the signed-in user, so they stream in. */}
-        <Suspense fallback={<p className="text-[var(--dash-muted)]">Đang tải…</p>}>
+        <Suspense fallback={<LoadingState />}>
           <FormLoader />
         </Suspense>
       </section>

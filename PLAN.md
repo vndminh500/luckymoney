@@ -43,7 +43,8 @@ Làm theo lát cắt dọc: mỗi tính năng chạy được từ giao diện �
   - Xong khi: test `percentUsed` đúng; hiển thị cảnh báo đúng ngưỡng.
 
 ## Giai đoạn 5: Hoàn thiện và triển khai
-- [ ] T15. Responsive (360px), kiểm tra truy cập bàn phím, trạng thái loading/lỗi/rỗng.
+- [x] T15. Responsive (360px), kiểm tra truy cập bàn phím, trạng thái loading/lỗi/rỗng.
+  - Xong khi: e2e `responsive-a11y.spec.ts` pass: 17 trang trong app và 2 trang đăng nhập không cuộn ngang ở 360px; skip link; menu điện thoại dùng được bằng bàn phím; trang không tìm thấy có đường quay về.
 - [ ] T16. Giới hạn tần suất cho đăng nhập/đăng ký, rà soát bảo mật (header, cookie, input).
 - [ ] T17. Triển khai Vercel + Postgres hosted, tạo tài khoản demo với dữ liệu mẫu.
 - [ ] T18. Viết `README.md` tiếng Anh: giới thiệu, ảnh chụp màn hình, sơ đồ kiến trúc, stack, cách chạy, link demo.

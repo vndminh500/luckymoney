@@ -1,3 +1,4 @@
+import { LoadingState } from "@/components/ui/loading-state";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
@@ -14,7 +15,7 @@ const card =
 
 export default function ProfilePage() {
   return (
-    <Suspense fallback={<p className="text-[var(--dash-muted)]">Đang tải…</p>}>
+    <Suspense fallback={<LoadingState />}>
       <Profile />
     </Suspense>
   );

@@ -1,3 +1,4 @@
+import { LoadingState } from "@/components/ui/loading-state";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -27,7 +28,7 @@ export default function EditTransactionPage({ params }: PageProps<"/transactions
           Sửa giao dịch
         </h1>
       </div>
-      <Suspense fallback={<p className="text-[var(--dash-muted)]">Đang tải…</p>}>
+      <Suspense fallback={<LoadingState />}>
         <EditLoader params={params} />
       </Suspense>
     </main>

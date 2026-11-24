@@ -1,3 +1,4 @@
+import { LoadingState } from "@/components/ui/loading-state";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -23,7 +24,7 @@ type View = (typeof VIEWS)[number]["value"];
 export default function DebtsPage({ searchParams }: PageProps<"/debts">) {
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8">
-      <Suspense fallback={<p className="text-[var(--dash-muted)]">Đang tải…</p>}>
+      <Suspense fallback={<LoadingState />}>
         <Debts searchParams={searchParams} />
       </Suspense>
     </main>
@@ -141,7 +142,7 @@ function DebtCard({
   const nextState = next ? status.installments.find((i) => i.id === next.id)?.state : undefined;
 
   return (
-    <li className="animate-lm-rise" style={{ animationDelay: `${delay}ms` }}>
+    <li className="min-w-0 animate-lm-rise" style={{ animationDelay: `${delay}ms` }}>
       <Link
         href={`/debts/${debt.id}`}
         className="flex h-full flex-col gap-3 rounded-2xl border border-[var(--dash-border)] bg-[var(--dash-surface)] p-5 transition-[border-color,box-shadow,transform] duration-200 ease-lm hover:-translate-y-0.5 hover:border-lm-sky hover:shadow-[0_12px_28px_rgb(6_43_69/0.08)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lm-deep"

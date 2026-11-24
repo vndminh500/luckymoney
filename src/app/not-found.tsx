@@ -12,10 +12,10 @@ export default function NotFound() {
           Không tìm thấy
         </h1>
         <p className="text-[var(--dash-muted)]">
-          Trang hoặc giao dịch này không tồn tại, hoặc đã bị xóa.
+          Trang này không tồn tại, hoặc nội dung đã bị xóa.
         </p>
-        <Link href="/transactions" className={`${brandPrimaryButton} mt-2`}>
-          Về danh sách giao dịch
+        <Link href="/" className={`${brandPrimaryButton} mt-2`}>
+          Về trang tổng quan
         </Link>
       </main>
     </div>

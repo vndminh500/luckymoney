@@ -1,3 +1,4 @@
+import { LoadingState } from "@/components/ui/loading-state";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -19,7 +20,7 @@ const monthButton =
 export default function BudgetsPage({ searchParams }: PageProps<"/budgets">) {
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8">
-      <Suspense fallback={<p className="text-[var(--dash-muted)]">Đang tải…</p>}>
+      <Suspense fallback={<LoadingState />}>
         <Budgets searchParams={searchParams} />
       </Suspense>
     </main>

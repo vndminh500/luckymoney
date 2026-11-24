@@ -1,3 +1,4 @@
+import { LoadingState } from "@/components/ui/loading-state";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
@@ -10,7 +11,7 @@ export const metadata: Metadata = { title: "Giao diện" };
 
 export default function AppearancePage() {
   return (
-    <Suspense fallback={<p className="text-[var(--dash-muted)]">Đang tải…</p>}>
+    <Suspense fallback={<LoadingState />}>
       <Appearance />
     </Suspense>
   );

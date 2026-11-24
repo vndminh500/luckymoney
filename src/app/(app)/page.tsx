@@ -1,3 +1,4 @@
+import { LoadingState } from "@/components/ui/loading-state";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -22,7 +23,7 @@ export default function DashboardPage({ searchParams }: PageProps<"/">) {
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8">
       {/* The user, the month and its numbers are request data: they stream in. */}
-      <Suspense fallback={<p className="text-[var(--dash-muted)]">Đang tải…</p>}>
+      <Suspense fallback={<LoadingState />}>
         <Dashboard searchParams={searchParams} />
       </Suspense>
     </main>
@@ -57,7 +58,8 @@ async function Dashboard({ searchParams }: Pick<PageProps<"/">, "searchParams">)
   const [stats, display] = await Promise.all([loadStats(user.id, month), getPreferences(user.id)]);
 
   const greeting = (
-    <h1 className="text-[1.75rem] leading-tight font-bold tracking-[-0.01em]">
+    // A long email has no natural break points: let it wrap anywhere.
+    <h1 className="text-[1.75rem] leading-tight font-bold tracking-[-0.01em] [overflow-wrap:anywhere]">
       Xin chào, {user.name ?? user.email}
     </h1>
   );

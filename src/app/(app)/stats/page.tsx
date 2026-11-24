@@ -1,3 +1,4 @@
+import { LoadingState } from "@/components/ui/loading-state";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -39,7 +40,7 @@ export default function StatsPage({ searchParams }: PageProps<"/stats">) {
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8">
       <h1 className="text-[1.75rem] leading-tight font-bold tracking-[-0.01em]">Thống kê</h1>
       {/* The period comes from the URL and the data from the user: they stream in. */}
-      <Suspense fallback={<p className="text-[var(--dash-muted)]">Đang tải…</p>}>
+      <Suspense fallback={<LoadingState />}>
         <Stats searchParams={searchParams} />
       </Suspense>
     </main>

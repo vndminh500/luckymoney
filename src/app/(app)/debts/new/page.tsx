@@ -1,3 +1,4 @@
+import { LoadingState } from "@/components/ui/loading-state";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
@@ -11,7 +12,7 @@ export default function NewDebtPage() {
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-8">
       <h1 className="text-[1.75rem] leading-tight font-bold tracking-[-0.01em]">Thêm khoản nợ</h1>
-      <Suspense fallback={<p className="text-[var(--dash-muted)]">Đang tải…</p>}>
+      <Suspense fallback={<LoadingState />}>
         <NewDebt />
       </Suspense>
     </main>

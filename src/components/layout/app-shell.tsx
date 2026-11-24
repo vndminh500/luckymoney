@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Suspense, useEffect, useState, type ReactNode } from "react";
+import { Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { Logo } from "@/components/brand/logo";
 
@@ -151,10 +151,14 @@ export function AppShell({
   accountMenu: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const drawerRef = useRef<HTMLElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const wasOpen = useRef(false);
 
-  // Escape closes the drawer.
+  // Opening moves focus to the first section; Escape closes the drawer.
   useEffect(() => {
     if (!open) return;
+    drawerRef.current?.querySelector<HTMLElement>("nav a")?.focus();
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") setOpen(false);
     };
@@ -162,10 +166,25 @@ export function AppShell({
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
+  // Closing gives focus back to the menu button, unless a link already took
+  // the user to another page (focus then belongs to the new page).
+  useEffect(() => {
+    if (wasOpen.current && !open && drawerRef.current?.contains(document.activeElement)) {
+      menuButtonRef.current?.focus();
+    }
+    wasOpen.current = open;
+  }, [open]);
+
   const close = () => setOpen(false);
 
   return (
     <div className="dash-shell flex min-h-full flex-1">
+      <a
+        href="#noi-dung"
+        className="fixed top-3 left-3 z-[60] -translate-y-20 rounded-xl bg-lm-sky px-4 py-2.5 font-bold text-lm-ink shadow-lg transition-transform duration-200 ease-lm focus-visible:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lm-deep"
+      >
+        Bỏ qua tới nội dung chính
+      </a>
       {/* Desktop sidebar */}
       <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 border-r border-[var(--dash-border)] bg-[var(--dash-surface)] lg:block">
         <Sidebar onNavigate={close} />
@@ -180,11 +199,16 @@ export function AppShell({
         }`}
       />
       <aside
+        ref={drawerRef}
         id="app-drawer"
         aria-label="Menu"
         inert={!open}
-        className={`fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] border-r border-[var(--dash-border)] bg-[var(--dash-surface)] shadow-[0_20px_60px_rgb(6_43_69/0.25)] transition-[transform,visibility] duration-300 ease-lm lg:hidden ${
-          open ? "visible translate-x-0" : "invisible -translate-x-full"
+        className={`fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] border-r border-[var(--dash-border)] bg-[var(--dash-surface)] shadow-[0_20px_60px_rgb(6_43_69/0.25)] lg:hidden ${
+          // Visible at once when opening (so focus can move in), hidden only
+          // after the slide-out when closing.
+          open
+            ? "visible translate-x-0 [transition:transform_300ms_var(--ease-lm),visibility_0s]"
+            : "invisible -translate-x-full [transition:transform_300ms_var(--ease-lm),visibility_0s_300ms]"
         }`}
       >
         <Sidebar onNavigate={close} />
@@ -193,6 +217,7 @@ export function AppShell({
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-[var(--dash-border)] bg-[var(--dash-surface)]/80 px-4 py-3 backdrop-blur lg:justify-end">
           <button
+            ref={menuButtonRef}
             type="button"
             aria-label="Mở menu"
             aria-expanded={open}
@@ -209,7 +234,10 @@ export function AppShell({
           </Link>
           {accountMenu}
         </header>
-        {children}
+        {/* Skip-link target; inert behind the open phone menu. */}
+        <div id="noi-dung" tabIndex={-1} inert={open} className="flex flex-1 flex-col outline-none">
+          {children}
+        </div>
       </div>
     </div>
   );

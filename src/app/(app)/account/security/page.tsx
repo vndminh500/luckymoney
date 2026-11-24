@@ -1,3 +1,4 @@
+import { LoadingState } from "@/components/ui/loading-state";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
@@ -9,7 +10,7 @@ export const metadata: Metadata = { title: "Bảo mật" };
 
 export default function SecurityPage() {
   return (
-    <Suspense fallback={<p className="text-[var(--dash-muted)]">Đang tải…</p>}>
+    <Suspense fallback={<LoadingState />}>
       <Security />
     </Suspense>
   );
