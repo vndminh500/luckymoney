@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
-import { AppHeader } from "@/components/layout/app-header";
 import { TransactionList } from "@/components/transactions/transaction-list";
 import { BrandAlert, brandPrimaryButton } from "@/components/ui/brand-form";
 import { getCurrentUser } from "@/server/auth/session";
@@ -14,21 +13,18 @@ export const metadata: Metadata = { title: "Giao dịch" };
 
 export default function TransactionsPage({ searchParams }: PageProps<"/transactions">) {
   return (
-    <div className="dash-shell flex flex-1 flex-col">
-      <AppHeader current="/transactions" />
-      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-8">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <h1 className="text-[1.75rem] leading-tight font-bold tracking-[-0.01em]">Giao dịch</h1>
-          <Link href="/transactions/new" className={brandPrimaryButton}>
-            Thêm giao dịch
-          </Link>
-        </div>
-        {/* The list depends on the user and the URL, so it streams in. */}
-        <Suspense fallback={<p className="text-[var(--dash-muted)]">Đang tải…</p>}>
-          <ListLoader searchParams={searchParams} />
-        </Suspense>
-      </main>
-    </div>
+    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-8">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-[1.75rem] leading-tight font-bold tracking-[-0.01em]">Giao dịch</h1>
+        <Link href="/transactions/new" className={brandPrimaryButton}>
+          Thêm giao dịch
+        </Link>
+      </div>
+      {/* The list depends on the user and the URL, so it streams in. */}
+      <Suspense fallback={<p className="text-[var(--dash-muted)]">Đang tải…</p>}>
+        <ListLoader searchParams={searchParams} />
+      </Suspense>
+    </main>
   );
 }
 

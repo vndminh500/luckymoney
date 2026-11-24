@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { deleteTransactionAction, updateTransactionAction } from "@/app/(app)/transactions/actions";
-import { AppHeader } from "@/components/layout/app-header";
 import { TransactionForm } from "@/components/transactions/transaction-form";
 import { toDateKey } from "@/lib/dates";
 import { getCurrentUser } from "@/server/auth/session";
@@ -16,25 +15,22 @@ export const metadata: Metadata = { title: "Sửa giao dịch" };
 
 export default function EditTransactionPage({ params }: PageProps<"/transactions/[id]/edit">) {
   return (
-    <div className="dash-shell flex flex-1 flex-col">
-      <AppHeader current="/transactions" />
-      <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8">
-        <div>
-          <Link
-            href="/transactions"
-            className="text-sm font-medium text-[var(--dash-muted)] underline-offset-4 hover:text-[var(--dash-text)] hover:underline"
-          >
-            Về danh sách
-          </Link>
-          <h1 className="mt-2 text-[1.75rem] leading-tight font-bold tracking-[-0.01em]">
-            Sửa giao dịch
-          </h1>
-        </div>
-        <Suspense fallback={<p className="text-[var(--dash-muted)]">Đang tải…</p>}>
-          <EditLoader params={params} />
-        </Suspense>
-      </main>
-    </div>
+    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8">
+      <div>
+        <Link
+          href="/transactions"
+          className="text-sm font-medium text-[var(--dash-muted)] underline-offset-4 hover:text-[var(--dash-text)] hover:underline"
+        >
+          Về danh sách
+        </Link>
+        <h1 className="mt-2 text-[1.75rem] leading-tight font-bold tracking-[-0.01em]">
+          Sửa giao dịch
+        </h1>
+      </div>
+      <Suspense fallback={<p className="text-[var(--dash-muted)]">Đang tải…</p>}>
+        <EditLoader params={params} />
+      </Suspense>
+    </main>
   );
 }
 

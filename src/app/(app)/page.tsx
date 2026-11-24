@@ -5,7 +5,6 @@ import { Suspense } from "react";
 import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
 import { DailyChart } from "@/components/dashboard/daily-chart";
 import { SummaryTiles } from "@/components/dashboard/summary-tiles";
-import { AppHeader } from "@/components/layout/app-header";
 import { addMonths } from "@/lib/dates";
 import { getCurrentUser } from "@/server/auth/session";
 import { ValidationError } from "@/server/errors";
@@ -19,15 +18,12 @@ const monthButton =
 /** The signed-in home page: the monthly dashboard (PRD F4). */
 export default function DashboardPage({ searchParams }: PageProps<"/">) {
   return (
-    <div className="dash-shell flex flex-1 flex-col">
-      <AppHeader />
-      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8">
-        {/* The user, the month and its numbers are request data: they stream in. */}
-        <Suspense fallback={<p className="text-[var(--dash-muted)]">Đang tải…</p>}>
-          <Dashboard searchParams={searchParams} />
-        </Suspense>
-      </main>
-    </div>
+    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8">
+      {/* The user, the month and its numbers are request data: they stream in. */}
+      <Suspense fallback={<p className="text-[var(--dash-muted)]">Đang tải…</p>}>
+        <Dashboard searchParams={searchParams} />
+      </Suspense>
+    </main>
   );
 }
 

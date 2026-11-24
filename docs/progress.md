@@ -157,3 +157,10 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Danh sách: mỗi dòng có vòng biểu tượng danh mục, tên, ghi chú, số tiền (thu màu xanh lá, chi giữ màu chữ) và ngày; trạng thái rỗng có nút thêm giao dịch; chuyển tháng bằng nút tròn ‹ › (nhãn "Tháng trước"/"Tháng sau"); phân trang có mũi tên SVG thay ký tự "→".
 - `src/components/ui/form.tsx` (kiểu cũ) giờ chỉ còn trang danh mục dùng.
 - E2E cập nhật theo giao diện: ghi chú và ngày nằm ở hai chỗ riêng thay vì chuỗi "15/10/2026 · Bún chả", nút "Tháng sau" thay "Tháng sau →".
+
+## Menu chuyển sang sidebar bên trái (2026-11-24, ngoài PLAN, theo yêu cầu)
+- Layout chung `src/app/(app)/layout.tsx` + `src/components/layout/app-shell.tsx`: sidebar trái (logo, Tổng quan, Giao dịch, Ngân sách, Danh mục, có biểu tượng), thanh trên cùng chỉ còn nút "Đăng xuất". Dashboard chuyển từ `src/app/page.tsx` vào `src/app/(app)/page.tsx` để dùng chung layout; layout giữ nguyên khi chuyển trang nên thanh đánh dấu mục hiện tại có hiệu ứng. Bỏ `app-header.tsx`.
+- Trang danh mục (vẫn kiểu cũ bên trong) cũng nằm trong khung mới; bỏ hai liên kết "Trang chủ"/"Giao dịch" ở đầu trang.
+- Dưới `lg`: sidebar thành ngăn kéo trượt từ trái (nút "Mở menu", `aria-expanded`, lớp phủ mờ), đóng khi chọn mục, bấm lớp phủ hoặc Esc; khi đóng dùng `invisible` + `inert` để không vào được bằng bàn phím hay trình đọc màn hình. Trên màn hình nhỏ nút đăng xuất chỉ hiện biểu tượng, chữ "Đăng xuất" vẫn là tên truy cập.
+- Next (Cache Components) đòi `usePathname()` nằm trong `<Suspense>` ở route động (`/transactions/[id]/edit` làm build lỗi). Chỉ danh sách menu đọc `usePathname`, bọc trong `<Suspense>` với dự phòng là cùng danh sách chưa đánh dấu.
+- E2E mới `tests/e2e/navigation.spec.ts`: mục hiện tại có `aria-current`, thanh trên chỉ có nút đăng xuất, ngăn kéo mở/đóng trên điện thoại.

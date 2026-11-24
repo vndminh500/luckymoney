@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Suspense } from "react";
 
 import { AddCategoryForm, CategoryRow } from "@/components/categories/category-manager";
@@ -11,17 +10,7 @@ export const metadata: Metadata = { title: "Danh mục" };
 export default function CategoriesPage() {
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-8">
-      <header className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-xl font-semibold">Danh mục</h1>
-        <div className="flex items-center gap-4 text-sm font-medium">
-          <Link href="/" className="text-emerald-800 underline dark:text-emerald-400">
-            Trang chủ
-          </Link>
-          <Link href="/transactions" className="text-emerald-800 underline dark:text-emerald-400">
-            Giao dịch
-          </Link>
-        </div>
-      </header>
+      <h1 className="text-[1.75rem] leading-tight font-bold tracking-[-0.01em]">Danh mục</h1>
       <AddCategoryForm />
       <Suspense fallback={<p className="text-zinc-600 dark:text-zinc-400">Đang tải…</p>}>
         <CategoryLists />

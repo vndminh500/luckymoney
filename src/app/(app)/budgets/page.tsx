@@ -4,7 +4,6 @@ import { Suspense } from "react";
 
 import { BudgetForm } from "@/components/budgets/budget-form";
 import { BudgetList } from "@/components/budgets/budget-list";
-import { AppHeader } from "@/components/layout/app-header";
 import { addMonths } from "@/lib/dates";
 import { getCurrentUser } from "@/server/auth/session";
 import { listBudgets } from "@/server/budgets/service";
@@ -18,14 +17,11 @@ const monthButton =
 
 export default function BudgetsPage({ searchParams }: PageProps<"/budgets">) {
   return (
-    <div className="dash-shell flex flex-1 flex-col">
-      <AppHeader current="/budgets" />
-      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8">
-        <Suspense fallback={<p className="text-[var(--dash-muted)]">Đang tải…</p>}>
-          <Budgets searchParams={searchParams} />
-        </Suspense>
-      </main>
-    </div>
+    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8">
+      <Suspense fallback={<p className="text-[var(--dash-muted)]">Đang tải…</p>}>
+        <Budgets searchParams={searchParams} />
+      </Suspense>
+    </main>
   );
 }
 
