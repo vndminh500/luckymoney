@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useEffect, useRef } from "react";
 
 export type SectionTab = { href: string; label: string };
 
@@ -18,7 +18,7 @@ function TabList({
   return (
     <nav
       aria-label={label}
-      className="flex gap-1 overflow-x-auto border-b border-[var(--dash-border)]"
+      className="flex gap-1 overflow-x-auto overflow-y-hidden border-b border-[var(--dash-border)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {tabs.map((tab) => {
         const active = pathname === tab.href;
@@ -33,7 +33,7 @@ function TabList({
             {/* Underline of the current section; grows in when it becomes active. */}
             <span
               aria-hidden="true"
-              className={`absolute inset-x-3 -bottom-px h-0.5 origin-center rounded-full bg-lm-sky transition-transform duration-300 ease-lm ${
+              className={`absolute inset-x-3 bottom-0 h-0.5 origin-center rounded-full bg-lm-sky transition-transform duration-300 ease-lm ${
                 active ? "scale-x-100" : "scale-x-0"
               }`}
             />
@@ -45,7 +45,22 @@ function TabList({
 }
 
 function CurrentTabList(props: { tabs: SectionTab[]; label: string }) {
-  return <TabList {...props} pathname={usePathname()} />;
+  const pathname = usePathname();
+  const ref = useRef<HTMLDivElement>(null);
+
+  // On narrow screens the tabs scroll sideways without a scrollbar, so bring
+  // the current one into view instead of leaving it hidden off the edge.
+  useEffect(() => {
+    ref.current
+      ?.querySelector('[aria-current="page"]')
+      ?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [pathname]);
+
+  return (
+    <div ref={ref}>
+      <TabList {...props} pathname={pathname} />
+    </div>
+  );
 }
 
 /** Second-level navigation of a section (Account, Settings). */
