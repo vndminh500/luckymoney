@@ -20,6 +20,7 @@ test("the sidebar lists the sections and marks the current one", async ({ page }
     "Giao dịch",
     "Ngân sách",
     "Sổ nợ",
+    "Tích góp",
     "Danh mục",
   ]);
   await expect(nav.getByRole("link", { name: "Tổng quan" })).toHaveAttribute(

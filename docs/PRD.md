@@ -48,6 +48,12 @@ Mọi người ghi chi tiêu bằng ghi chú hoặc bảng tính rồi bỏ sau 
 - Email nhắc mỗi ngày (bật/tắt trong Cài đặt > Thông báo) cho kỳ còn 3 ngày đến hạn và kỳ quá hạn.
 - Nghiệm thu: tổng các kỳ phải bằng số tiền nợ; không trả quá số còn nợ; mỗi kỳ chỉ nhắc một lần mỗi loại; user A không xem/sửa được sổ nợ của user B.
 
+### F7. Tích góp (thêm theo yêu cầu ngày 2026-11-24)
+- Các hũ tiền / quỹ (vd: Quỹ khẩn cấp, Du lịch): tên, biểu tượng; nạp và rút nhiều lần, có ngày và ghi chú.
+- Tổng tiền tích góp, số dư từng hũ và phần trăm trong tổng; lịch sử có số dư sau mỗi lần.
+- Không tính vào thu chi và thống kê. Chưa có nhắc nhở.
+- Nghiệm thu: không rút quá số dư; không hoàn tác lần nạp đã bị rút; xóa hũ phải xác nhận; user A không xem/sửa được hũ của user B.
+
 ## 6. Ý tưởng cho v2
 - Giao dịch định kỳ, nhập/xuất CSV, đính kèm hóa đơn.
 - Nhập nhanh bằng AI: gõ "phở 50k hôm qua", ứng dụng tự tách số tiền, danh mục, ngày (LLM trả về dữ liệu có cấu trúc, người dùng xác nhận trước khi lưu).

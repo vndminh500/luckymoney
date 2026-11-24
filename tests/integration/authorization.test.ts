@@ -29,6 +29,7 @@ import * as budgetActions from "@/app/(app)/budgets/actions";
 import * as accountAvatarRoute from "@/app/api/account/avatar/route";
 import * as categoryActions from "@/app/(app)/categories/actions";
 import * as debtActions from "@/app/(app)/debts/actions";
+import * as savingsActions from "@/app/(app)/savings/actions";
 import * as settingsActions from "@/app/(app)/settings/actions";
 import * as transactionActions from "@/app/(app)/transactions/actions";
 import * as categoryRoute from "@/app/api/categories/[id]/route";
@@ -617,6 +618,26 @@ describe("server actions", () => {
     expect(await bobSnapshot()).toEqual(before);
   });
 
+  it("savings actions are a 404 on Bob's jar and entry", async () => {
+    const before = await bobSnapshot();
+
+    await expectNotFound(
+      savingsActions.updateJarAction(bobJar, {}, form({ name: "Hacked", icon: "" })),
+    );
+    await expectNotFound(
+      savingsActions.addEntryAction(
+        bobJar,
+        {},
+        form({ kind: "WITHDRAW", amount: "8765432", occurredOn: "2026-11-02", note: "" }),
+      ),
+    );
+    await expectNotFound(savingsActions.deleteEntryAction(bobJar, bobEntry));
+    await expectNotFound(savingsActions.deleteJarAction(bobJar));
+
+    expect(await prisma.savingsJar.count({ where: { userId: alice.userId } })).toBe(0);
+    expect(await bobSnapshot()).toEqual(before);
+  });
+
   it("every action requires a session", async () => {
     signInAs(null);
     const before = await bobSnapshot();
@@ -651,6 +672,15 @@ describe("server actions", () => {
       debtActions.deletePaymentAction(bobDebt, bobPayment),
       debtActions.deleteDebtAction(bobDebt),
       debtActions.settleDebtAction(bobDebt),
+      savingsActions.createJarAction({}, form({ name: "X", icon: "" })),
+      savingsActions.updateJarAction(bobJar, {}, form({ name: "X", icon: "" })),
+      savingsActions.addEntryAction(
+        bobJar,
+        {},
+        form({ kind: "DEPOSIT", amount: "1k", occurredOn: "2026-11-02", note: "" }),
+      ),
+      savingsActions.deleteEntryAction(bobJar, bobEntry),
+      savingsActions.deleteJarAction(bobJar),
     ];
 
     for (const attempt of attempts) {

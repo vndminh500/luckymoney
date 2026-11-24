@@ -13,6 +13,7 @@ const FEATURES = [
   "Ngân sách theo danh mục, cảnh báo ở 80% và 100%",
   "Danh mục riêng: thêm, sửa, xóa, chọn biểu tượng",
   "Sổ nợ: ai nợ ai, lịch trả nhiều kỳ, email nhắc hạn",
+  "Tích góp: chia tiền để dành vào từng hũ",
 ];
 
 export default function AboutPage() {

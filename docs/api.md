@@ -70,6 +70,19 @@ Ngày là ngày lịch `YYYY-MM-DD`; trạng thái tính theo "hôm nay" ở mú
 | DELETE | `/api/debts/:id/payments/:paymentId` | Hoàn tác một lần trả. `204`. |
 | GET | `/api/cron/debt-reminders` | Chỉ cho Vercel Cron: header `Authorization: Bearer $CRON_SECRET`. Gửi email nhắc (kỳ còn ≤ 3 ngày và kỳ quá hạn, mỗi kỳ một lần mỗi loại). Trả `{ emails, installments }`. |
 
+## Tích góp
+Hũ tiền / quỹ. Không phải thu/chi, không vào thống kê. Số dư = tổng nạp − tổng rút, không bao giờ âm.
+
+| Method | Path | Mô tả |
+|---|---|---|
+| GET | `/api/savings` | `{ jars: [{ id, name, icon, balance, lastActivity }], total }`, hũ nhiều tiền nhất trước. |
+| POST | `/api/savings` | Body: `{ name, icon? }`. Tên không trùng trong cùng user (`409`). `201`. |
+| GET | `/api/savings/:id` | Hũ với `balance`, `deposited`, `withdrawn` và `entries` (mới nhất trước, kèm `balanceAfter`). |
+| PATCH | `/api/savings/:id` | Body: `{ name?, icon? }` (ít nhất một). |
+| DELETE | `/api/savings/:id` | Xóa hũ và lịch sử. `204`. |
+| POST | `/api/savings/:id/entries` | Body: `{ kind: "DEPOSIT" \| "WITHDRAW", amount, occurredOn, note? }`. Không rút quá số dư. `201`. |
+| DELETE | `/api/savings/:id/entries/:entryId` | Hoàn tác. `409` nếu bỏ lần nạp làm số dư âm (tiền đã được rút). `204`. |
+
 ## Ghi chú cài đặt
 - Có thể dùng Server Actions cho thao tác từ giao diện, nhưng logic nằm trong `src/server/` và dùng chung với route handler để dễ test.
 - Mọi schema Zod đặt ở `src/lib/schemas/` và dùng lại cho cả client và server.

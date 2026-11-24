@@ -18,7 +18,7 @@ async function registerAndSignIn(page: Page): Promise<void> {
 }
 
 /** Some data so lists, charts and the debt pages are not all empty. */
-async function seed(page: Page): Promise<{ transactionId: string; debtId: string }> {
+async function seed(page: Page): Promise<{ transactionId: string; debtId: string; jarId: string }> {
   const categories = (await (await page.request.get("/api/categories")).json()) as {
     id: string;
     name: string;
@@ -53,7 +53,20 @@ async function seed(page: Page): Promise<{ transactionId: string; debtId: string
       },
     })
   ).json();
-  return { transactionId: transaction.id, debtId: debt.id };
+  const jar = await (
+    await page.request.post("/api/savings", {
+      data: { name: "Quỹ mua nhà cho cả gia đình trong năm năm tới", icon: "🏠" },
+    })
+  ).json();
+  await page.request.post(`/api/savings/${jar.id}/entries`, {
+    data: {
+      kind: "DEPOSIT",
+      amount: 987_654_321,
+      occurredOn: "2026-01-01",
+      note: "Một ghi chú rất dài để kiểm tra xem dòng có bị tràn ngang hay không",
+    },
+  });
+  return { transactionId: transaction.id, debtId: debt.id, jarId: jar.id };
 }
 
 async function expectNoSidewaysScroll(page: Page, path: string): Promise<void> {
@@ -92,7 +105,7 @@ test("every page fits a 360px wide screen", async ({ page }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 360, height: 740 });
   await registerAndSignIn(page);
-  const { transactionId, debtId } = await seed(page);
+  const { transactionId, debtId, jarId } = await seed(page);
 
   for (const path of [
     "/",
@@ -105,6 +118,8 @@ test("every page fits a 360px wide screen", async ({ page }) => {
     "/debts/new",
     `/debts/${debtId}`,
     `/debts/${debtId}/edit`,
+    "/savings",
+    `/savings/${jarId}`,
     "/categories",
     "/account",
     "/account/security",

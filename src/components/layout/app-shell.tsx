@@ -69,6 +69,16 @@ const NAV: NavItem[] = [
     ),
   },
   {
+    href: "/savings",
+    label: "Tích góp",
+    icon: (
+      <svg {...iconProps}>
+        <path d="M8 4h8M9 4v2.5C6.5 7.5 5 9.8 5 12.5V18a2.5 2.5 0 0 0 2.5 2.5h9A2.5 2.5 0 0 0 19 18v-5.5c0-2.7-1.5-5-4-6V4" />
+        <path d="M12 10.5v6M9.5 13.5h5" />
+      </svg>
+    ),
+  },
+  {
     href: "/categories",
     label: "Danh mục",
     icon: (

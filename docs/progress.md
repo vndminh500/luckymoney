@@ -248,3 +248,11 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Tất toán = ghi một `DebtPayment` bằng toàn bộ số còn lại, ngày hôm nay theo múi giờ user, ghi chú "Tất toán". Không thêm cột hay trạng thái mới: mọi kỳ thành "Đã trả" nhờ `scheduleStatus`, khoản nợ vào "Đã xong", và hoàn tác bằng nút "Hoàn tác" của lần trả đó. Khoản đã trả xong thì `409`.
 - Nút chỉ hiện với khoản có từ 2 kỳ và chưa trả xong; bấm thì mở `<dialog>` xác nhận (số còn lại, ngày, số kỳ còn lại). Chưa có route API riêng; chỉ có server action, được thêm vào bộ test phân quyền.
 - Ảnh chụp 360px lộ lỗi có sẵn: ba số "Số tiền nợ / Đã trả / Còn lại" đè lên nhau. Test T15 thêm kiểm tra "chữ tràn khỏi ô của nó" (bắt được lỗi trước khi sửa); trên điện thoại ba số giờ xếp thành dòng.
+
+## T23. Tích góp (2026-11-24, theo yêu cầu)
+- Đã hỏi người dùng: dạng **hũ tiền / quỹ** (không mục tiêu, không lịch góp); **không** tính vào thu chi; **chưa** cần nhắc nhở.
+- Mô hình: `SavingsJar` (tên duy nhất trong user, biểu tượng) và `SavingsEntry` (`DEPOSIT`/`WITHDRAW`, số tiền dương, ngày `YYYY-MM-DD`, ghi chú). Số dư không lưu mà tính từ các lần nạp/rút (cùng cách Sổ nợ), nên hoàn tác hay sửa không thể làm lệch số.
+- Ràng buộc số dư không âm ở hai chỗ: rút không quá số dư, và không hoàn tác lần nạp nếu số dư còn lại không đủ (`409` với lời giải thích "hãy hoàn tác lần rút trước").
+- Xóa hũ được kể cả khi còn tiền (có hộp xác nhận nêu số dư), vì đây là sổ ghi, không phải tiền thật bị mất.
+- Giao diện: thẻ tổng (gradient màu thương hiệu), lưới hũ với phần trăm trong tổng, form tạo hũ dùng lại bộ chọn biểu tượng; trang hũ có Nạp/Rút (dùng DatePicker), lịch sử có số dư sau mỗi lần, Sửa/Xóa. Thông báo thành công/thất bại như form Danh mục.
+- Kiểm tra 360px (thêm 2 trang, dữ liệu dài) bắt được lỗi trang hũ tràn 318px: cột lưới giãn theo ghi chú dài; sửa bằng `minmax(0, …)`. Kiểm tra độ mạnh: bỏ lọc `userId` làm 4 case phân quyền đỏ.
