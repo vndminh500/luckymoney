@@ -1,6 +1,5 @@
-import { NextResponse } from "next/server";
-
-import { auth } from "@/auth";
+import { getToken } from "next-auth/jwt";
+import { NextResponse, type NextRequest } from "next/server";
 
 /** Pages that guests may open. Signed-in users are sent home from these. */
 const GUEST_PAGES = ["/login", "/register"];
@@ -9,17 +8,37 @@ const GUEST_PAGES = ["/login", "/register"];
 const PUBLIC_API_PREFIX = "/api/auth/";
 
 /**
+ * True when the request carries a valid, unexpired session cookie.
+ *
+ * The proxy only decodes the cookie and never writes one. Auth.js' `auth()`
+ * proxy wrapper re-issues the session cookie on every response, so a request
+ * that was in flight during sign-out (e.g. a link prefetch) put the cookie back
+ * and signed the user in again. Sessions therefore have a fixed lifetime
+ * (SESSION_MAX_AGE_SECONDS from sign-in) instead of a rolling one.
+ */
+async function hasSession(request: NextRequest): Promise<boolean> {
+  const token = await getToken({
+    req: request,
+    secret: process.env.AUTH_SECRET,
+    // Same rule as Auth.js: "__Secure-" cookie names on https.
+    secureCookie: request.nextUrl.protocol === "https:",
+  });
+  return Boolean(token?.sub);
+}
+
+/**
  * First, optimistic auth check that keeps guests out of app pages.
  * It is not the security boundary: route handlers and server actions check the
  * session again through src/server/auth/session.ts.
  */
-export default auth((request) => {
+export default async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname, search } = request.nextUrl;
-  const isSignedIn = Boolean(request.auth?.user?.id);
 
   if (pathname.startsWith(PUBLIC_API_PREFIX)) {
     return NextResponse.next();
   }
+
+  const isSignedIn = await hasSession(request);
 
   if (GUEST_PAGES.includes(pathname)) {
     return isSignedIn ? NextResponse.redirect(new URL("/", request.nextUrl)) : NextResponse.next();
@@ -41,11 +60,11 @@ export default auth((request) => {
     loginUrl.searchParams.set("callbackUrl", `${pathname}${search}`);
   }
   return NextResponse.redirect(loginUrl);
-});
+}
 
 export const config = {
   // Skip Next.js internals and static files from /public.
   matcher: [
-    "/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon\.ico|.*\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

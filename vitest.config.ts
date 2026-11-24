@@ -34,6 +34,9 @@ export default defineConfig({
           fileParallelism: false,
           env: { DATABASE_URL: process.env.TEST_DATABASE_URL ?? "" },
           testTimeout: 20_000,
+          // next-auth imports "next/server" without an extension, which Node's ESM
+          // resolver rejects; letting Vite transform it resolves the import.
+          server: { deps: { inline: ["next-auth"] } },
         },
       },
     ],

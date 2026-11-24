@@ -60,5 +60,14 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Form chỉ chọn ngày; `occurredAt` là thời điểm đầu ngày đó theo múi giờ của user (`startOfZonedDay`). Ngày mặc định là "hôm nay" theo múi giờ user, tính ở server.
 - Giao diện: trang `/transactions/new`, sau khi lưu thì giữ loại và ngày, xóa số tiền, danh mục, ghi chú để nhập tiếp nhanh. Danh sách (T8) chưa có nên chưa chuyển trang.
 - Route `POST /api/transactions` dùng chung service với server action. Test route đi qua e2e (cookie phiên thật) thay vì mock session.
-- Vướng mắc (chưa sửa, cần xử lý trước khi thêm nhiều liên kết ở T8/T13): proxy của Auth.js gắn lại cookie phiên vào mọi phản hồi (gia hạn phiên). Một request prefetch gửi trước khi đăng xuất nhưng trả về sau sẽ ghi lại cookie, làm user bị đăng nhập lại. E2E "registering an existing email" lỗi khoảng 1/5 lần khi trang chủ có liên kết prefetch. Tạm tắt prefetch cho liên kết "Thêm giao dịch" (130/130 lần chạy xanh). Hướng sửa gốc: proxy chỉ đọc phiên mà không ghi cookie, hoặc thu hồi phiên ở server khi đăng xuất.
+- Phát hiện: proxy của Auth.js gắn lại cookie phiên vào mọi phản hồi, nên một request prefetch đang chạy lúc đăng xuất làm user bị đăng nhập lại. Đã sửa ngay sau T7 (xem mục bên dưới).
 - Chưa xử lý: danh mục bị lưu trữ đúng lúc giữa bước kiểm tra và bước ghi (khoảng cách rất nhỏ, chấp nhận ở v1).
+
+## Sửa lỗi: đăng xuất bị hoàn tác (2026-11-24)
+- Nguyên nhân: `auth()` dùng làm proxy gọi endpoint session của Auth.js trên mọi request và gắn `set-cookie` (JWT gia hạn, cookie csrf, callback-url) vào phản hồi. Request bắt đầu trước khi đăng xuất mà trả về sau sẽ ghi lại cookie đã xóa.
+- Cách sửa: `src/proxy.ts` chỉ giải mã cookie bằng `getToken` (`next-auth/jwt`, kiểm tra chữ ký và `exp`) và không bao giờ ghi cookie. Bỏ `prefetch={false}` tạm thời ở trang chủ.
+- Hệ quả: phiên có thời hạn cố định 7 ngày từ lúc đăng nhập, không còn tự gia hạn khi dùng. Phù hợp PRD ("phiên đăng nhập có hạn").
+- Test: `tests/integration/proxy.test.ts` (không ghi cookie, khách bị chuyển về `/login`, cookie hết hạn hoặc bị sửa coi như chưa đăng nhập, API trả 401). E2E chạy lặp 10 lần: 180/180 xanh.
+- Vitest: thêm `server.deps.inline: ["next-auth"]` cho project integration vì `next-auth` import `next/server` không có đuôi file. Request trong test cần header `x-forwarded-proto` như Next.js thật, nếu thiếu Auth.js coi là https.
+- Còn lại (đã có từ trước, không thuộc lỗi này): Vitest cảnh báo "ESM syntax in a file loaded as CommonJS (vitest.config.ts)" vì `package.json` không có `"type": "module"`. Test vẫn chạy đúng.
+- Lưu ý bảo mật còn mở: JWT không thu hồi được ở server, nên cookie bị lộ vẫn dùng được đến khi hết hạn. Xem xét ở T16.
