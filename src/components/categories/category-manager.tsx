@@ -9,7 +9,9 @@ import {
 } from "@/app/(app)/categories/actions";
 import { DeleteCategoryDialog } from "@/components/categories/delete-category-dialog";
 import { IconPicker } from "@/components/categories/icon-picker";
+import { SavedNote } from "@/components/account/profile-form";
 import {
+  BrandAlert,
   BrandField,
   brandPrimaryButton,
   brandSecondaryButton,
@@ -66,6 +68,7 @@ export function AddCategoryForm() {
     {},
   );
   const errors = state.fieldErrors ?? {};
+  const failed = Object.keys(errors).length > 0;
   return (
     <form
       // Remount after a save so the inputs clear.
@@ -75,6 +78,18 @@ export function AddCategoryForm() {
       className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_12rem] sm:items-start"
       noValidate
     >
+      {state.added ? (
+        <div className="sm:col-span-2">
+          <SavedNote savedAt={state.savedAt}>
+            {`Đã thêm danh mục “${state.added.name}” vào mục ${state.added.type === "INCOME" ? "Thu" : "Chi"}.`}
+          </SavedNote>
+        </div>
+      ) : null}
+      {failed ? (
+        <div className="sm:col-span-2">
+          <BrandAlert>Chưa thêm được danh mục. Xem lỗi ở ô được đánh dấu bên dưới.</BrandAlert>
+        </div>
+      ) : null}
       <BrandField
         name="name"
         label="Tên danh mục"

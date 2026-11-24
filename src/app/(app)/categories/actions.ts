@@ -14,6 +14,8 @@ export type CategoryFormState = {
   values?: Record<string, string>;
   /** Changes on every successful save so the form can reset. */
   savedAt?: number;
+  /** The category just added, for the success message. */
+  added?: { name: string; type: string };
 };
 
 const text = (formData: FormData, key: string): string => {
@@ -61,7 +63,12 @@ export async function createCategoryAction(
     type: text(formData, "type"),
     icon: text(formData, "icon"),
   };
-  return saveWith(values, () => createCategory(userId, values));
+  let added: CategoryFormState["added"];
+  const state = await saveWith(values, async () => {
+    const category = await createCategory(userId, values);
+    added = { name: category.name, type: category.type };
+  });
+  return { ...state, added };
 }
 
 export async function renameCategoryAction(

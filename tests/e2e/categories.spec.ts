@@ -39,6 +39,8 @@ test("add, edit and delete a category", async ({ page }) => {
   await addForm.getByRole("button", { name: "Thêm danh mục" }).click();
   await expect(row(page, "Danh mục chi", "Cà phê")).toHaveCount(1);
   await expect(row(page, "Danh mục chi", "Cà phê")).toContainText("☕");
+  // A success message says what was added, and where.
+  await expect(addForm.getByRole("status")).toHaveText("Đã thêm danh mục “Cà phê” vào mục Chi.");
   await expect(addForm.getByLabel("Tên danh mục")).toHaveValue("");
   await expect(picker).toHaveAccessibleName("Biểu tượng: chưa chọn");
 
@@ -52,6 +54,15 @@ test("add, edit and delete a category", async ({ page }) => {
   await addForm.getByLabel("Tên danh mục").fill("Cà phê");
   await addForm.getByRole("button", { name: "Thêm danh mục" }).click();
   await expect(addForm.getByText(/Đã có danh mục cùng tên/)).toBeVisible();
+  // A failure says so at the top of the form; the old success message is gone.
+  await expect(addForm.getByRole("alert")).toHaveText(
+    "Chưa thêm được danh mục. Xem lỗi ở ô được đánh dấu bên dưới.",
+  );
+  await expect(addForm.getByRole("status")).toHaveCount(0);
+  // An empty name is a failure too.
+  await addForm.getByLabel("Tên danh mục").fill("");
+  await addForm.getByRole("button", { name: "Thêm danh mục" }).click();
+  await expect(addForm.getByRole("alert")).toContainText("Chưa thêm được danh mục.");
 
   // Edit the name and the icon
   const coffee = row(page, "Danh mục chi", "Cà phê");
