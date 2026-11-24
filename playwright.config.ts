@@ -23,10 +23,11 @@ export default defineConfig({
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
-    // Always test the production build (CI builds in a separate step). Using
+    // Always test a fresh production build, built here (also in CI) so the build
+    // sees the env below: static pages such as /register read it at build time. Using
     // `next start` also avoids clashing with a running `next dev`: Next.js allows
     // only one dev server per project directory.
-    command: isCI ? `npm run start -- -p ${PORT}` : `npm run build && npm run start -- -p ${PORT}`,
+    command: `npm run build && npm run start -- -p ${PORT}`,
     url: `http://localhost:${PORT}/login`,
     reuseExistingServer: !isCI,
     timeout: 300_000,
