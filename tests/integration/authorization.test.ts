@@ -38,6 +38,10 @@ import * as debtPaymentRoute from "@/app/api/debts/[id]/payments/[paymentId]/rou
 import * as debtPaymentsRoute from "@/app/api/debts/[id]/payments/route";
 import * as debtRoute from "@/app/api/debts/[id]/route";
 import * as debtsRoute from "@/app/api/debts/route";
+import * as savingsEntryRoute from "@/app/api/savings/[id]/entries/[entryId]/route";
+import * as savingsEntriesRoute from "@/app/api/savings/[id]/entries/route";
+import * as savingsJarRoute from "@/app/api/savings/[id]/route";
+import * as savingsRoute from "@/app/api/savings/route";
 import * as statsByCategoryRoute from "@/app/api/stats/by-category/route";
 import * as statsDailyRoute from "@/app/api/stats/daily/route";
 import * as statsPeriodRoute from "@/app/api/stats/period/route";
@@ -57,6 +61,9 @@ let bobBudget: string;
 /** Bob's debt ("Chú Tư", 7,654,321) and a payment on it. */
 let bobDebt: string;
 let bobPayment: string;
+/** Bob's savings jar ("Hũ của Bob", 8,765,432) and its deposit. */
+let bobJar: string;
+let bobEntry: string;
 
 const signInAs = (user: UserFixture | null) => {
   session.userId = user?.userId ?? null;
@@ -82,7 +89,7 @@ function form(values: Record<string, string>): FormData {
 
 /** Bob's rows exactly as they are in the database, to prove nothing changed. */
 async function bobSnapshot() {
-  const [transactions, categories, budgets, avatar, debts] = await Promise.all([
+  const [transactions, categories, budgets, avatar, debts, jars] = await Promise.all([
     prisma.transaction.findMany({ where: { userId: bob.userId }, orderBy: { id: "asc" } }),
     prisma.category.findMany({ where: { userId: bob.userId }, orderBy: { id: "asc" } }),
     prisma.budget.findMany({ where: { userId: bob.userId }, orderBy: { id: "asc" } }),
@@ -91,8 +98,9 @@ async function bobSnapshot() {
       where: { userId: bob.userId },
       include: { installments: true, payments: true },
     }),
+    prisma.savingsJar.findMany({ where: { userId: bob.userId }, include: { entries: true } }),
   ]);
-  return { transactions, categories, budgets, avatar, debts };
+  return { transactions, categories, budgets, avatar, debts, jars };
 }
 
 /** Next.js' notFound() throws an error whose digest marks a 404. */
@@ -157,6 +165,18 @@ beforeEach(async () => {
   });
   bobDebt = debt.id;
   bobPayment = debt.payments[0].id;
+  const jar = await prisma.savingsJar.create({
+    data: {
+      userId: bob.userId,
+      name: "Hũ của Bob",
+      entries: {
+        create: [{ kind: "DEPOSIT", amount: 8_765_432, occurredOn: "2026-11-01" }],
+      },
+    },
+    include: { entries: true },
+  });
+  bobJar = jar.id;
+  bobEntry = jar.entries[0].id;
   signInAs(alice);
 });
 
@@ -387,6 +407,69 @@ const endpoints: {
     expectStatus: 401,
   },
   {
+    route: "savings",
+    method: "GET",
+    attack: () => savingsRoute.GET(),
+    expectStatus: 200,
+  },
+  {
+    route: "savings",
+    method: "POST",
+    // Same name as Bob's jar, claiming to be Bob: a new jar of Alice's.
+    attack: () =>
+      savingsRoute.POST(
+        request("POST", "/api/savings", { name: "Hũ của Bob", userId: bob.userId }),
+      ),
+    expectStatus: 201,
+  },
+  {
+    route: "savings/[id]",
+    method: "GET",
+    attack: () => savingsJarRoute.GET(request("GET", `/api/savings/${bobJar}`), context(bobJar)),
+    expectStatus: 404,
+  },
+  {
+    route: "savings/[id]",
+    method: "PATCH",
+    attack: () =>
+      savingsJarRoute.PATCH(
+        request("PATCH", `/api/savings/${bobJar}`, { name: "Hacked" }),
+        context(bobJar),
+      ),
+    expectStatus: 404,
+  },
+  {
+    route: "savings/[id]",
+    method: "DELETE",
+    attack: () =>
+      savingsJarRoute.DELETE(request("DELETE", `/api/savings/${bobJar}`), context(bobJar)),
+    expectStatus: 404,
+  },
+  {
+    route: "savings/[id]/entries",
+    method: "POST",
+    // Emptying Bob's jar.
+    attack: () =>
+      savingsEntriesRoute.POST(
+        request("POST", `/api/savings/${bobJar}/entries`, {
+          kind: "WITHDRAW",
+          amount: 8_765_432,
+          occurredOn: "2026-11-02",
+        }),
+        context(bobJar),
+      ),
+    expectStatus: 404,
+  },
+  {
+    route: "savings/[id]/entries/[entryId]",
+    method: "DELETE",
+    attack: () =>
+      savingsEntryRoute.DELETE(request("DELETE", `/api/savings/${bobJar}/entries/${bobEntry}`), {
+        params: Promise.resolve({ id: bobJar, entryId: bobEntry }),
+      }),
+    expectStatus: 404,
+  },
+  {
     route: "account/avatar",
     method: "GET",
     // Only the session user's own avatar exists at this URL; Alice has none.
@@ -420,6 +503,9 @@ describe("API endpoints", () => {
         bobPayment,
         "Chú Tư",
         "7654321",
+        bobJar,
+        bobEntry,
+        "8765432",
       ]) {
         expect(body).not.toContain(secret);
       }
