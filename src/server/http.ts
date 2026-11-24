@@ -1,7 +1,12 @@
+import { unstable_rethrow } from "next/navigation";
+
 import { AppError, ValidationError } from "@/server/errors";
 
 /** Maps any thrown error to the JSON error format in docs/api.md. Unknown errors become 500. */
 export function errorResponse(error: unknown): Response {
+  // Next.js signals (notFound, redirect, the prerender bail-out of connection())
+  // must reach the framework, not become a logged 500.
+  unstable_rethrow(error);
   if (error instanceof ValidationError) {
     return Response.json({ error: error.code, details: error.details }, { status: error.status });
   }
