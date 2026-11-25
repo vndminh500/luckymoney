@@ -21,6 +21,13 @@ export const RESET_CODE_TTL_MS = 10 * 60_000;
 export const RESET_TICKET_TTL_MS = 15 * 60_000;
 export const RESET_MAX_ATTEMPTS = 5;
 export const RESET_RESEND_COOLDOWN_MS = 60_000;
+/**
+ * Codes per account per day. Requesting a new code starts a fresh count of 5
+ * guesses, so without this cap someone who knows an email could keep guessing.
+ * 5 codes x 5 guesses = at most 25 guesses a day against 1,000,000 codes.
+ */
+export const RESET_MAX_CODES_PER_DAY = 5;
+const DAY_MS = 24 * 60 * 60_000;
 
 function parse<S extends z.ZodType>(schema: S, input: unknown): z.output<S> {
   const parsed = schema.safeParse(input);
@@ -49,7 +56,8 @@ function resetEmail(code: string): { subject: string; text: string; html: string
 
 /**
  * Emails a 6-digit code to an account that has a password. Unknown emails,
- * Google-only accounts and requests within the resend cooldown return silently,
+ * Google-only accounts, requests within the resend cooldown and accounts over
+ * the daily cap return silently,
  * so the caller always shows the same answer and cannot learn who is registered.
  * A failed send is logged, not thrown, for the same reason.
  */
@@ -66,21 +74,28 @@ export async function requestPasswordReset(
   if (!user?.passwordHash) {
     return;
   }
-  const recent = await prisma.passwordReset.findFirst({
-    where: {
-      userId: user.id,
-      createdAt: { gt: new Date(now.getTime() - RESET_RESEND_COOLDOWN_MS) },
-    },
-    select: { id: true },
+  const dayAgo = new Date(now.getTime() - DAY_MS);
+  const recent = await prisma.passwordReset.findMany({
+    where: { userId: user.id, createdAt: { gt: dayAgo } },
+    select: { createdAt: true },
   });
-  if (recent) {
+  const cooldownStart = now.getTime() - RESET_RESEND_COOLDOWN_MS;
+  if (
+    recent.length >= RESET_MAX_CODES_PER_DAY ||
+    recent.some((row) => row.createdAt.getTime() > cooldownStart)
+  ) {
     return;
   }
 
   const code = generateResetCode();
   await prisma.$transaction(async (tx) => {
-    // A new code replaces any earlier one.
-    await tx.passwordReset.deleteMany({ where: { userId: user.id } });
+    // Rows from the last day stay, expired, so the daily cap can count them.
+    await tx.passwordReset.deleteMany({ where: { userId: user.id, createdAt: { lte: dayAgo } } });
+    // A new code replaces any earlier code or ticket.
+    await tx.passwordReset.updateMany({
+      where: { userId: user.id },
+      data: { expiresAt: now, ticketExpiresAt: now },
+    });
     const row = await tx.passwordReset.create({
       data: {
         userId: user.id,

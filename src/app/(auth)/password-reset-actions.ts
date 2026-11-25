@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 
 import {
   RESET_TICKET_TTL_MS,
@@ -10,6 +11,7 @@ import {
   verifyResetCode,
 } from "@/server/auth/password-reset";
 import { RESET_TICKET_COOKIE } from "@/server/auth/reset-cookie";
+import { sendInBackground } from "@/server/email/background";
 import { sendEmail } from "@/server/email/mailer";
 import { ValidationError } from "@/server/errors";
 
@@ -53,7 +55,8 @@ export async function requestResetCodeAction(
 ): Promise<ForgotPasswordState> {
   const email = text(formData, "email").trim();
   try {
-    await requestPasswordReset({ email }, new Date(), sendEmail);
+    // Sent after the response: SMTP speed must not change or delay the answer.
+    await requestPasswordReset({ email }, new Date(), sendInBackground(sendEmail, after));
   } catch (error) {
     if (error instanceof ValidationError) {
       return { step: "email", email, fieldErrors: fieldErrorsOf(error) };

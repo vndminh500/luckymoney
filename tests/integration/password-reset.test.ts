@@ -100,6 +100,35 @@ describe("requestPasswordReset", () => {
     );
   });
 
+  it("sends at most 5 codes per account in 24 hours", async () => {
+    await createUser();
+    const { send } = mailbox();
+
+    for (let i = 0; i < 6; i++) {
+      await requestPasswordReset({ email: "an@example.com" }, later(i * 61_000), send);
+    }
+    expect(send).toHaveBeenCalledTimes(5);
+
+    await requestPasswordReset({ email: "an@example.com" }, later(24 * 60 * 60_000 + 1), send);
+    expect(send).toHaveBeenCalledTimes(6);
+  });
+
+  it("allows at most 25 wrong guesses per account in 24 hours", async () => {
+    await createUser();
+    let wrongGuesses = 0;
+    for (let i = 0; i < 8; i++) {
+      const { send, lastCode } = mailbox();
+      const at = later(i * 61_000);
+      await requestPasswordReset({ email: "an@example.com" }, at, send);
+      if (send.mock.calls.length === 0) continue;
+      for (let j = 0; j < 5; j++) {
+        await verifyResetCode({ email: "an@example.com", code: wrongCode(lastCode()) }, at);
+        wrongGuesses++;
+      }
+    }
+    expect(wrongGuesses).toBe(25);
+  });
+
   it("swallows send failures so the answer stays the same", async () => {
     await createUser();
     const send = vi.fn<SendEmail>(async () => {
