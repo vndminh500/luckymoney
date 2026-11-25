@@ -86,6 +86,76 @@ test("month navigation moves between months", async ({ page }) => {
   await expect(page.getByText("Chưa có khoản chi nào trong tháng này.").first()).toBeVisible();
 });
 
+test("the month picker jumps straight to a month years back", async ({ page }) => {
+  await registerAndSignIn(page);
+  await page.goto("/?month=2026-06");
+  const trigger = page.getByRole("button", { name: "Tháng 6/2026. Chọn tháng khác" });
+
+  // Mouse: open, go back two years, pick March.
+  await trigger.click();
+  const panel = page.getByRole("dialog", { name: "Chọn tháng" });
+  await expect(panel.getByRole("link", { name: "Tháng 6/2026" })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+  await panel.getByRole("button", { name: "Năm trước" }).click();
+  await panel.getByRole("button", { name: "Năm trước" }).click();
+  await panel.getByRole("link", { name: "Tháng 3/2024" }).click();
+  await expect(page).toHaveURL("/?month=2024-03");
+  await expect(page.getByRole("heading", { name: "Tháng 3/2024" })).toBeVisible();
+  await expect(panel).toBeHidden();
+
+  // Years view: from 2024 to 2019 in three clicks.
+  await page.getByRole("button", { name: "Tháng 3/2024. Chọn tháng khác" }).click();
+  await panel.getByRole("button", { name: "Năm 2024. Chọn năm khác" }).click();
+  await panel.getByRole("button", { name: "2019" }).click();
+  await panel.getByRole("link", { name: "Tháng 11/2019" }).click();
+  await expect(page).toHaveURL("/?month=2019-11");
+
+  // "Tháng này" comes back to the current month.
+  await page.getByRole("main").getByRole("link", { name: "Tháng này" }).first().click();
+  await expect(page).toHaveURL(/\/\?month=\d{4}-\d{2}$/);
+  await expect(page.getByRole("main").getByRole("link", { name: "Tháng này" })).toHaveCount(0);
+});
+
+test("the month picker works with the keyboard", async ({ page }) => {
+  await registerAndSignIn(page);
+  await page.goto("/?month=2026-06");
+
+  const trigger = page.getByRole("button", { name: "Tháng 6/2026. Chọn tháng khác" });
+  await trigger.focus();
+  await page.keyboard.press("Enter");
+  const panel = page.getByRole("dialog", { name: "Chọn tháng" });
+  await expect(panel.getByRole("link", { name: "Tháng 6/2026" })).toBeFocused();
+
+  await page.keyboard.press("ArrowLeft"); // May
+  await page.keyboard.press("ArrowUp"); // February
+  await page.keyboard.press("PageUp"); // February 2025
+  await expect(panel.getByRole("link", { name: "Tháng 2/2025" })).toBeFocused();
+
+  await page.keyboard.press("Escape");
+  await expect(panel).toBeHidden();
+  await expect(trigger).toBeFocused();
+
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("PageUp");
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL("/?month=2025-06");
+});
+
+test("the open month picker fits a 360px screen", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 740 });
+  await registerAndSignIn(page);
+  await page.goto("/?month=2026-06");
+  await page.getByRole("button", { name: "Tháng 6/2026. Chọn tháng khác" }).click();
+
+  const box = await page.getByRole("dialog", { name: "Chọn tháng" }).boundingBox();
+  expect(box).not.toBeNull();
+  expect(box!.x).toBeGreaterThanOrEqual(0);
+  expect(box!.x + box!.width).toBeLessThanOrEqual(360);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
+});
+
 test("an invalid month shows a message", async ({ page }) => {
   await registerAndSignIn(page);
   await page.goto("/?month=2026-13");

@@ -305,3 +305,10 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Module demo chỉ dùng import tương đối có đuôi `.ts` (thêm `allowImportingTsExtensions` vào tsconfig) vì `prisma/seed.ts` chạy bằng `node` thuần, không hiểu alias `@/`.
 - Transaction của reset chờ kết nối tối đa 15 giây: với Prisma Postgres ở xa, mặc định 2 giây báo "Unable to start a transaction in the given time".
 - Sự cố: `.env` đang trỏ `DATABASE_URL` tới production, nên `prisma migrate dev --name rate_limits` (T16) đã áp migration đó lên production (chỉ tạo bảng `RateLimit`, không đụng dữ liệu), và một lần chạy seed cũng nhắm vào production nhưng thất bại trước khi ghi. Đã thêm một dòng vào "Lỗi hay gặp" trong AGENTS.md.
+
+## Bộ chọn tháng ở Tổng quan (2026-11-25, theo yêu cầu)
+- Trước chỉ có ‹ › nên xem tháng xa phải bấm lùi từng tháng. `MonthPicker` (src/components/dashboard/month-picker.tsx) giữ ‹ › và thêm: bấm nhãn "Tháng 6/2026 ▾" mở bảng 12 tháng của một năm (‹ › đổi năm), bấm năm để chọn trong khối 12 năm, nút "Tháng này" (cả trong bảng lẫn cạnh ‹ › khi đang xem tháng khác). Tới tháng bất kỳ trong vòng 12 năm chỉ mất tối đa 3 lần bấm.
+- Mỗi ô tháng là `Link` tới `/?month=YYYY-MM`, nên điều hướng, prefetch và nút Back vẫn như cũ. Tháng đang xem tô xanh, tháng hiện tại (theo múi giờ user, tính ở server) có viền, tháng tương lai hiện mờ nhưng vẫn chọn được như trước.
+- Bàn phím: mở thì focus vào tháng đang xem; ←→ theo tháng, ↑↓ theo quý, PageUp/PageDown theo năm, Enter mở tháng, Esc đóng và trả focus. Bấm ra ngoài thì đóng.
+- E2E: nhảy về 2 năm trước bằng chuột, qua bảng năm tới 2019, "Tháng này"; luồng bàn phím; bảng nằm gọn trong màn 360px.
+- Lần chạy toàn bộ e2e: `auth-transition.spec.ts` (đo vị trí thanh tab theo từng khung hình) đỏ một lần khi máy bận, chạy lại riêng xanh 3/3; không liên quan thay đổi này.
