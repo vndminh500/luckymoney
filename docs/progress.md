@@ -312,3 +312,4 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Bàn phím: mở thì focus vào tháng đang xem; ←→ theo tháng, ↑↓ theo quý, PageUp/PageDown theo năm, Enter mở tháng, Esc đóng và trả focus. Bấm ra ngoài thì đóng.
 - E2E: nhảy về 2 năm trước bằng chuột, qua bảng năm tới 2019, "Tháng này"; luồng bàn phím; bảng nằm gọn trong màn 360px.
 - Lần chạy toàn bộ e2e: `auth-transition.spec.ts` (đo vị trí thanh tab theo từng khung hình) đỏ một lần khi máy bận, chạy lại riêng xanh 3/3; không liên quan thay đổi này.
+- Đã chạy seed lên production (người dùng đồng ý): đăng nhập demo trên https://luckymoney-fawn.vercel.app thành công, tháng 11/2026 có 92 giao dịch. `prisma migrate status` trên production: đủ 8 migration.

@@ -47,7 +47,8 @@ Làm theo lát cắt dọc: mỗi tính năng chạy được từ giao diện �
   - Xong khi: e2e `responsive-a11y.spec.ts` pass: 17 trang trong app và 2 trang đăng nhập không cuộn ngang ở 360px; skip link; menu điện thoại dùng được bằng bàn phím; trang không tìm thấy có đường quay về.
 - [x] T16. Giới hạn tần suất cho đăng nhập/đăng ký, rà soát bảo mật (header, cookie, input).
   - Xong khi: test giới hạn (đúng ngưỡng, cửa sổ mới, gửi song song không vượt, không lưu IP/email rõ), `429` + `Retry-After` ở API đăng ký, e2e thông báo "thử quá nhiều lần" và header bảo mật.
-- [ ] T17. Triển khai Vercel + Postgres hosted, tạo tài khoản demo với dữ liệu mẫu.
+- [x] T17. Triển khai Vercel + Postgres hosted, tạo tài khoản demo với dữ liệu mẫu.
+  - Xong khi: https://luckymoney-fawn.vercel.app chạy; đăng nhập `demo@example.com` / `demo-luckymoney` thấy 6 tháng dữ liệu (đã kiểm trên production); test `demo-account.test.ts` pass.
 - [ ] T18. Viết `README.md` tiếng Anh: giới thiệu, ảnh chụp màn hình, sơ đồ kiến trúc, stack, cách chạy, link demo.
 - [x] T22. Sổ nợ (theo yêu cầu): khoản nợ hai chiều, lịch trả nhiều kỳ, trả một phần, quá hạn, email nhắc hằng ngày.
   - Xong khi: test lịch trả/trả một phần/quá hạn, test phân quyền cho mọi route và action, test email nhắc (một lần mỗi loại, theo múi giờ, gửi lỗi thì thử lại), e2e luồng thêm, trả, xóa.
