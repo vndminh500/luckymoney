@@ -256,3 +256,13 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Xóa hũ được kể cả khi còn tiền (có hộp xác nhận nêu số dư), vì đây là sổ ghi, không phải tiền thật bị mất.
 - Giao diện: thẻ tổng (gradient màu thương hiệu), lưới hũ với phần trăm trong tổng, form tạo hũ dùng lại bộ chọn biểu tượng; trang hũ có Nạp/Rút (dùng DatePicker), lịch sử có số dư sau mỗi lần, Sửa/Xóa. Thông báo thành công/thất bại như form Danh mục.
 - Kiểm tra 360px (thêm 2 trang, dữ liệu dài) bắt được lỗi trang hũ tràn 318px: cột lưới giãn theo ghi chú dài; sửa bằng `minmax(0, …)`. Kiểm tra độ mạnh: bỏ lọc `userId` làm 4 case phân quyền đỏ.
+
+## T24. Quên mật khẩu (2026-11-25, theo yêu cầu)
+- Luồng: `/login` → "Quên mật khẩu?" → `/forgot-password` (nhập email, rồi nhập mã trên cùng trang) → `/reset-password` (mật khẩu mới + nhập lại) → popup "Đổi mật khẩu thành công" với nút "Đăng nhập". Thiết kế ở `docs/superpowers/specs/2026-11-25-forgot-password-design.md`.
+- Mã OTP 6 chữ số, hết hạn 10 phút, sai 5 lần thì khóa (lần nhập đúng cũng tính một lượt, đếm nguyên tử để đoán song song không vượt giới hạn), mỗi email chờ 60 giây mới gửi lại, mã mới thay mã cũ. Chỉ lưu SHA-256 của `id:mã`.
+- Nhập đúng mã thì nhận vé 32 byte (lưu SHA-256, dùng một lần, 15 phút) trong cookie httpOnly `lm-reset-ticket`, `path=/reset-password`. Trang đặt lại chỉ hiện form khi vé hợp lệ.
+- Không lộ email: mọi email đều thấy "Nếu email đã đăng ký, mã đã được gửi.". Tài khoản chỉ có Google không nhận mã (người dùng chọn). Gửi email lỗi thì chỉ ghi log, câu trả lời không đổi; hệ quả là người dùng thật không biết email không đi.
+- Đặt lại xong không xóa cookie: xóa cookie trong server action làm Next.js render lại trang (vé đã hết) và mất popup; vé đã bị xóa ở DB nên cookie vô dụng và tự hết hạn.
+- Phiên JWT đang mở ở thiết bị khác không bị thu hồi sau khi đổi mật khẩu (giới hạn của phiên không trạng thái). Giới hạn tần suất theo IP để cho T16.
+- E2E chạy không có SMTP: test ghi đè `codeHash` của bản ghi vừa tạo bằng mã đã biết (`hashResetCode`), không có đường code riêng cho test trong ứng dụng.
+- Kiểm tra độ mạnh: bỏ điều kiện email khi tìm mã làm test "mã của A không dùng cho B" đỏ.

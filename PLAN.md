@@ -52,6 +52,8 @@ Làm theo lát cắt dọc: mỗi tính năng chạy được từ giao diện �
   - Xong khi: test lịch trả/trả một phần/quá hạn, test phân quyền cho mọi route và action, test email nhắc (một lần mỗi loại, theo múi giờ, gửi lỗi thì thử lại), e2e luồng thêm, trả, xóa.
 - [x] T23. Tích góp (theo yêu cầu): hũ tiền, nạp/rút, lịch sử, tổng; tách khỏi thu chi.
   - Xong khi: test số dư/không rút quá/hoàn tác, test phân quyền mọi route và action, e2e luồng tạo, nạp, rút, hoàn tác, sửa, xóa; trang mới qua kiểm tra 360px.
+- [x] T24. Quên mật khẩu (theo yêu cầu): link ở trang Đăng nhập, mã OTP 6 số qua email, trang đặt lại mật khẩu, popup thành công.
+  - Xong khi: test mã đúng/sai/hết hạn/khóa sau 5 lần/chờ 60 giây, vé dùng một lần, mã của user A không dùng được cho user B, tài khoản chỉ Google không nhận mã; e2e cả luồng; hai trang mới qua kiểm tra 360px.
 
 ## Giai đoạn 6 (v2, sau khi MVP xong)
 - [ ] T19. Nhập nhanh bằng AI: gõ câu tự nhiên, LLM trả về JSON (amount, category, date), người dùng xác nhận trước khi lưu.
