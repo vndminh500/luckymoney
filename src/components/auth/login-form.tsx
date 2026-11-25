@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 
 import { loginAction, type AuthFormState } from "@/app/(auth)/actions";
@@ -26,6 +27,12 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
         defaultValue={state.values?.email}
       />
       <PasswordField name="password" label="Mật khẩu" autoComplete="current-password" required />
+      <Link
+        href="/forgot-password"
+        className="-mt-2 self-end text-sm font-medium text-lm-deep underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lm-deep dark:text-lm-aqua"
+      >
+        Quên mật khẩu?
+      </Link>
       <AuthSubmit pending={pending}>{pending ? "Đang đăng nhập…" : "Đăng nhập"}</AuthSubmit>
     </form>
   );

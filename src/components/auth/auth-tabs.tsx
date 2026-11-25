@@ -15,10 +15,11 @@ const TABS = [
  */
 export function AuthTabs() {
   const pathname = usePathname();
-  const activeIndex = Math.max(
-    0,
-    TABS.findIndex((tab) => tab.href === pathname),
-  );
+  const activeIndex = TABS.findIndex((tab) => tab.href === pathname);
+  // Other auth pages (forgot / reset password) are neither tab.
+  if (activeIndex === -1) {
+    return null;
+  }
 
   return (
     <nav

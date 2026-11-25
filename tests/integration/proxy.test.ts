@@ -66,4 +66,18 @@ describe("proxy", () => {
     const response = await run("/login", await sessionCookie());
     expect(new URL(response.headers.get("location") ?? "").pathname).toBe("/");
   });
+
+  it("lets guests open the password reset pages", async () => {
+    for (const path of ["/forgot-password", "/reset-password"]) {
+      const response = await run(path);
+      expect(response.headers.get("location"), path).toBe(null);
+    }
+  });
+
+  it("sends signed-in users away from the password reset pages", async () => {
+    for (const path of ["/forgot-password", "/reset-password"]) {
+      const response = await run(path, await sessionCookie());
+      expect(new URL(response.headers.get("location") ?? "").pathname, path).toBe("/");
+    }
+  });
 });

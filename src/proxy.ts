@@ -2,7 +2,7 @@ import { getToken } from "next-auth/jwt";
 import { NextResponse, type NextRequest } from "next/server";
 
 /** Pages that guests may open. Signed-in users are sent home from these. */
-const GUEST_PAGES = ["/login", "/register"];
+const GUEST_PAGES = ["/login", "/register", "/forgot-password", "/reset-password"];
 
 /** API paths that work without a session (Auth.js endpoints and registration). */
 const PUBLIC_API_PREFIX = "/api/auth/";

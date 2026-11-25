@@ -134,7 +134,7 @@ test("every page fits a 360px wide screen", async ({ page }) => {
 
 test("the sign-in pages fit a 360px wide screen", async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 740 });
-  for (const path of ["/login", "/register"]) {
+  for (const path of ["/login", "/register", "/forgot-password", "/reset-password"]) {
     await page.goto(path);
     const scroll = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
