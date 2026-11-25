@@ -63,8 +63,10 @@ export default async function proxy(request: NextRequest): Promise<NextResponse>
 }
 
 export const config = {
-  // Skip Next.js internals and static files from /public.
+  // Skip Next.js internals, static files from /public and the installable-app
+  // files (manifest, service worker, offline page, Android asset links), which
+  // guests and the Android app must reach without a session.
   matcher: [
-    "/((?!_next/static|_next/image|favicon\.ico|.*\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon\.ico|manifest\.webmanifest|sw\.js|offline\.html|\.well-known/|.*\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

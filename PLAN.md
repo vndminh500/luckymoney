@@ -57,6 +57,9 @@ Làm theo lát cắt dọc: mỗi tính năng chạy được từ giao diện �
 - [x] T24. Quên mật khẩu (theo yêu cầu): link ở trang Đăng nhập, mã OTP 6 số qua email, trang đặt lại mật khẩu, popup thành công.
   - Xong khi: test mã đúng/sai/hết hạn/khóa sau 5 lần/chờ 60 giây, vé dùng một lần, mã của user A không dùng được cho user B, tài khoản chỉ Google không nhận mã; e2e cả luồng; hai trang mới qua kiểm tra 360px.
 
+- [x] T25. Cài được như app (theo yêu cầu): manifest, icon, service worker với trang offline, `assetlinks.json` cho APK Android (PWABuilder, cài thẳng, không qua cửa hàng).
+  - Xong khi: test manifest và icon, `assetlinks` theo biến môi trường, e2e khách tải được manifest/icon/sw/offline/assetlinks và mất mạng thì hiện trang offline.
+
 ## Giai đoạn 6 (v2, sau khi MVP xong)
 - [ ] T19. Nhập nhanh bằng AI: gõ câu tự nhiên, LLM trả về JSON (amount, category, date), người dùng xác nhận trước khi lưu.
 - [ ] T20. Nhập/xuất CSV.

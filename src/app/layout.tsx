@@ -1,7 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
 
+import { APP_THEME_COLOR } from "@/app/manifest";
+import { ServiceWorker } from "@/components/service-worker";
 import { THEME_COOKIE } from "@/lib/theme";
 
 // Roboto ships a Vietnamese subset, so diacritics render in the same font.
@@ -14,7 +16,12 @@ const roboto = Roboto({
 export const metadata: Metadata = {
   title: { default: "Lucky Money", template: "%s · Lucky Money" },
   description: "Quản lý chi tiêu cá nhân",
+  applicationName: "Lucky Money",
+  appleWebApp: { capable: true, title: "Lucky Money", statusBarStyle: "default" },
+  icons: { apple: "/icons/apple-touch-icon.png" },
 };
+
+export const viewport: Viewport = { themeColor: APP_THEME_COLOR };
 
 /**
  * Applies the saved theme (Cài đặt > Giao diện) before the first paint, from a
@@ -35,7 +42,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        {children}
+        <ServiceWorker />
+      </body>
     </html>
   );
 }
