@@ -115,3 +115,70 @@ test("blocks /reset-password without a verified code", async ({ page }) => {
   await page.getByRole("link", { name: "Yêu cầu mã mới" }).click();
   await expect(page).toHaveURL("/forgot-password");
 });
+
+test("accepts a code typed in groups of two", async ({ page }) => {
+  const email = await registerAndSignOut(page);
+  await requestCode(page, email);
+  await enterCode(page, "24 68 10");
+
+  await expect(page).toHaveURL("/reset-password");
+});
+
+test("goes back to change the email, keeping what was typed", async ({ page }) => {
+  await page.goto("/forgot-password");
+  await page.getByLabel("Email").fill("go-nham@example.com");
+  await page.getByRole("button", { name: "Gửi mã" }).click();
+  await expect(page.getByLabel("Mã xác nhận")).toBeVisible();
+
+  await page.getByRole("button", { name: "Đổi email" }).click();
+
+  await expect(page.getByLabel("Email")).toHaveValue("go-nham@example.com");
+  await expect(page.getByLabel("Mã xác nhận")).toHaveCount(0);
+});
+
+test("shows the reset page as expired when opened again after a reset", async ({ page }) => {
+  const email = await registerAndSignOut(page);
+  await requestCode(page, email);
+  await enterCode(page, KNOWN_CODE);
+  await page.getByLabel("Mật khẩu mới", { exact: true }).fill(NEW_PASSWORD);
+  await page.getByLabel("Nhập lại mật khẩu mới", { exact: true }).fill(NEW_PASSWORD);
+  await page.getByRole("button", { name: "Đổi mật khẩu" }).click();
+  await expect(page.getByRole("dialog", { name: "Đổi mật khẩu thành công" })).toBeVisible();
+
+  // The ticket cookie is still in the browser, but the ticket is used up.
+  await page.goto("/reset-password");
+  await expect(page.getByText("Phiên đặt lại đã hết hạn")).toBeVisible();
+  await expect(page.getByLabel("Mật khẩu mới", { exact: true })).toHaveCount(0);
+});
+
+test("every step fits a 360px wide screen", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 740 });
+  const expectNoSidewaysScroll = async (step: string): Promise<void> => {
+    const scroll = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(scroll, step).toBe(0);
+  };
+  const email = await registerAndSignOut(page);
+  await requestCode(page, email);
+  await expectNoSidewaysScroll("code step");
+
+  await enterCode(page, "000000");
+  await expect(page.getByText("Mã không đúng hoặc đã hết hạn.")).toBeVisible();
+  await expectNoSidewaysScroll("wrong code");
+
+  await enterCode(page, KNOWN_CODE);
+  await expect(page).toHaveURL("/reset-password");
+  await page.getByRole("button", { name: "Đổi mật khẩu" }).click();
+  await expect(page.getByText(/Mật khẩu cần ít nhất/)).toBeVisible();
+  await expectNoSidewaysScroll("reset form with errors");
+
+  await page.getByLabel("Mật khẩu mới", { exact: true }).fill(NEW_PASSWORD);
+  await page.getByLabel("Nhập lại mật khẩu mới", { exact: true }).fill(NEW_PASSWORD);
+  await page.getByRole("button", { name: "Đổi mật khẩu" }).click();
+  const dialog = page.getByRole("dialog", { name: "Đổi mật khẩu thành công" });
+  await expect(dialog).toBeVisible();
+  await expectNoSidewaysScroll("success dialog");
+  const box = await dialog.boundingBox();
+  expect(box && box.x >= 0 && box.x + box.width <= 360, "dialog inside the screen").toBe(true);
+});

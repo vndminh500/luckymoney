@@ -75,20 +75,21 @@ export async function requestPasswordReset(
     return;
   }
   const dayAgo = new Date(now.getTime() - DAY_MS);
-  const recent = await prisma.passwordReset.findMany({
-    where: { userId: user.id, createdAt: { gt: dayAgo } },
-    select: { createdAt: true },
-  });
   const cooldownStart = now.getTime() - RESET_RESEND_COOLDOWN_MS;
-  if (
-    recent.length >= RESET_MAX_CODES_PER_DAY ||
-    recent.some((row) => row.createdAt.getTime() > cooldownStart)
-  ) {
-    return;
-  }
-
   const code = generateResetCode();
-  await prisma.$transaction(async (tx) => {
+  const created = await prisma.$transaction(async (tx) => {
+    // Lock the user row so parallel requests check the cooldown one at a time.
+    await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${user.id} FOR UPDATE`;
+    const recent = await tx.passwordReset.findMany({
+      where: { userId: user.id, createdAt: { gt: dayAgo } },
+      select: { createdAt: true },
+    });
+    if (
+      recent.length >= RESET_MAX_CODES_PER_DAY ||
+      recent.some((row) => row.createdAt.getTime() > cooldownStart)
+    ) {
+      return false;
+    }
     // Rows from the last day stay, expired, so the daily cap can count them.
     await tx.passwordReset.deleteMany({ where: { userId: user.id, createdAt: { lte: dayAgo } } });
     // A new code replaces any earlier code or ticket.
@@ -109,7 +110,11 @@ export async function requestPasswordReset(
       where: { id: row.id },
       data: { codeHash: hashResetCode(row.id, code) },
     });
+    return true;
   });
+  if (!created) {
+    return;
+  }
 
   try {
     await send({ to: user.email, ...resetEmail(code) });

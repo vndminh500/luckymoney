@@ -12,12 +12,17 @@ import { AuthAlert, AuthField, AuthSubmit } from "@/components/auth/auth-fields"
 
 /**
  * Both steps share one form state. The code step posts `step=code`, so Enter or
- * "Xác nhận" checks the code; only the "Gửi lại mã" button adds `resend`.
+ * "Xác nhận" checks the code; only "Gửi lại mã" adds `resend` and only
+ * "Đổi email" adds `changeEmail`.
  */
 async function forgotPasswordStep(
   previous: ForgotPasswordState,
   formData: FormData,
 ): Promise<ForgotPasswordState> {
+  if (formData.has("changeEmail")) {
+    // Back to step 1 without a server call, keeping the email to fix it.
+    return { step: "email", email: String(formData.get("email") ?? "") };
+  }
   const verify = formData.get("step") === "code" && !formData.has("resend");
   return verify
     ? verifyResetCodeAction(previous, formData)
@@ -72,7 +77,7 @@ export function ForgotPasswordForm() {
         inputMode="numeric"
         autoComplete="one-time-code"
         placeholder="123456"
-        maxLength={7}
+        maxLength={12}
         required
         autoFocus
         error={state.fieldErrors?.code}
@@ -88,10 +93,19 @@ export function ForgotPasswordForm() {
         >
           Gửi lại mã
         </button>
-        <Link href="/login" className={linkClass}>
-          Quay lại đăng nhập
-        </Link>
+        <button
+          type="submit"
+          name="changeEmail"
+          value="1"
+          disabled={pending}
+          className={`${linkClass} disabled:opacity-60`}
+        >
+          Đổi email
+        </button>
       </div>
+      <Link href="/login" className={`${linkClass} self-center`}>
+        Quay lại đăng nhập
+      </Link>
     </form>
   );
 }

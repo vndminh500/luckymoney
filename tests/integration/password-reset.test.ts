@@ -100,6 +100,19 @@ describe("requestPasswordReset", () => {
     );
   });
 
+  it("sends one code when two requests arrive at the same moment", async () => {
+    await createUser();
+    const { send } = mailbox();
+
+    await Promise.all([
+      requestPasswordReset({ email: "an@example.com" }, NOW, send),
+      requestPasswordReset({ email: "an@example.com" }, NOW, send),
+    ]);
+
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(await prisma.passwordReset.count()).toBe(1);
+  });
+
   it("sends at most 5 codes per account in 24 hours", async () => {
     await createUser();
     const { send } = mailbox();
