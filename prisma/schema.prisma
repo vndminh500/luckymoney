@@ -68,13 +68,14 @@ model User {
   notifyBudgetOver    Boolean         @default(true) // cảnh báo khi vượt ngân sách
   notifyDebtEmail     Boolean         @default(true) // email nhắc kỳ trả nợ sắp đến hạn / quá hạn
 
-  avatar       UserAvatar?
-  accounts     Account[]
-  categories   Category[]
-  transactions Transaction[]
-  budgets      Budget[]
-  debts        Debt[]
-  savingsJars  SavingsJar[]
+  avatar         UserAvatar?
+  accounts       Account[]
+  categories     Category[]
+  transactions   Transaction[]
+  budgets        Budget[]
+  debts          Debt[]
+  savingsJars    SavingsJar[]
+  passwordResets PasswordReset[]
 }
 
 // Ảnh đại diện (đã cắt vuông, 256x256) tách bảng riêng để truy vấn User không phải tải ảnh.
@@ -85,6 +86,23 @@ model UserAvatar {
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Một lần "quên mật khẩu": mã OTP qua email, rồi vé đặt lại sau khi nhập đúng mã.
+// Chỉ lưu bản băm của mã và vé. Mỗi user có tối đa một bản ghi đang dùng.
+model PasswordReset {
+  id              String    @id @default(cuid())
+  userId          String
+  codeHash        String
+  attempts        Int       @default(0) // số lần nhập sai mã
+  expiresAt       DateTime // mã hết hạn
+  ticketHash      String?   @unique // có sau khi nhập đúng mã
+  ticketExpiresAt DateTime?
+  createdAt       DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 // Dùng cho Google OAuth (Auth.js Prisma adapter).

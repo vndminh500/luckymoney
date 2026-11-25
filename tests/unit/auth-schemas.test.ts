@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { loginSchema, registerSchema } from "@/lib/schemas/auth";
+import {
+  loginSchema,
+  registerSchema,
+  resetPasswordSchema,
+  verifyResetCodeSchema,
+} from "@/lib/schemas/auth";
 
 describe("registerSchema", () => {
   it("normalizes email to trimmed lowercase", () => {
@@ -44,5 +49,40 @@ describe("loginSchema", () => {
 
   it("rejects an empty password", () => {
     expect(loginSchema.safeParse({ email: "a@b.vn", password: "" }).success).toBe(false);
+  });
+});
+
+describe("verifyResetCodeSchema", () => {
+  it("accepts a 6-digit code with spaces", () => {
+    expect(verifyResetCodeSchema.parse({ email: "An@Example.com ", code: "123 456" })).toEqual({
+      email: "an@example.com",
+      code: "123456",
+    });
+  });
+
+  it("rejects codes that are not 6 digits", () => {
+    for (const code of ["12345", "1234567", "12a456", ""]) {
+      expect(verifyResetCodeSchema.safeParse({ email: "a@b.co", code }).success).toBe(false);
+    }
+  });
+});
+
+describe("resetPasswordSchema", () => {
+  it("reports a mismatched confirmation on confirmPassword", () => {
+    const result = resetPasswordSchema.safeParse({
+      password: "mat-khau-moi-1",
+      confirmPassword: "khac-hoan-toan",
+    });
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]).toMatchObject({
+      path: ["confirmPassword"],
+      message: "Mật khẩu xác nhận không khớp.",
+    });
+  });
+
+  it("applies the register password length rules", () => {
+    expect(
+      resetPasswordSchema.safeParse({ password: "ngan", confirmPassword: "ngan" }).success,
+    ).toBe(false);
   });
 });
