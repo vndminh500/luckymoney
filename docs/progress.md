@@ -266,3 +266,4 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Phiên JWT đang mở ở thiết bị khác không bị thu hồi sau khi đổi mật khẩu (giới hạn của phiên không trạng thái). Giới hạn tần suất theo IP để cho T16.
 - E2E chạy không có SMTP: test ghi đè `codeHash` của bản ghi vừa tạo bằng mã đã biết (`hashResetCode`), không có đường code riêng cho test trong ứng dụng.
 - Kiểm tra độ mạnh: bỏ điều kiện email khi tìm mã làm test "mã của A không dùng cho B" đỏ.
+- Sau review: tối đa 5 mã mỗi tài khoản trong 24 giờ (mã cũ bị cho hết hạn thay vì xóa, để đếm được), nên kẻ biết email chỉ đoán được tối đa 25 lần/ngày. Email chứa mã gửi sau khi đã trả lời (`after()` của Next.js, `src/server/email/background.ts`), nên SMTP chậm/treo không làm treo request và không lộ email nào có tài khoản qua thời gian phản hồi.
