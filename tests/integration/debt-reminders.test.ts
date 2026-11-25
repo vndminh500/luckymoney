@@ -145,6 +145,6 @@ describe("GET /api/cron/debt-reminders", () => {
 
     const response = await call("Bearer s3cret-value");
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ emails: 1, installments: 1 });
+    expect(await response.json()).toEqual({ emails: 1, installments: 1, rateLimitsDeleted: 0 });
   });
 });

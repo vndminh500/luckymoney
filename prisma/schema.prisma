@@ -236,3 +236,13 @@ model SavingsEntry {
 
   @@index([jarId, occurredOn])
 }
+
+// Bộ đếm giới hạn tần suất (đăng nhập, đăng ký, quên mật khẩu) theo cửa sổ cố định.
+// key = tên luật + SHA-256 của IP hoặc email, nên không lưu IP/email dạng rõ.
+model RateLimit {
+  key         String   @id
+  count       Int
+  windowStart DateTime
+
+  @@index([windowStart])
+}

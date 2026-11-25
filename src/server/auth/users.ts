@@ -5,6 +5,7 @@ import { burnPasswordCheck, hashPassword, verifyPassword } from "@/server/auth/p
 import { createDefaultCategories } from "@/server/categories/defaults";
 import { prisma } from "@/server/db";
 import { ConflictError, ValidationError } from "@/server/errors";
+import { enforceRateLimit, RATE_LIMITS } from "@/server/rate-limit";
 
 /** User fields that are safe to return to clients (never the password hash). */
 export type PublicUser = { id: string; email: string; name: string | null; createdAt: Date };
@@ -59,4 +60,21 @@ export async function verifyCredentials(input: unknown): Promise<AuthenticatedUs
     return null;
   }
   return { id: user.id, email: user.email, name: user.name };
+}
+
+/**
+ * Sign-in entry point: counts the attempt against the per-IP and per-email
+ * limits (throws RateLimitedError past them), then checks the credentials.
+ */
+export async function authenticate(
+  input: unknown,
+  ip: string,
+  now: Date = new Date(),
+): Promise<AuthenticatedUser | null> {
+  await enforceRateLimit(RATE_LIMITS.loginPerIp, ip, now);
+  const parsed = loginSchema.safeParse(input);
+  if (parsed.success) {
+    await enforceRateLimit(RATE_LIMITS.loginPerEmail, parsed.data.email, now);
+  }
+  return verifyCredentials(input);
 }

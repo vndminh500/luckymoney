@@ -71,6 +71,7 @@ export async function saveThemeAction(theme: string): Promise<SettingsFormState>
     sameSite: "lax",
     // Read by the inline script in the root layout, so not httpOnly; it holds no secret.
     httpOnly: false,
+    secure: process.env.NODE_ENV === "production",
   });
   return { savedAt: Date.now() };
 }

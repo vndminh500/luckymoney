@@ -285,3 +285,15 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Migration không chạy khi build: sau mỗi lần đổi schema phải tự chạy `npx prisma migrate deploy` với `DATABASE_URL` production.
 - Đã kiểm tra: `/api/auth/session` trả `null`, đăng nhập sai trả `CredentialsSignin` (DB có bảng), người dùng đã thử đăng ký và các luồng chính.
 - Còn thiếu để tick T17: tài khoản demo với dữ liệu mẫu.
+
+## T16. Giới hạn tần suất và rà soát bảo mật (2026-11-25)
+- Bộ đếm lưu ở Postgres (bảng `RateLimit`, cửa sổ cố định), không thêm dịch vụ hay dependency. Một câu `INSERT … ON CONFLICT DO UPDATE … RETURNING` nên gửi song song không vượt ngưỡng (có test 12 lần song song, đúng 3 lần qua). Khóa là tên luật + SHA-256 của IP/email, không lưu IP/email dạng rõ. Lần bị từ chối vẫn được đếm nhưng không kéo dài cửa sổ.
+- Ngưỡng (`RATE_LIMITS` trong `src/server/rate-limit.ts`): đăng nhập 20 lần/15 phút mỗi IP và 10 lần/15 phút mỗi email (chặn cả khi nhiều IP cùng đoán một tài khoản; mật khẩu đúng cũng bị chặn khi đã quá ngưỡng); đăng ký 5 lần/giờ mỗi IP; xin mã đặt lại 10 lần/giờ và nhập mã 30 lần/giờ mỗi IP (cộng với giới hạn theo tài khoản có từ T24).
+- Đăng nhập: giới hạn nằm trong `authorize` (`authenticate` ở `src/server/auth/users.ts`), nên áp dụng cho cả server action lẫn gọi thẳng `/api/auth/callback/credentials`. Quá ngưỡng thì ném `CredentialsSignin` có `code = "rate_limited"`, form hiện "Bạn đã thử đăng nhập quá nhiều lần…". API đăng ký trả `429` + `Retry-After`.
+- IP lấy từ phần tử đầu của `x-forwarded-for` (Vercel tự đặt header này và bỏ giá trị client gửi). Nếu tự host sau proxy khác, proxy phải làm tương tự, nếu không kẻ tấn công đổi header để né giới hạn theo IP (giới hạn theo email vẫn còn).
+- Dọn bộ đếm hết hạn trong cron hằng ngày `/api/cron/debt-reminders` (gói Hobby chỉ cho một cron mỗi ngày), trả thêm `rateLimitsDeleted`.
+- E2E: mọi test chạy từ cùng một máy nên sẽ đụng giới hạn theo IP. `tests/e2e/fixtures.ts` cho mỗi test một IP ngẫu nhiên qua `x-forwarded-for` (đúng cách ứng dụng đọc IP trên Vercel), nên ứng dụng không có đường code riêng cho test. Mọi spec import `test` từ `./fixtures`.
+- Lỗi gặp khi viết e2e: React xóa ô mật khẩu khi action trả về; điền ngay sau khi nhận response có thể bị xóa mất và gửi mật khẩu rỗng (không được tính vào giới hạn theo email). Test chờ ô mật khẩu trống rồi mới điền lần tiếp.
+- Header (`next.config.ts`, mọi đường dẫn): CSP (`default-src 'self'`, `frame-ancestors 'none'`, `object-src 'none'`, `form-action 'self'`; script vẫn cần `'unsafe-inline'` vì Next.js chèn script khởi động và script giao diện, dùng nonce sẽ buộc mọi trang thành động), HSTS 2 năm, `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`; tắt `X-Powered-By`.
+- Cookie: phiên Auth.js mặc định `httpOnly`, `sameSite=lax`, `secure` trên https (tên `__Secure-`); vé đặt lại mật khẩu `httpOnly`, `secure`, giới hạn `path`. Cookie giao diện thêm `secure` ở production (không `httpOnly` vì script đọc, không chứa bí mật).
+- Input: mọi service nhận dữ liệu từ người dùng đều qua Zod; các hàm không parse chỉ nhận id và lọc theo `userId` (bộ test phân quyền T11).
