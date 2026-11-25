@@ -45,7 +45,6 @@ export function ForgotPasswordForm() {
           type="email"
           label="Email"
           autoComplete="email"
-          placeholder="ban@email.com"
           required
           defaultValue={state.email}
           error={state.fieldErrors?.email}
@@ -76,7 +75,6 @@ export function ForgotPasswordForm() {
         label="Mã xác nhận"
         inputMode="numeric"
         autoComplete="one-time-code"
-        placeholder="123456"
         maxLength={12}
         required
         autoFocus

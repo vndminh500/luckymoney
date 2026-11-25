@@ -95,7 +95,6 @@ export function AddCategoryForm() {
         label="Tên danh mục"
         required
         maxLength={CATEGORY_NAME_MAX_LENGTH}
-        placeholder="vd: Cà phê, Tiền điện"
         defaultValue={state.values?.name}
         error={errors.name}
       />

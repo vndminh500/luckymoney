@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 const TABS = [
   { href: "/login", label: "Đăng nhập" },
@@ -45,12 +45,35 @@ export function AuthTabs() {
   );
 }
 
-/** Replays the rise animation whenever the route changes, so the new form eases in. */
+/**
+ * Replays the rise animation whenever the route changes, so the new form eases
+ * in. The forms differ in height and the auth column is centered, so the box
+ * animates its height to the new content: the tabs above glide instead of jump.
+ */
 export function AuthTransition({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState<number>();
+
+  useEffect(() => {
+    const content = contentRef.current;
+    if (!content) return;
+    const observer = new ResizeObserver(() => setHeight(content.offsetHeight));
+    observer.observe(content);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div key={pathname} className="animate-lm-rise">
-      {children}
+    <div
+      data-testid="auth-height"
+      style={{ height }}
+      className="transition-[height] duration-[420ms] ease-lm motion-reduce:transition-none"
+    >
+      <div ref={contentRef}>
+        <div key={pathname} className="animate-lm-rise">
+          {children}
+        </div>
+      </div>
     </div>
   );
 }

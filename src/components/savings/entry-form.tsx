@@ -90,7 +90,6 @@ export function EntryForm({ jarId, today, balance, canWithdraw }: Props) {
         name="amount"
         label="Số tiền"
         inputMode="numeric"
-        placeholder="vd: 500k, 2tr"
         variant="large"
         defaultValue={state.values?.amount}
         hint={kind === "WITHDRAW" ? `Số dư hiện có: ${balance}` : undefined}
@@ -110,7 +109,6 @@ export function EntryForm({ jarId, today, balance, canWithdraw }: Props) {
         <BrandField
           name="note"
           label="Ghi chú"
-          placeholder="vd: Lương tháng 11"
           defaultValue={state.values?.note}
           error={errors.note}
         />

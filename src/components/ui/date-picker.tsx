@@ -225,7 +225,6 @@ export function DatePicker({
           type="text"
           inputMode="numeric"
           autoComplete="off"
-          placeholder="dd/mm/yyyy"
           aria-label={label ? undefined : ariaLabel}
           aria-invalid={error || typedInvalid ? true : undefined}
           aria-describedby={describedBy || undefined}

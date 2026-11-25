@@ -45,7 +45,6 @@ export function AddJarForm() {
         label="Tên hũ"
         required
         maxLength={JAR_NAME_MAX_LENGTH}
-        placeholder="vd: Quỹ khẩn cấp, Du lịch Đà Lạt"
         defaultValue={state.values?.name}
         error={errors.name}
       />

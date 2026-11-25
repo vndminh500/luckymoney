@@ -128,7 +128,6 @@ export function DebtForm({ debtId, initial, today }: Props) {
           <BrandField
             name="counterparty"
             label={direction === "I_OWE" ? "Người cho vay" : "Người vay"}
-            placeholder="vd: Anh Hùng, Lan"
             value={counterparty}
             onChange={(event) => setCounterparty(event.target.value)}
             error={errors.counterparty}
@@ -140,7 +139,6 @@ export function DebtForm({ debtId, initial, today }: Props) {
             name="principal"
             label="Số tiền nợ"
             inputMode="numeric"
-            placeholder="vd: 5tr, 500k"
             value={principal}
             onChange={(event) => setPrincipal(event.target.value)}
             hint={
@@ -162,7 +160,6 @@ export function DebtForm({ debtId, initial, today }: Props) {
           <BrandField
             name="note"
             label="Ghi chú"
-            placeholder="vd: Mượn sửa xe"
             value={note}
             onChange={(event) => setNote(event.target.value)}
             error={errors.note}

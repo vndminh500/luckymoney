@@ -64,7 +64,6 @@ export function BudgetForm({ month, categories }: Props) {
           name="amount"
           inputMode="decimal"
           autoComplete="off"
-          placeholder="2tr"
           defaultValue={state.values?.amount}
           aria-invalid={errors.amount ? true : undefined}
           aria-describedby={errors.amount ? "budget-amount-error" : "budget-amount-hint"}

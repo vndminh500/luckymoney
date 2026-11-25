@@ -17,7 +17,6 @@ export function RegisterForm() {
         name="name"
         label="Tên (không bắt buộc)"
         autoComplete="name"
-        placeholder="Bạn muốn được gọi là gì?"
         defaultValue={state.values?.name}
         error={errors.name}
       />
@@ -26,7 +25,6 @@ export function RegisterForm() {
         type="email"
         label="Email"
         autoComplete="email"
-        placeholder="ban@email.com"
         required
         defaultValue={state.values?.email}
         error={errors.email}

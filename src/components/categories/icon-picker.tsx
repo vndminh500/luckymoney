@@ -116,7 +116,6 @@ export function IconPicker({ name, defaultValue = null, label = "Biểu tượng
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             aria-label="Tìm hoạt động"
-            placeholder="Tìm: cà phê, xăng, tiền nhà…"
             className="h-10 w-full rounded-lg border border-[var(--dash-border)] bg-[var(--dash-bg)] px-3 text-[var(--dash-text)] outline-none placeholder:text-[var(--dash-muted)]/80 focus-visible:border-lm-sky"
           />
         </div>

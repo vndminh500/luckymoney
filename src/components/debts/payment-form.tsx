@@ -49,7 +49,7 @@ export function PaymentForm({ debtId, suggested, today, payLabel }: Props) {
           required
         />
       </div>
-      <BrandField name="note" label="Ghi chú" placeholder="vd: Chuyển khoản" error={errors.note} />
+      <BrandField name="note" label="Ghi chú" error={errors.note} />
       <button type="submit" disabled={pending} className={brandPrimaryButton}>
         {pending ? <Spinner /> : null}
         {pending ? "Đang lưu…" : payLabel}

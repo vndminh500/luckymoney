@@ -163,7 +163,6 @@ function TransactionFields({
         label="Số tiền"
         inputMode="decimal"
         autoComplete="off"
-        placeholder="50k"
         required
         autoFocus={autoFocusAmount}
         defaultValue={values?.amount}
@@ -206,7 +205,6 @@ function TransactionFields({
           name="note"
           label="Ghi chú (không bắt buộc)"
           autoComplete="off"
-          placeholder="Phở bò, đổ xăng…"
           maxLength={NOTE_MAX_LENGTH}
           defaultValue={values?.note}
           error={errors.note}

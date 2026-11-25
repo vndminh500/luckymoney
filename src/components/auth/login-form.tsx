@@ -22,7 +22,6 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
         type="email"
         label="Email"
         autoComplete="email"
-        placeholder="ban@email.com"
         required
         defaultValue={state.values?.email}
       />

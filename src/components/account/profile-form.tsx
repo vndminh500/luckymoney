@@ -55,7 +55,6 @@ export function ProfileForm({ name, username, birthDate, email, googleLinked, to
           autoComplete="username"
           autoCapitalize="none"
           spellCheck={false}
-          placeholder="vd: minh.nguyen"
           defaultValue={values?.username ?? username ?? ""}
           hint="Tên hiển thị duy nhất. Bạn vẫn đăng nhập bằng email."
           error={errors.username}
