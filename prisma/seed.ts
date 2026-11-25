@@ -1,7 +1,9 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 
-// Empty seed for now. Demo data is added in later tasks (T13, T17).
+import { DEMO_EMAIL, resetDemoAccount } from "../src/server/demo/demo-account.ts";
+
+/** `npx prisma db seed`: (re)creates the public demo account with sample data. */
 async function main(): Promise<void> {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
@@ -9,8 +11,8 @@ async function main(): Promise<void> {
   }
   const prisma = new PrismaClient({ adapter: new PrismaPg(connectionString) });
   try {
-    await prisma.$connect();
-    console.log("Seed: nothing to seed yet.");
+    await resetDemoAccount(prisma);
+    console.log(`Seed: demo account ${DEMO_EMAIL} is ready.`);
   } finally {
     await prisma.$disconnect();
   }

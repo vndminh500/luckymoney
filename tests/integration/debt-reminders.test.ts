@@ -137,6 +137,7 @@ describe("GET /api/cron/debt-reminders", () => {
   it("refuses a wrong secret and runs with the right one", async () => {
     vi.stubEnv("CRON_SECRET", "s3cret-value");
     vi.stubEnv("SMTP_URL", "");
+    vi.stubEnv("DEMO_ACCOUNT_RESET", "");
     vi.spyOn(console, "info").mockImplementation(() => undefined);
     await createDebt(aliceId, debt("Anh Hùng", [{ dueDate: "2026-01-01", amount: 1_000 }]));
 
@@ -145,6 +146,11 @@ describe("GET /api/cron/debt-reminders", () => {
 
     const response = await call("Bearer s3cret-value");
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ emails: 1, installments: 1, rateLimitsDeleted: 0 });
+    expect(await response.json()).toEqual({
+      emails: 1,
+      installments: 1,
+      rateLimitsDeleted: 0,
+      demoReset: false,
+    });
   });
 });

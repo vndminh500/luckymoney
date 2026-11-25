@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { toDateKey } from "@/lib/dates";
 import { changePasswordSchema, profileSchema } from "@/lib/schemas/account";
 import { hashPassword, verifyPassword } from "@/server/auth/password";
+import { DEMO_EMAIL } from "@/server/demo/demo-account";
 import { prisma } from "@/server/db";
 import { ConflictError, ValidationError } from "@/server/errors";
 
@@ -80,10 +81,16 @@ export async function changePassword(userId: string, input: unknown): Promise<vo
     throw ValidationError.fromZod(parsed.error);
   }
   const { currentPassword, newPassword } = parsed.data;
-  const { passwordHash } = await prisma.user.findUniqueOrThrow({
+  const { passwordHash, email } = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
-    select: { passwordHash: true },
+    select: { passwordHash: true, email: true },
   });
+  if (email === DEMO_EMAIL) {
+    // Visitors share the demo account; one of them must not lock the others out.
+    throw new ValidationError([
+      { field: "newPassword", message: "Không thể đổi mật khẩu của tài khoản demo." },
+    ]);
+  }
   if (!(await verifyPassword(currentPassword, passwordHash))) {
     throw new ValidationError([
       { field: "currentPassword", message: "Mật khẩu hiện tại không đúng." },

@@ -59,3 +59,4 @@ Một task CHƯA xong cho đến khi lint, typecheck và test đều pass. Phả
 
 ## Lỗi hay gặp (thêm một dòng mỗi khi agent lặp lại cùng một lỗi)
 - Không ghi văn bản có backtick (Markdown inline code, template literal) qua `node -e "..."` hay `sed` trong bash: bash coi backtick là lệnh con, làm mất chữ và chạy lệnh ngoài ý muốn. Dùng công cụ Edit/Write, hoặc heredoc có nháy (`<<'EOF'`).
+- `.env` có thể đang trỏ `DATABASE_URL` tới database production (người dùng sửa để chạy `migrate deploy`). Trước mọi lệnh `prisma migrate dev`, `prisma db seed` hay script ghi DB, kiểm tra host (`localhost`) hoặc truyền `DATABASE_URL` local ngay trong lệnh.
