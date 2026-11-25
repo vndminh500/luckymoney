@@ -61,12 +61,10 @@ describe("requestPasswordReset", () => {
     expect(rows[0].codeHash).not.toContain(lastCode());
   });
 
-  it("stays silent for unknown emails and Google-only accounts", async () => {
-    await prisma.user.create({ data: { email: "google@example.com" } });
+  it("stays silent for unknown emails", async () => {
     const { send } = mailbox();
 
     await requestPasswordReset({ email: "nobody@example.com" }, NOW, send);
-    await requestPasswordReset({ email: "google@example.com" }, NOW, send);
 
     expect(send).not.toHaveBeenCalled();
     expect(await prisma.passwordReset.count()).toBe(0);

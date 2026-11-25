@@ -95,13 +95,6 @@ describe("verifyCredentials", () => {
     await registerUser(validInput);
     await expect(verifyCredentials(input)).resolves.toBeNull();
   });
-
-  it("returns null for an account without a password (Google-only)", async () => {
-    await prisma.user.create({ data: { email: "google@example.com", passwordHash: null } });
-    await expect(
-      verifyCredentials({ email: "google@example.com", password: "anything-at-all" }),
-    ).resolves.toBeNull();
-  });
 });
 
 describe("POST /api/auth/register", () => {

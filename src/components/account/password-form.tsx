@@ -7,8 +7,8 @@ import { SavedNote } from "@/components/account/profile-form";
 import { BrandField, brandPrimaryButton, Spinner } from "@/components/ui/brand-form";
 import { PASSWORD_MIN_LENGTH } from "@/lib/schemas/auth";
 
-/** Change the password, or create one for an account that only signs in with Google. */
-export function PasswordForm({ hasPassword }: { hasPassword: boolean }) {
+/** Change the password; the current one must be confirmed. */
+export function PasswordForm() {
   const [state, formAction, pending] = useActionState<AccountFormState, FormData>(
     changePasswordAction,
     {},
@@ -23,23 +23,15 @@ export function PasswordForm({ hasPassword }: { hasPassword: boolean }) {
       className="flex flex-col gap-5"
       noValidate
     >
-      <SavedNote savedAt={state.savedAt}>
-        {hasPassword ? "Đã đổi mật khẩu." : "Đã tạo mật khẩu."}
-      </SavedNote>
-      {hasPassword ? (
-        <BrandField
-          name="currentPassword"
-          type="password"
-          label="Mật khẩu hiện tại"
-          autoComplete="current-password"
-          required
-          error={errors.currentPassword}
-        />
-      ) : (
-        <p className="text-[var(--dash-muted)]">
-          Tài khoản của bạn đang đăng nhập bằng Google. Tạo mật khẩu để có thể đăng nhập bằng email.
-        </p>
-      )}
+      <SavedNote savedAt={state.savedAt}>Đã đổi mật khẩu.</SavedNote>
+      <BrandField
+        name="currentPassword"
+        type="password"
+        label="Mật khẩu hiện tại"
+        autoComplete="current-password"
+        required
+        error={errors.currentPassword}
+      />
       <BrandField
         name="newPassword"
         type="password"
@@ -60,7 +52,7 @@ export function PasswordForm({ hasPassword }: { hasPassword: boolean }) {
       />
       <button type="submit" disabled={pending} className={`${brandPrimaryButton} self-start`}>
         {pending ? <Spinner /> : null}
-        {pending ? "Đang lưu…" : hasPassword ? "Đổi mật khẩu" : "Tạo mật khẩu"}
+        {pending ? "Đang lưu…" : "Đổi mật khẩu"}
       </button>
     </form>
   );

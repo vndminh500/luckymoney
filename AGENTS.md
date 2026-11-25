@@ -5,7 +5,7 @@
 ## Công nghệ
 - Next.js (App Router) + TypeScript (strict)
 - PostgreSQL + Prisma
-- Auth.js (credentials + Google)
+- Auth.js (credentials)
 - Tailwind CSS, Recharts
 - Zod để validate
 - Vitest (unit), Playwright (e2e)

@@ -55,9 +55,8 @@ function resetEmail(code: string): { subject: string; text: string; html: string
 }
 
 /**
- * Emails a 6-digit code to an account that has a password. Unknown emails,
- * Google-only accounts, requests within the resend cooldown and accounts over
- * the daily cap return silently,
+ * Emails a 6-digit code to a registered account. Unknown emails, requests
+ * within the resend cooldown and accounts over the daily cap return silently,
  * so the caller always shows the same answer and cannot learn who is registered.
  * A failed send is logged, not thrown, for the same reason.
  */
@@ -69,9 +68,9 @@ export async function requestPasswordReset(
   const { email } = parse(forgotPasswordSchema, input);
   const user = await prisma.user.findUnique({
     where: { email },
-    select: { id: true, email: true, passwordHash: true },
+    select: { id: true, email: true },
   });
-  if (!user?.passwordHash) {
+  if (!user) {
     return;
   }
   const dayAgo = new Date(now.getTime() - DAY_MS);

@@ -40,10 +40,6 @@ export default defineConfig({
       DATABASE_URL: process.env.E2E_DATABASE_URL ?? "",
       AUTH_SECRET: process.env.AUTH_SECRET ?? "",
       AUTH_TRUST_HOST: "true",
-      // Fake Google client so the button and the OAuth redirect can be tested;
-      // tests intercept accounts.google.com, so no real Google call is made.
-      AUTH_GOOGLE_ID: "e2e-fake-client-id.apps.googleusercontent.com",
-      AUTH_GOOGLE_SECRET: "e2e-fake-secret",
     },
   },
 });

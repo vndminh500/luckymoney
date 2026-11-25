@@ -13,7 +13,7 @@ Mã lỗi: `400 VALIDATION_ERROR`, `401 UNAUTHENTICATED`, `404 NOT_FOUND`, `409 
 | Method | Path | Mô tả |
 |---|---|---|
 | POST | `/api/auth/register` | Body: `{ email, password, name? }`. Trả `201` với user (không có hash). `409` nếu email đã tồn tại. |
-| POST/GET | `/api/auth/[...nextauth]` | Auth.js: đăng nhập credentials, Google, đăng xuất, session. |
+| POST/GET | `/api/auth/[...nextauth]` | Auth.js: đăng nhập credentials, đăng xuất, session. |
 
 Ràng buộc: email hợp lệ, mật khẩu tối thiểu 8 ký tự. Giới hạn tần suất cho đăng nhập và đăng ký.
 

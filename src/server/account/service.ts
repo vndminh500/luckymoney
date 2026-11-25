@@ -13,8 +13,6 @@ export type Account = {
   name: string | null;
   username: string | null;
   birthDate: string | null;
-  hasPassword: boolean;
-  googleLinked: boolean;
   /** Changes whenever the avatar changes (cache-busting); null without an avatar. */
   avatarVersion: number | null;
   createdAt: Date;
@@ -29,17 +27,13 @@ export async function getAccount(userId: string): Promise<Account> {
       name: true,
       username: true,
       birthDate: true,
-      passwordHash: true,
       createdAt: true,
       avatar: { select: { updatedAt: true } },
-      accounts: { where: { provider: "google" }, select: { id: true } },
     },
   });
-  const { passwordHash, avatar, accounts, ...profile } = user;
+  const { avatar, ...profile } = user;
   return {
     ...profile,
-    hasPassword: passwordHash !== null,
-    googleLinked: accounts.length > 0,
     avatarVersion: avatar ? avatar.updatedAt.getTime() : null,
   };
 }
@@ -77,9 +71,8 @@ export async function updateProfile(
 }
 
 /**
- * Changes the password. An account that has one must confirm it first; a
- * Google-only account can create one. Existing sessions (JWT) stay valid
- * until they expire, see docs/progress.md.
+ * Changes the password after confirming the current one. Existing sessions
+ * (JWT) stay valid until they expire, see docs/progress.md.
  */
 export async function changePassword(userId: string, input: unknown): Promise<void> {
   const parsed = changePasswordSchema.safeParse(input);
@@ -91,7 +84,7 @@ export async function changePassword(userId: string, input: unknown): Promise<vo
     where: { id: userId },
     select: { passwordHash: true },
   });
-  if (passwordHash && !(await verifyPassword(currentPassword ?? "", passwordHash))) {
+  if (!(await verifyPassword(currentPassword, passwordHash))) {
     throw new ValidationError([
       { field: "currentPassword", message: "Mật khẩu hiện tại không đúng." },
     ]);

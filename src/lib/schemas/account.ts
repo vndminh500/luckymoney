@@ -50,10 +50,13 @@ const newPassword = z
   .min(PASSWORD_MIN_LENGTH, { error: `Mật khẩu cần ít nhất ${PASSWORD_MIN_LENGTH} ký tự.` })
   .max(PASSWORD_MAX_LENGTH, { error: `Mật khẩu tối đa ${PASSWORD_MAX_LENGTH} ký tự.` });
 
-/** Security form. currentPassword is required only when the account already has one. */
+/** Security form: the current password confirms the change. */
 export const changePasswordSchema = z
   .object({
-    currentPassword: z.string().max(PASSWORD_MAX_LENGTH).optional(),
+    currentPassword: z
+      .string({ error: "Vui lòng nhập mật khẩu hiện tại." })
+      .min(1, { error: "Vui lòng nhập mật khẩu hiện tại." })
+      .max(PASSWORD_MAX_LENGTH),
     newPassword,
     confirmPassword: z.string({ error: "Vui lòng nhập lại mật khẩu mới." }),
   })

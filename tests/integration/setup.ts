@@ -10,7 +10,7 @@ requireTestDatabaseUrl("DATABASE_URL", "_test");
 /** Every test starts from an empty database. */
 beforeEach(async () => {
   await prisma.$executeRawUnsafe(
-    'TRUNCATE TABLE "Transaction", "Budget", "Category", "Account", "User" RESTART IDENTITY CASCADE',
+    'TRUNCATE TABLE "Transaction", "Budget", "Category", "User" RESTART IDENTITY CASCADE',
   );
 });
 

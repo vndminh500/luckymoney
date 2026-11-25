@@ -9,7 +9,6 @@ import {
   updateProfile,
 } from "@/server/account/service";
 import { registerUser, verifyCredentials } from "@/server/auth/users";
-import { prisma } from "@/server/db";
 import { ConflictError, ValidationError } from "@/server/errors";
 
 const PASSWORD = "mat-khau-an-toan";
@@ -47,8 +46,6 @@ describe("getAccount", () => {
       name: "Alice",
       username: null,
       birthDate: null,
-      hasPassword: true,
-      googleLinked: false,
       avatarVersion: null,
       createdAt: expect.any(Date),
     });
@@ -148,15 +145,21 @@ describe("changePassword", () => {
     ).resolves.toMatchObject({ id: aliceId });
   });
 
-  it("lets a Google-only account create a password without a current one", async () => {
-    const google = await prisma.user.create({ data: { email: "g@example.com" } });
-    await changePassword(google.id, {
-      newPassword: "mat-khau-moi-123",
-      confirmPassword: "mat-khau-moi-123",
-    });
+  it("refuses to change the password without the current one", async () => {
+    for (const currentPassword of [undefined, ""]) {
+      await expect(
+        fields(
+          change({
+            currentPassword,
+            newPassword: "mat-khau-moi-123",
+            confirmPassword: "mat-khau-moi-123",
+          }),
+        ),
+      ).resolves.toEqual(["currentPassword"]);
+    }
     await expect(
-      verifyCredentials({ email: "g@example.com", password: "mat-khau-moi-123" }),
-    ).resolves.toMatchObject({ id: google.id });
+      verifyCredentials({ email: "alice@example.com", password: PASSWORD }),
+    ).resolves.toMatchObject({ id: aliceId });
   });
 });
 

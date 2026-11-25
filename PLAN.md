@@ -16,8 +16,8 @@ Làm theo lát cắt dọc: mỗi tính năng chạy được từ giao diện �
 ## Giai đoạn 1: Xác thực
 - [x] T5. Đăng ký và đăng nhập bằng email + mật khẩu (Auth.js, JWT), băm mật khẩu, middleware chặn route cần đăng nhập, tạo danh mục mặc định khi đăng ký.
   - Xong khi: e2e đăng ký, đăng nhập, đăng xuất pass; chưa đăng nhập bị chuyển về `/login`.
-- [ ] T6. Thêm đăng nhập Google OAuth.
-  - Xong khi: đăng nhập Google tạo hoặc liên kết user đúng.
+- [x] ~~T6. Thêm đăng nhập Google OAuth.~~
+  - Đã bỏ theo yêu cầu (2026-11-25): gỡ toàn bộ đăng nhập/đăng ký bằng Google, xem `docs/progress.md`.
 
 ## Giai đoạn 2: Giao dịch và danh mục (lát cắt dọc đầu tiên)
 - [x] T7. Thêm giao dịch: schema Zod, service, route/action, form giao diện, test.

@@ -12,7 +12,6 @@ type Props = {
   username: string | null;
   birthDate: string | null;
   email: string;
-  googleLinked: boolean;
   today: string;
 };
 
@@ -29,7 +28,7 @@ export function SavedNote({ savedAt, children }: { savedAt?: number; children: s
   );
 }
 
-export function ProfileForm({ name, username, birthDate, email, googleLinked, today }: Props) {
+export function ProfileForm({ name, username, birthDate, email, today }: Props) {
   const [state, formAction, pending] = useActionState<AccountFormState, FormData>(
     updateProfileAction,
     {},
@@ -76,11 +75,7 @@ export function ProfileForm({ name, username, birthDate, email, googleLinked, to
         value={email}
         readOnly
         aria-readonly="true"
-        hint={
-          googleLinked
-            ? "Email dùng để đăng nhập, đã liên kết với Google. Chưa thể đổi email."
-            : "Email dùng để đăng nhập. Chưa thể đổi email."
-        }
+        hint="Email dùng để đăng nhập. Chưa thể đổi email."
       />
       <button type="submit" disabled={pending} className={`${brandPrimaryButton} self-start`}>
         {pending ? <Spinner /> : null}

@@ -45,7 +45,6 @@ async function Profile() {
           username={account.username}
           birthDate={account.birthDate}
           email={account.email}
-          googleLinked={account.googleLinked}
           today={today}
         />
       </section>

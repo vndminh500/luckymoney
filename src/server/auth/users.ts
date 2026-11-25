@@ -50,8 +50,8 @@ export async function verifyCredentials(input: unknown): Promise<AuthenticatedUs
     where: { email },
     select: { id: true, email: true, name: true, passwordHash: true },
   });
-  if (!user?.passwordHash) {
-    // Unknown email, or a Google-only account: same cost and answer as a wrong password.
+  if (!user) {
+    // Unknown email: same cost and answer as a wrong password.
     await burnPasswordCheck(password);
     return null;
   }

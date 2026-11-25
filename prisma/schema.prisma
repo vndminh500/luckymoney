@@ -55,7 +55,7 @@ model User {
   name         String? // họ tên
   username     String?  @unique // tên hiển thị duy nhất (@minh); đăng nhập vẫn bằng email
   birthDate    String? // "YYYY-MM-DD"
-  passwordHash String? // null nếu chỉ đăng nhập bằng Google
+  passwordHash String
   timeZone     String   @default("Asia/Ho_Chi_Minh")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -69,7 +69,6 @@ model User {
   notifyDebtEmail     Boolean         @default(true) // email nhắc kỳ trả nợ sắp đến hạn / quá hạn
 
   avatar         UserAvatar?
-  accounts       Account[]
   categories     Category[]
   transactions   Transaction[]
   budgets        Budget[]
@@ -102,27 +101,6 @@ model PasswordReset {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
-}
-
-// Dùng cho Google OAuth (Auth.js Prisma adapter).
-// Phiên đăng nhập dùng JWT nên không cần bảng Session.
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
   @@index([userId])
 }
 

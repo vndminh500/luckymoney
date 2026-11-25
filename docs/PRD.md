@@ -22,7 +22,7 @@ Mọi người ghi chi tiêu bằng ghi chú hoặc bảng tính rồi bỏ sau 
 ## 5. Tính năng MVP và tiêu chí nghiệm thu
 
 ### F1. Xác thực
-- Đăng ký / đăng nhập bằng email + mật khẩu và Google OAuth. Đăng xuất.
+- Đăng ký / đăng nhập bằng email + mật khẩu. Đăng xuất. (Đăng nhập Google đã bỏ theo yêu cầu, 2026-11-25.)
 - Nghiệm thu: người chưa đăng nhập bị chuyển về trang đăng nhập; mật khẩu được băm; phiên đăng nhập có hạn.
 
 ### F2. Giao dịch (CRUD)
