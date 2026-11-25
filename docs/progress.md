@@ -278,3 +278,10 @@ Nhật ký quyết định và vướng mắc theo từng task.
 - Gỡ provider Google khỏi `src/auth.ts` (chỉ còn credentials), nút "Tiếp tục với Google" ở `/login` và `/register`, `googleSignInAction`, `src/server/auth/google.ts`, các biến `AUTH_GOOGLE_*` trong `.env.example` và Playwright, test `google.test.ts`, `google.spec.ts`. T6 trong PLAN đánh dấu đã bỏ.
 - Migration `remove_google_sign_in`: xóa bảng `Account`, `User.passwordHash` thành bắt buộc. Trước khi làm đã kiểm DB local: 0 dòng `Account`, 0 user thiếu mật khẩu; app chưa triển khai. Nếu DB nào còn user thiếu mật khẩu, migration báo lỗi thay vì tự xóa user.
 - Hệ quả: bỏ nhánh "tài khoản chỉ Google" ở đổi mật khẩu (giờ luôn bắt buộc mật khẩu hiện tại, kiểm ở Zod), quên mật khẩu và đăng nhập. Trang Bảo mật chỉ còn "Đổi mật khẩu"; dòng gợi ý email ở Tài khoản không còn nhắc Google. Trang `/login` vẫn hiện một thông báo chung cho mọi `?error=` của Auth.js.
+
+## T17. Triển khai lên Vercel (2026-11-25, một phần)
+- Đã chạy ở https://luckymoney-fawn.vercel.app (Vercel Hobby, nhánh `main` tự deploy). Database là Prisma Postgres (Free) qua Vercel Storage, nối cho cả Production và Preview: Preview dùng chung dữ liệu thật.
+- Biến Production: `DATABASE_URL` (do Storage tạo), `AUTH_SECRET`, `CRON_SECRET`, `APP_URL`, `SMTP_URL` (Gmail App Password), `EMAIL_FROM`.
+- Migration không chạy khi build: sau mỗi lần đổi schema phải tự chạy `npx prisma migrate deploy` với `DATABASE_URL` production.
+- Đã kiểm tra: `/api/auth/session` trả `null`, đăng nhập sai trả `CredentialsSignin` (DB có bảng), người dùng đã thử đăng ký và các luồng chính.
+- Còn thiếu để tick T17: tài khoản demo với dữ liệu mẫu.
